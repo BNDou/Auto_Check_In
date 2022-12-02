@@ -3,14 +3,9 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-02 20:10:45
+LastEditTime : 2022-12-02 20:17:47
 FilePath     : \Auto_Check_In\checkIn_ZhangFei.py
-Description  : 
-
-配置文件config.sh添加以下变量
-export COOKIE_ZHANGFEI=''
-export URL_ZHANGFEI=''
-export REFERER_ZHANGFEI=''
+Description  : 添加环境变量COOKIE_ZHANGFEI、URL_ZHANGFEI、REFERER_ZHANGFEI
 '''
 from lxml import etree
 import requests
@@ -26,9 +21,9 @@ except:
     pass
 
 # 获取环境变量
-cookie_zhangfei = process.env.COOKIE_ZHANGFEI
-url_zhangfei = process.env.URL_ZHANGFEI
-referer_zhangfei = process.env.REFERER_ZHANGFEI
+cookie_zhangfei = os.environ.get("COOKIE_ZHANGFEI")
+url_zhangfei = os.environ.get("URL_ZHANGFEI")
+referer_zhangfei = os.environ.get("REFERER_ZHANGFEI")
 
 
 def load_send():
