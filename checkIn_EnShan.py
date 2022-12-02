@@ -1,9 +1,9 @@
 '''
 new Env('恩山论坛签到')
-cron: 1 * * * *
+cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-02 19:52:09
+LastEditTime : 2022-12-02 20:00:11
 FilePath     : \Auto_Check_In\checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN
 '''
