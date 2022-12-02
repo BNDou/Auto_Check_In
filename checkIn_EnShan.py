@@ -3,9 +3,9 @@ new Env('恩山论坛签到')
 cron: 1 * * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-02 19:10:38
-FilePath     : \DailyCheckin_EnShan\dailyCheckin_EnShan.py
-Description  : 
+LastEditTime : 2022-12-02 19:52:09
+FilePath     : \Auto_Check_In\checkIn_EnShan.py
+Description  : 添加环境变量COOKIE_ENSHAN
 '''
 
 from lxml import etree

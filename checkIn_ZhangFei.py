@@ -3,9 +3,14 @@ new Env('掌上飞车签到')
 cron: 1 * * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-02 19:31:24
-FilePath     : \DailyCheckin_EnShan\dailyCheckin_ZhangFei.py
+LastEditTime : 2022-12-02 19:54:19
+FilePath     : \Auto_Check_In\checkIn_ZhangFei.py
 Description  : 
+
+配置文件config.sh添加以下变量
+export COOKIE_ZHANGFEI=''
+export URL_ZHANGFEI=''
+export REFERER_ZHANGFEI=''
 '''
 from lxml import etree
 import requests
