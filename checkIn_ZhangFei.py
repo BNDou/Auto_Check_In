@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-02 20:00:15
+LastEditTime : 2022-12-02 20:10:45
 FilePath     : \Auto_Check_In\checkIn_ZhangFei.py
 Description  : 
 
@@ -81,16 +81,16 @@ def run(*arg):
 def main(*arg):
     msg = ""
     sendnoty = 'true'
-    global cookie
-    if "\\n" in cookie:
-        clist = cookie.split("\\n")
+    global cookie_zhangfei
+    if "\\n" in cookie_zhangfei:
+        clist = cookie_zhangfei.split("\\n")
     else:
-        clist = cookie.split("\n")
+        clist = cookie_zhangfei.split("\n")
     i = 0
     while i < len(clist):
         msg += f"第 {i+1} 个账号开始执行任务\n"
-        cookie = clist[i]
-        msg += run(cookie)
+        cookie_zhangfei = clist[i]
+        msg += run(cookie_zhangfei)
         i += 1
     print(msg[:-1])
     if sendnoty:
@@ -102,7 +102,7 @@ def main(*arg):
 
 
 if __name__ == "__main__":
-    if cookie:
+    if cookie_zhangfei:
         print("----------掌上飞车开始尝试签到----------")
         main()
         print("----------掌上飞车签到执行完毕----------")
