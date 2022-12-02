@@ -3,21 +3,26 @@ new Env('恩山论坛签到')
 cron: 1 * * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-11-01 00:45:42
-FilePath     : \DailyCheckin_EnShan\dailyCheckinEnShan.py
+LastEditTime : 2022-12-02 19:10:38
+FilePath     : \DailyCheckin_EnShan\dailyCheckin_EnShan.py
 Description  : 
 '''
 
-import requests, json, time, os, sys
+from lxml import etree
+import requests
+import json
+import time
+import os
+import sys
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 try:
     from pusher import pusher
 except:
     pass
-from lxml import etree
 
 cookie = os.environ.get("COOKIE_ENSHAN")
+
 
 def load_send():
     global send
@@ -27,28 +32,32 @@ def load_send():
         try:
             from sendNotify import send
         except:
-            send=False
+            send = False
             print("加载通知服务失败~")
     else:
-        send=False
+        send = False
         print("加载通知服务失败~")
+
+
 load_send()
+
 
 def run(*arg):
     msg = ""
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'})
+    s.headers.update(
+        {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'})
 
     # 签到
     url = "https://www.right.com.cn/forum/home.php?mod=spacecp&ac=credit&op=log&suboperation=creditrulelog"
     headers = {
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Encoding' : 'gzip, deflate, br',
-        'Accept-Language' : 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
-        'Connection' : 'keep-alive',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+        'Connection': 'keep-alive',
         'Cookie': cookie,
-        'Host' : 'www.right.com.cn',
-        'Upgrade-Insecure-Requests' : '1',
+        'Host': 'www.right.com.cn',
+        'Upgrade-Insecure-Requests': '1',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'
     }
     try:
@@ -65,9 +74,10 @@ def run(*arg):
         msg = '无法正常连接到网站，请尝试改变网络环境，试下本地能不能跑脚本，或者换几个时间点执行脚本'
     return msg + '\n'
 
+
 def main(*arg):
     msg = ""
-    sendnoty='true'
+    sendnoty = 'true'
     global cookie
     if "\\n" in cookie:
         clist = cookie.split("\\n")
@@ -82,10 +92,11 @@ def main(*arg):
     print(msg[:-1])
     if sendnoty:
         try:
-           send('恩山论坛签到',msg)
+            send('恩山论坛签到', msg)
         except:
-            send('恩山论坛签到','错误，请查看运行日志！')
+            send('恩山论坛签到', '错误，请查看运行日志！')
     return msg[:-1]
+
 
 if __name__ == "__main__":
     if cookie:
