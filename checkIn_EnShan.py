@@ -3,7 +3,7 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-03 18:32:18
+LastEditTime : 2022-12-03 21:24:25
 FilePath     : /Auto_Check_In/checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN
 '''
@@ -61,7 +61,7 @@ def run(*arg):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'
     }
     try:
-        r = s.get(url, headers=headers, timeout=120)
+        r = s.get(url=url, headers=headers, timeout=120)
         # print(r.text)
         if '每天登录' in r.text:
             h = etree.HTML(r.text)
