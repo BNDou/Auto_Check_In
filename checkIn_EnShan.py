@@ -3,25 +3,40 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-03 21:57:27
+LastEditTime : 2022-12-04 03:30:05
 FilePath     : /Auto_Check_In/checkIn_EnShan.py
-Description  : 添加环境变量COOKIE_ENSHAN
+Description  : 添加环境变量COOKIE_ENSHAN，多账号用回车换行分开
 '''
 
 from lxml import etree
 import requests
-import json
-import time
 import os
 import sys
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
-try:
-    from pusher import pusher
-except:
-    pass
 
-cookie = os.environ.get("COOKIE_ENSHAN")
+
+# 获取环境变量
+def get_env():
+    # 判断 COOKIE_ENSHAN是否存在于环境变量
+    if "COOKIE_ENSHAN" in os.environ:
+        # 读取系统变量 以 \n 分割变量
+        cookie_list = os.environ.get('COOKIE_ENSHAN').split('\n')
+        # 判断 cookie 数量 大于 0 个
+        if len(cookie_list) <= 0:
+            # 标准日志输出
+            print('COOKIE_ENSHAN变量未启用')
+            send('小米社区日常', 'COOKIE_ENSHAN变量未启用')
+            # 脚本退出
+            sys.exit(1)
+    else:
+        # 标准日志输出
+        print('未添加COOKIE_ENSHAN变量')
+        send('小米社区日常', '未添加COOKIE_ENSHAN变量')
+        # 脚本退出
+        sys.exit(0)
+
+    return cookie_list
 
 
 def load_send():
@@ -42,7 +57,7 @@ def load_send():
 load_send()
 
 
-def run(*arg):
+def run(cookie, url):
     msg = ""
     s = requests.Session()
     s.headers.update(
@@ -69,37 +84,36 @@ def run(*arg):
             msg += f'签到成功或今日已签到\n最后签到时间：{data[0]}'
         else:
             msg += '签到失败，可能是cookie失效了！'
-            pusher(msg)
     except:
         msg = '无法正常连接到网站，请尝试改变网络环境，试下本地能不能跑脚本，或者换几个时间点执行脚本'
+
     return msg + '\n\n'
 
 
 def main(*arg):
     msg = ""
     sendnoty = 'true'
-    global cookie
-    if "\\n" in cookie:
-        clist = cookie.split("\\n")
-    else:
-        clist = cookie.split("\n")
+    global cookie_enshan
+    cookie_enshan = get_env()
+
     i = 0
-    while i < len(clist):
+    while i < len(cookie_enshan):
         msg += f"第 {i+1} 个账号开始执行任务\n"
-        cookie = clist[i]
-        msg += run(cookie)
+        msg += run(cookie_enshan[i])
         i += 1
+
     print(msg[:-1])
+
     if sendnoty:
         try:
             send('恩山论坛签到', msg)
         except:
             send('恩山论坛签到', '错误，请查看运行日志！')
+
     return msg[:-1]
 
 
 if __name__ == "__main__":
-    if cookie:
-        print("----------恩山论坛开始尝试签到----------")
-        main()
-        print("----------恩山论坛签到执行完毕----------")
+    print("----------恩山论坛开始尝试签到----------")
+    main()
+    print("----------恩山论坛签到执行完毕----------")

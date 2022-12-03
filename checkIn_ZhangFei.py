@@ -3,13 +3,12 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-04 00:57:06
+LastEditTime : 2022-12-04 03:28:35
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 添加环境变量COOKIE_ZHANGFEI、URL_ZHANGFEI，多账号用回车换行分开
 '''
 from lxml import etree
 import requests
-import json
 import os
 import sys
 sys.path.append('.')
@@ -17,7 +16,6 @@ requests.packages.urllib3.disable_warnings()
 
 
 # 获取环境变量
-# 返回值 list[list, list]
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
@@ -100,6 +98,7 @@ def main(*arg):
     global cookie_zhangfei
     global url_zhangfei
     cookie_zhangfei, url_zhangfei = get_env()
+
     i = 0
     while i < len(cookie_zhangfei):
         msg += f"第 {i+1} 个账号开始执行任务\n"
@@ -114,6 +113,7 @@ def main(*arg):
             send('掌上飞车签到', msg)
         except:
             send('掌上飞车签到', '错误，请查看运行日志！')
+
     return msg[:-1]
 
 
