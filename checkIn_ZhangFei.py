@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-03 20:44:02
+LastEditTime : 2022-12-03 21:27:41
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 添加环境变量COOKIE_ZHANGFEI、URL_ZHANGFEI
 '''
@@ -58,7 +58,7 @@ def run(cookie, url):
         'Cookie': cookie
     }
 
-    r = s.get(url, headers=headers, timeout=120)
+    r = s.get(url=url, headers=headers, timeout=120)
     rjson = r.json()
     msg += rjson.get('message', '')
     if 'send_result' in rjson:
