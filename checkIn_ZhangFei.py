@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-03 23:13:18
+LastEditTime : 2022-12-03 23:16:44
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 添加环境变量COOKIE_ZHANGFEI、URL_ZHANGFEI，多账号用回车换行分开
 '''
@@ -33,11 +33,13 @@ def get_env():
         if len(cookie_list) <= 0:
             # 标准日志输出
             send('掌上飞车签到', 'COOKIE_ZHANGFEI变量未启用')
+            print('COOKIE_ZHANGFEI变量未启用')
             # 脚本退出
             sys.exit(1)
     else:
         # 标准日志输出
         send('掌上飞车签到', '未添加COOKIE_ZHANGFEI变量')
+        print('未添加COOKIE_ZHANGFEI变量')
         # 脚本退出
         sys.exit(0)
 
@@ -46,9 +48,11 @@ def get_env():
         url_list = os.environ.get('URL_ZHANGFEI').split('\n')
         if len(url_list) <= 0:
             send('掌上飞车签到', 'URL_ZHANGFEI变量未启用')
+            print('URL_ZHANGFEI变量未启用')
             sys.exit(1)
     else:
         send('掌上飞车签到', '未添加URL_ZHANGFEI变量')
+        print('未添加URL_ZHANGFEI变量')
         sys.exit(0)
 
     return cookie_list, url_list
