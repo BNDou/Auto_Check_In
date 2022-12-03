@@ -3,7 +3,7 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-03 21:24:25
+LastEditTime : 2022-12-03 21:57:27
 FilePath     : /Auto_Check_In/checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN
 '''
@@ -66,13 +66,13 @@ def run(*arg):
         if '每天登录' in r.text:
             h = etree.HTML(r.text)
             data = h.xpath('//tr/td[6]/text()')
-            msg += f'签到成功或今日已签到，最后签到时间：{data[0]}'
+            msg += f'签到成功或今日已签到\n最后签到时间：{data[0]}'
         else:
             msg += '签到失败，可能是cookie失效了！'
             pusher(msg)
     except:
         msg = '无法正常连接到网站，请尝试改变网络环境，试下本地能不能跑脚本，或者换几个时间点执行脚本'
-    return msg + '\n'
+    return msg + '\n\n'
 
 
 def main(*arg):
