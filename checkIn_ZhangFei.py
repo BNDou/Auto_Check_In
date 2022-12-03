@@ -20,10 +20,9 @@ try:
 except:
     pass
 
+
 # 获取环境变量
 # 返回值 list[list, list]
-
-
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
