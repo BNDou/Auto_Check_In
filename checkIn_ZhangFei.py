@@ -3,14 +3,13 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-03 23:22:30
+LastEditTime : 2022-12-04 00:57:06
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 添加环境变量COOKIE_ZHANGFEI、URL_ZHANGFEI，多账号用回车换行分开
 '''
 from lxml import etree
 import requests
 import json
-import time
 import os
 import sys
 sys.path.append('.')
