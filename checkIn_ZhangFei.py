@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-04 03:28:35
+LastEditTime : 2022-12-05 03:19:21
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 添加环境变量COOKIE_ZHANGFEI、URL_ZHANGFEI，多账号用回车换行分开
 '''
@@ -13,6 +13,12 @@ import os
 import sys
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
+
+
+try:  # 异常捕捉
+    from sendNotify import send  # 导入消息通知模块
+except Exception as err:  # 异常捕捉
+    print('%s\n加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -48,24 +54,6 @@ def get_env():
         sys.exit(0)
 
     return cookie_list, url_list
-
-
-def load_send():
-    global send
-    cur_path = os.path.abspath(os.path.dirname(__file__))
-    sys.path.append(cur_path)
-    if os.path.exists(cur_path + "/sendNotify.py"):
-        try:
-            from sendNotify import send
-        except:
-            send = False
-            print("加载通知服务失败~")
-    else:
-        send = False
-        print("加载通知服务失败~")
-
-
-load_send()
 
 
 def run(cookie, url):
@@ -111,8 +99,9 @@ def main(*arg):
     if sendnoty:
         try:
             send('掌上飞车签到', msg)
-        except:
-            send('掌上飞车签到', '错误，请查看运行日志！')
+        except Exception as err:
+            print('%s\n错误，请查看运行日志！' % err)
+            send('掌上飞车签到', '%s\n错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
