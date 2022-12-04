@@ -82,7 +82,7 @@ def run(cookie, url):
     a = r.json()
 
     if 'code' in a:
-        if 401 or 500 == a.get('code'):
+        if (401, 500) == a.get('code'):
             print(
                 '失败，可能是cookie失效了\n建议手机端访问签到页面时抓cookie，其包含字段：miui_vip_serviceToken、cUserId、userId')
             send(
