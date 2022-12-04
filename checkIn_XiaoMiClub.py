@@ -3,7 +3,7 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-04 17:03:38
+LastEditTime : 2022-12-04 17:42:04
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
 '''
@@ -74,6 +74,14 @@ def run(cookie, url):
 
     r = s.get(url=url, data=data, headers=headers, timeout=120)
     a = r.json()
+
+    if 'code' in a:
+        if 401 == a.get('code'):
+            print('失败，可能是cookie失效了')
+            send('小米社区日常', '失败，可能是cookie失效了')
+            # 脚本退出
+            sys.exit(0)
+
     msg += a.get('message', '')
     if 'entity' in a:
         if 'desc' in a.get('entity'):
