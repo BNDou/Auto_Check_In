@@ -3,7 +3,7 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-05 00:39:30
+LastEditTime : 2022-12-05 01:50:09
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 
 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
@@ -102,7 +102,6 @@ def run(cookie, url):
                 msg += a.get('entity').get('title', '')
         else:
             msg += a.get('entity', '')
-    print(msg)
 
     return msg + '\n'
 
@@ -130,21 +129,33 @@ def main(*arg):
         userId = cookie_xiaomiclub[i][cookie_xiaomiclub[i].find(
             'userId=')+7:].replace(';', '')
 
-        msg += f"第 {i+1} 个账号{userId}开始执行任务\n"
+        log = f"第 {i+1} 个账号{userId}开始执行任务\n"
+        msg += log
+        print(log)
         # 签到
-        msg += '每日签到 ' + run(cookie_xiaomiclub[i], checkin_url)
+        log = '每日签到 ' + run(cookie_xiaomiclub[i], checkin_url)
+        msg += log
+        print(log)
         # 浏览帖子*3
         j = 0
         while j < 3:
-            msg += f'浏览帖子{j+1} ' + \
+            log = f'浏览帖子{j+1} ' + \
                 run(cookie_xiaomiclub[i], browse_url1 + userId)
+            msg += log
+            print(log)
             j += 1
         # 浏览专题页*1
-        msg += '浏览专题页 ' + run(cookie_xiaomiclub[i], browse_url2 + userId)
+        log = '浏览专题页 ' + run(cookie_xiaomiclub[i], browse_url2 + userId)
+        msg += log
+        print(log)
         # 浏览个人页*1
-        msg += '浏览个人页 ' + run(cookie_xiaomiclub[i], browse_url3 + userId)
+        log = '浏览个人页 ' + run(cookie_xiaomiclub[i], browse_url3 + userId)
+        msg += log
+        print(log)
         # 加入MIUI综合讨论圈子*1
-        msg += '加入MIUI综合讨论圈子 ' + run(cookie_xiaomiclub[i], join_miui)
+        log = '加入MIUI综合讨论圈子 ' + run(cookie_xiaomiclub[i], join_miui)
+        msg += log
+        print(log)
         msg += '\n'
         i += 1
 
