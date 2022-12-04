@@ -3,13 +3,15 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-04 18:35:21
+LastEditTime : 2022-12-04 20:31:26
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 
 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
 建议手机端访问签到页面时抓cookie
 电脑端的随便访问一个帖子时抓到的才可以用，其他页面的不行
 cookie有效期不清楚，包含字段：miui_vip_serviceToken、cUserId
+在抓到的cookie后面多加一个字段 userId 并赋上值（小米ID）
+格式如下：miui_vip_serviceToken=***; cUserId=***; userId=***;
 '''
 
 from lxml import etree
@@ -80,7 +82,7 @@ def run(cookie, url):
     a = r.json()
 
     if 'code' in a:
-        if 401 == a.get('code'):
+        if 401 or 500 == a.get('code'):
             print(
                 '失败，可能是cookie失效了\n建议手机端访问签到页面时抓cookie，其包含字段：miui_vip_serviceToken、cUserId')
             send(
@@ -105,11 +107,11 @@ def main(*arg):
     # 签到
     checkin_url = 'https://api.vip.miui.com/mtop/planet/vip/user/checkin?ref=vipAccountShortcut&pathname=/mio/checkIn&version=dev.221116&miui_version=V13.0.5.1.47.DEV&android_version=12&oaid=e8f4a0444d8fb4d2&device=umi&restrict_imei=&miui_big_version=V130&model=Mi%2010&androidVersion=12&miuiBigVersion=V130'
     # 浏览帖子*3
-    browse_url1 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?userId=148484041&action=BROWSE_POST_10S&pathname=/mio/detail&version=dev.20001&miui_version=undefined&android_version=undefined&oaid=false&device=&restrict_imei=&miui_big_version=&model=&androidVersion=undefined&miuiBigVersion='
+    browse_url1 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?action=BROWSE_POST_10S&pathname=/mio/detail&version=dev.20001&miui_version=undefined&android_version=undefined&oaid=false&device=&restrict_imei=&miui_big_version=&model=&androidVersion=undefined&miuiBigVersion=&userId='
     # 浏览专题页*1
-    browse_url2 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?userId=148484041&action=BROWSE_SPECIAL_PAGES_SPECIAL_PAGE&ref=vipAccountShortcut&pathname=/mio/subject&version=dev.221116&miui_version=V13.0.5.1.47.DEV&android_version=12&oaid=e8f4a0444d8fb4d2&device=umi&restrict_imei=&miui_big_version=V130&model=Mi%2010&androidVersion=12&miuiBigVersion=V130'
+    browse_url2 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?action=BROWSE_SPECIAL_PAGES_SPECIAL_PAGE&ref=vipAccountShortcut&pathname=/mio/subject&version=dev.221116&miui_version=V13.0.5.1.47.DEV&android_version=12&oaid=e8f4a0444d8fb4d2&device=umi&restrict_imei=&miui_big_version=V130&model=Mi%2010&androidVersion=12&miuiBigVersion=V130&userId='
     # 浏览个人页*1
-    browse_url3 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?userId=148484041&action=BROWSE_SPECIAL_PAGES_USER_HOME&ref=vipAccountShortcut&pathname=/mio/homePage&version=dev.221116&miui_version=V13.0.5.1.47.DEV&android_version=12&oaid=e8f4a0444d8fb4d2&device=umi&restrict_imei=&miui_big_version=V130&model=Mi%2010&androidVersion=12&miuiBigVersion=V130'
+    browse_url3 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?action=BROWSE_SPECIAL_PAGES_USER_HOME&ref=vipAccountShortcut&pathname=/mio/homePage&version=dev.221116&miui_version=V13.0.5.1.47.DEV&android_version=12&oaid=e8f4a0444d8fb4d2&device=umi&restrict_imei=&miui_big_version=V130&model=Mi%2010&androidVersion=12&miuiBigVersion=V130&userId='
     # 加入MIUI综合讨论圈子
     join_miui = 'https://api.vip.miui.com/api/community/board/follow?boardId=558495&ref=communityGrowUp&pathname=/mio/singleBoard&version=dev.221116&miui_version=V13.0.5.1.47.DEV&android_version=12&oaid=e8f4a0444d8fb4d2&device=umi&restrict_imei=&miui_big_version=V130&model=Mi%2010&androidVersion=12&miuiBigVersion=V130'
     # 获取cookie环境变量
@@ -117,20 +119,26 @@ def main(*arg):
 
     i = 0
     while i < len(cookie_xiaomiclub):
+        # 获取小米id
+        userId = cookie_xiaomiclub[i][cookie_xiaomiclub[i].find(
+            'userId=')+7:].replace(';', '')
+
         msg += f"第 {i+1} 个账号开始执行任务\n"
         # 签到
         msg += '每日签到\n' + run(cookie_xiaomiclub[i], checkin_url)
         # 浏览帖子*3
         j = 0
         while j < 3:
-            msg += f'浏览帖子{j+1}\n' + run(cookie_xiaomiclub[i], browse_url1)
+            msg += f'浏览帖子{j+1}\n' + \
+                run(cookie_xiaomiclub[i], browse_url1 + userId)
             j += 1
         # 浏览专题页*1
-        msg += '浏览专题页\n' + run(cookie_xiaomiclub[i], browse_url2)
+        msg += '浏览专题页\n' + run(cookie_xiaomiclub[i], browse_url2 + userId)
         # 浏览个人页*1
-        msg += '浏览个人页\n' + run(cookie_xiaomiclub[i], browse_url3)
+        msg += '浏览个人页\n' + run(cookie_xiaomiclub[i], browse_url3 + userId)
         # 加入MIUI综合讨论圈子*1
         msg += '加入MIUI综合讨论圈子\n' + run(cookie_xiaomiclub[i], join_miui)
+
         i += 1
 
     print(msg[:-1])
