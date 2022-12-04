@@ -3,7 +3,7 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-04 03:14:29
+LastEditTime : 2022-12-04 17:03:38
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
 '''
@@ -123,9 +123,9 @@ def main(*arg):
 
     if sendnoty:
         try:
-            send('掌上飞车签到', msg)
+            send('小米社区日常', msg)
         except:
-            send('掌上飞车签到', '错误，请查看运行日志！')
+            send('小米社区日常', '错误，请查看运行日志！')
 
     return msg[:-1]
 
