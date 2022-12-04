@@ -3,7 +3,7 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-04 03:30:05
+LastEditTime : 2022-12-04 20:46:19
 FilePath     : /Auto_Check_In/checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN，多账号用回车换行分开
 '''
@@ -26,13 +26,13 @@ def get_env():
         if len(cookie_list) <= 0:
             # 标准日志输出
             print('COOKIE_ENSHAN变量未启用')
-            send('小米社区日常', 'COOKIE_ENSHAN变量未启用')
+            send('恩山论坛签到', 'COOKIE_ENSHAN变量未启用')
             # 脚本退出
-            sys.exit(1)
+            sys.exit(0)
     else:
         # 标准日志输出
         print('未添加COOKIE_ENSHAN变量')
-        send('小米社区日常', '未添加COOKIE_ENSHAN变量')
+        send('恩山论坛签到', '未添加COOKIE_ENSHAN变量')
         # 脚本退出
         sys.exit(0)
 
