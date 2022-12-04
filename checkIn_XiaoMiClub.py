@@ -3,13 +3,13 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-04 18:31:44
+LastEditTime : 2022-12-04 18:35:21
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 
 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
 建议手机端访问签到页面时抓cookie
 电脑端的随便访问一个帖子时抓到的才可以用，其他页面的不行
-cookie有效期不清楚，主要字段：miui_vip_serviceToken、cUserId
+cookie有效期不清楚，包含字段：miui_vip_serviceToken、cUserId
 '''
 
 from lxml import etree
@@ -35,8 +35,8 @@ def get_env():
             sys.exit(1)
     else:
         # 标准日志输出
-        print('未添加COOKIE_XIAOMICLUB变量')
-        send('小米社区日常', '未添加COOKIE_XIAOMICLUB变量')
+        print('未添加COOKIE_XIAOMICLUB变量\n建议手机端访问签到页面时抓cookie，其包含字段：miui_vip_serviceToken、cUserId')
+        send('小米社区日常', '未添加COOKIE_XIAOMICLUB变量\n建议手机端访问签到页面时抓cookie，其包含字段：miui_vip_serviceToken、cUserId')
         # 脚本退出
         sys.exit(0)
 
@@ -81,8 +81,10 @@ def run(cookie, url):
 
     if 'code' in a:
         if 401 == a.get('code'):
-            print('失败，可能是cookie失效了')
-            send('小米社区日常', '失败，可能是cookie失效了')
+            print(
+                '失败，可能是cookie失效了\n建议手机端访问签到页面时抓cookie，其包含字段：miui_vip_serviceToken、cUserId')
+            send(
+                '小米社区日常', '失败，可能是cookie失效了\n建议手机端访问签到页面时抓cookie，其包含字段：miui_vip_serviceToken、cUserId')
             # 脚本退出
             sys.exit(0)
 
