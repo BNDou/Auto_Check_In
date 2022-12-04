@@ -3,9 +3,13 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-04 17:42:04
+LastEditTime : 2022-12-04 18:31:44
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
-Description  : 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
+Description  : 
+添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
+建议手机端访问签到页面时抓cookie
+电脑端的随便访问一个帖子时抓到的才可以用，其他页面的不行
+cookie有效期不清楚，主要字段：miui_vip_serviceToken、cUserId
 '''
 
 from lxml import etree
