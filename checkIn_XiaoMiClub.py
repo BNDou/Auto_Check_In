@@ -3,7 +3,7 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-04 21:32:45
+LastEditTime : 2022-12-04 22:01:49
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 
 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
@@ -16,6 +16,7 @@ cookie有效期不清楚，包含字段：miui_vip_serviceToken、cUserId
 
 from lxml import etree
 import requests
+import time
 import os
 import sys
 sys.path.append('.')
@@ -64,6 +65,8 @@ load_send()
 
 
 def run(cookie, url):
+    # 延迟5秒执行，防止频繁
+    time.sleep(5)
     msg = ''
     s = requests.Session()
     s.headers.update({'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/106.0.0.0'})
@@ -93,9 +96,9 @@ def run(cookie, url):
     msg += a.get('message', '')
     if 'entity' in a:
         if 'desc' in a.get('entity'):
-            msg += a.get('entity').get('desc')
+            msg += a.get('entity').get('desc', '')
         if 'title' in a.get('entity'):
-            msg += a.get('entity').get('title')
+            msg += a.get('entity').get('title', '')
 
     return msg + '\n'
 
