@@ -3,7 +3,7 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-05 01:50:09
+LastEditTime : 2022-12-05 03:27:48
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 
 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
@@ -21,6 +21,14 @@ import os
 import sys
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
+
+# 测试用环境变量
+# os.environ['COOKIE_XIAOMICLUB'] = ''
+
+try:  # 异常捕捉
+    from sendNotify import send  # 导入消息通知模块
+except Exception as err:  # 异常捕捉
+    print('%s\n加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -44,24 +52,6 @@ def get_env():
         sys.exit(0)
 
     return cookie_list
-
-
-def load_send():
-    global send
-    cur_path = os.path.abspath(os.path.dirname(__file__))
-    sys.path.append(cur_path)
-    if os.path.exists(cur_path + "/sendNotify.py"):
-        try:
-            from sendNotify import send
-        except:
-            send = False
-            print("加载通知服务失败~")
-    else:
-        send = False
-        print("加载通知服务失败~")
-
-
-load_send()
 
 
 def run(cookie, url):
@@ -103,7 +93,7 @@ def run(cookie, url):
         else:
             msg += a.get('entity', '')
 
-    return msg + '\n'
+    return msg
 
 
 def main(*arg):
@@ -129,32 +119,32 @@ def main(*arg):
         userId = cookie_xiaomiclub[i][cookie_xiaomiclub[i].find(
             'userId=')+7:].replace(';', '')
 
-        log = f"第 {i+1} 个账号{userId}开始执行任务\n"
-        msg += log
+        log = f"第 {i+1} 个账号{userId}开始执行任务"
+        msg += log + '\n'
         print(log)
         # 签到
         log = '每日签到 ' + run(cookie_xiaomiclub[i], checkin_url)
-        msg += log
+        msg += log + '\n'
         print(log)
         # 浏览帖子*3
         j = 0
         while j < 3:
             log = f'浏览帖子{j+1} ' + \
                 run(cookie_xiaomiclub[i], browse_url1 + userId)
-            msg += log
+            msg += log + '\n'
             print(log)
             j += 1
         # 浏览专题页*1
         log = '浏览专题页 ' + run(cookie_xiaomiclub[i], browse_url2 + userId)
-        msg += log
+        msg += log + '\n'
         print(log)
         # 浏览个人页*1
         log = '浏览个人页 ' + run(cookie_xiaomiclub[i], browse_url3 + userId)
-        msg += log
+        msg += log + '\n'
         print(log)
         # 加入MIUI综合讨论圈子*1
         log = '加入MIUI综合讨论圈子 ' + run(cookie_xiaomiclub[i], join_miui)
-        msg += log
+        msg += log + '\n'
         print(log)
         msg += '\n'
         i += 1
@@ -162,8 +152,9 @@ def main(*arg):
     if sendnoty:
         try:
             send('小米社区日常', msg)
-        except:
-            send('小米社区日常', '错误，请查看运行日志！')
+        except Exception as err:
+            print('%s\n错误，请查看运行日志！' % err)
+            send('小米社区日常', '%s\n错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
