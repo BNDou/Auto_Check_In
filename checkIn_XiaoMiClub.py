@@ -134,7 +134,7 @@ def main(*arg):
     # 签到
     checkin_url = 'https://api.vip.miui.com/mtop/planet/vip/user/checkin'
     # 浏览帖子*3
-    browse_url1 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?pathname=/mio/detail&oaid=false&userId='
+    browse_url1 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?action=BROWSE_POST_10S&pathname=/mio/detail&oaid=false&userId='
     # 浏览专题页*1
     browse_url2 = 'https://api.vip.miui.com/mtop/planet/vip/member/addCommunityGrowUpPointByAction?action=BROWSE_SPECIAL_PAGES_SPECIAL_PAGE&pathname=/mio/subject&oaid=e8f4a0444d8fb4d2&userId='
     # 浏览个人页*1
