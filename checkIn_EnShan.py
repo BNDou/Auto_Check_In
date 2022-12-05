@@ -3,7 +3,7 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-05 03:19:22
+LastEditTime : 2022-12-05 17:48:35
 FilePath     : /Auto_Check_In/checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN，多账号用回车换行分开
 '''
@@ -15,6 +15,8 @@ import sys
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
+# 测试用环境变量
+# os.environ['COOKIE_ENSHAN'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
