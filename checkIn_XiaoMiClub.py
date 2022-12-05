@@ -89,7 +89,7 @@ def run_get(cookie, url):
             if 'title' in a.get('entity'):
                 msg += a.get('entity').get('title', '')
         else:
-            msg += a.get('entity', '')
+            msg += a.get('entity')
 
     return msg
 
