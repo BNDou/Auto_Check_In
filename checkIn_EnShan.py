@@ -47,7 +47,7 @@ def get_env():
     return cookie_list
 
 
-def run(cookie, url):
+def run(cookie):
     msg = ""
     s = requests.Session()
     s.headers.update(
