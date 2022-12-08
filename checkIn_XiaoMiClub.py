@@ -3,7 +3,7 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-07 00:52:53
+LastEditTime : 2022-12-09 00:37:42
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 
 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
@@ -85,11 +85,11 @@ def run_get(cookie, url):
     if 'entity' in a:
         if isinstance(a.get('entity'), dict):
             if 'desc' in a.get('entity'):
-                msg += a.get('entity').get('desc', '')
+                msg += ' ' + a.get('entity').get('desc', '')
             if 'title' in a.get('entity'):
-                msg += a.get('entity').get('title', '')
+                msg += ' ' + a.get('entity').get('title', '')
         else:
-            msg += str(a.get('entity', ''))
+            msg += ' ' + str(a.get('entity', ''))
 
     return msg
 
@@ -179,9 +179,9 @@ def main(*arg):
         print(log)
         # 点赞他人帖子*2
         for num in range(2):
-            log = f'点赞他人帖子{num+1}次' + \
+            log = f'点赞他人帖子{num+1}次 ' + \
                 run_post(cookie_xiaomiclub[i], thumb_up+'announceThumbUp')
-            log += f' 取消点赞' + \
+            log += f' 取消点赞 ' + \
                 run_post(cookie_xiaomiclub[i],
                          thumb_up+'announceCancelThumbUp')
             msg += log + '\n'
