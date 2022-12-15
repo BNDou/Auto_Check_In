@@ -3,13 +3,13 @@ new Env('小米社区日常')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
-LastEditTime : 2022-12-09 00:37:42
+LastEditTime : 2022-12-15 21:53:31
 FilePath     : /Auto_Check_In/checkIn_XiaoMiClub.py
 Description  : 
 添加环境变量COOKIE_XIAOMICLUB，多账号用回车换行分开
 建议手机端访问签到页面时抓cookie
 电脑端的随便访问一个帖子时抓到的才可以用，其他页面的不行
-cookie有效期不清楚，包含字段：miui_vip_serviceToken、cUserId
+cookie有效期好像是24小时，包含字段：miui_vip_serviceToken、cUserId
 在抓到的cookie后面多加一个字段 userId 并赋上值（小米ID）
 格式如下：miui_vip_serviceToken=***; cUserId=***; userId=***;
 '''
