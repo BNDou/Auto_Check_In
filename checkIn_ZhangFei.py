@@ -3,10 +3,16 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-05 17:48:59
+LastEditTime : 2022-12-18 03:58:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
-Description  : 添加环境变量COOKIE_ZHANGFEI、URL_ZHANGFEI，多账号用回车换行分开
+Description  : 
+添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
+值分别是cookie和referer
 '''
+import datetime
+import time
+from urllib.parse import unquote
+from bs4 import BeautifulSoup
 from lxml import etree
 import requests
 import os
@@ -16,6 +22,7 @@ requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
 # os.environ['COOKIE_ZHANGFEI'] = ''
+# os.environ['REFERER_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -43,27 +50,68 @@ def get_env():
         # 脚本退出
         sys.exit(0)
 
-    # 判断 URL_ZHANGFEI是否存在于环境变量
-    if "URL_ZHANGFEI" in os.environ:
-        url_list = os.environ.get('URL_ZHANGFEI').split('\n')
-        if len(url_list) <= 0:
-            print('URL_ZHANGFEI变量未启用')
-            send('掌上飞车签到', 'URL_ZHANGFEI变量未启用')
+    # 判断 REFERER_ZHANGFEI是否存在于环境变量
+    if "REFERER_ZHANGFEI" in os.environ:
+        referer_list = os.environ.get('REFERER_ZHANGFEI').split('\n')
+        if len(referer_list) <= 0:
+            print('REFERER_ZHANGFEI变量未启用')
+            send('掌上飞车签到', 'REFERER_ZHANGFEI变量未启用')
             sys.exit(1)
     else:
-        print('未添加URL_ZHANGFEI变量')
-        send('掌上飞车签到', '未添加URL_ZHANGFEI变量')
+        print('未添加REFERER_ZHANGFEI变量')
+        send('掌上飞车签到', '未添加REFERER_ZHANGFEI变量')
         sys.exit(0)
 
-    return cookie_list, url_list
+    return cookie_list, referer_list
 
 
-def run(cookie, url):
+# 定义一个获取url页面下label标签的attr属性的函数
+def getHtml(url):
+    count_list = []
+    giftId_list = []
+    date_list = []
+    response = requests.get(url)
+    response.encoding = 'utf-8'
+    html = response.text
+    soup = BeautifulSoup(html, 'html.parser')
+
+    for target in soup.find_all('span'):
+        try:
+            value = target.text
+        except:
+            value = ''
+        if value:
+            count_list.append(value)
+
+    for target in soup.find_all('a'):
+        try:
+            value = target.get('giftid')
+        except:
+            value = ''
+        if value:
+            giftId_list.append(value)
+
+    for target in soup.find_all('div'):
+        try:
+            if 'text2' in target.get('class'):
+                value = target.text
+            else:
+                value = ''
+        except:
+            value = ''
+        if value:
+            date_list.append(value)
+
+    return count_list, giftId_list, date_list
+
+
+# 签到
+def checkIn(cookie, user_data, giftid):
     msg = ""
     s = requests.Session()
     s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778'})
 
-    # 签到
+    url = f"https://mwegame.qq.com/ams/sign/doSign/month?userId={user_data.get('userId')}&uin={user_data.get('uin')}&roleId={user_data.get('roleId')}&uniqueRoleId={user_data.get('uniqueRoleId')}&areaId={user_data.get('areaId')}&accessToken={user_data.get('accessToken')}&token={user_data.get('token')}&gift_id={giftid}&game=speed"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
         'Connection': 'keep-alive',
@@ -79,24 +127,159 @@ def run(cookie, url):
     if 'send_result' in rjson:
         msg += '\n' + rjson.get('send_result').get('sMsg', '')
 
-    return msg + '\n\n'
+    return msg
+
+
+# 累计签到奖励
+def getGift(cookie, count_list, giftId_list, user_data):
+    msg = ''
+    s = requests.Session()
+    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778'})
+
+    url = "https://mwegame.qq.com/ams/send/handle"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
+        'Connection': 'keep-alive',
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'Cookie': cookie,
+    }
+
+    print(count_list[0] + ' 用户:' + user_data.get('roleName') + ' 累计签到' +
+          count_list[1] + '天\n当月礼物有:' + str(giftId_list))
+
+    num = 3
+    for num in range(len(count_list)-3):
+        # 累计签到天数是否足够，否则退出
+        if int(count_list[1]) < int(count_list[num+3]):
+            break
+
+        # 生成表单
+        data = {
+            'userId': user_data.get('userId'),  # 掌飞id
+            'uin': user_data.get('uin'),  # QQ账号
+            'toUin': user_data.get('toUin'),  # QQ账号
+            'roleId': user_data.get('roleId'),  # QQ账号
+            'uniqueRoleId': user_data.get('uniqueRoleId'),  # 唯一角色id
+            'areaId': user_data.get('areaId'),  # 大区
+            'accessToken': user_data.get('accessToken'),  # 访问令牌
+            'token': user_data.get('token'),  # 令牌
+            'gift_id': giftId_list[num+1]  # 礼物id
+        }
+
+        # 延迟1秒执行，防止频繁
+        time.sleep(2)
+
+        r = s.post(url=url, data=data, headers=headers)
+        a = r.json()
+        # 是否成功
+        if 'status' in a:
+            if a.get('status') == 1:
+                msg += '累计签到' + count_list[num+3] + '天的礼物:' + \
+                    giftId_list[num+1] + ' ' + a.get('data', '') + '\n'
+                print('累计签到' + count_list[num+3] + '天的礼物:' +
+                      giftId_list[num+1] + ' ' + a.get('data', ''))
+                if 'send_result' in a:
+                    msg += a.get('send_result').get('sMsg', '') + '\n'
+                    print(a.get('send_result').get('sMsg', ''))
+            else:
+                print('累计签到' + count_list[num+3] + '天的礼物:' +
+                      giftId_list[num+1] + ' ' + a.get('message', ''))
+
+    return msg
+
+
+# 特别福利
+def getGiftDays(cookie, count_list, giftId_list, user_data):
+    msg = ''
+    s = requests.Session()
+    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778'})
+
+    url = "https://mwegame.qq.com/ams/send/handle"
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
+        'Connection': 'keep-alive',
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'Cookie': cookie,
+    }
+
+    # 生成表单
+    data = {
+        'userId': user_data.get('userId'),  # 掌飞id
+        'uin': user_data.get('uin'),  # QQ账号
+        'toUin': user_data.get('toUin'),  # QQ账号
+        'roleId': user_data.get('roleId'),  # QQ账号
+        'uniqueRoleId': user_data.get('uniqueRoleId'),  # 唯一角色id
+        'areaId': user_data.get('areaId'),  # 大区
+        'accessToken': user_data.get('accessToken'),  # 访问令牌
+        'token': user_data.get('token'),  # 令牌
+        'gift_id': giftId_list[len(count_list)-2]  # 礼物id
+    }
+
+    # 延迟1秒执行，防止频繁
+    time.sleep(2)
+
+    r = s.post(url=url, data=data, headers=headers)
+    a = r.json()
+    # 是否成功
+    if 'status' in a:
+        if a.get('status') == 1:
+            msg += f"今日{datetime.datetime.now().strftime('%m月%d日')}特殊福利:{a.get('data', '')}\n"
+            print(
+                f"今日{datetime.datetime.now().strftime('%m月%d日')}特殊福利:{a.get('data', '')}")
+            if 'send_result' in a:
+                msg += a.get('send_result').get('sMsg', '') + '\n'
+                print(a.get('send_result').get('sMsg', ''))
+        else:
+            print(f"今日{datetime.datetime.now().strftime('%m月%d日')}特殊福利 已领取过")
+
+    return msg
 
 
 def main(*arg):
     msg = ""
     sendnoty = 'true'
     global cookie_zhangfei
-    global url_zhangfei
-    cookie_zhangfei, url_zhangfei = get_env()
+    global referer_zhangfei
+    cookie_zhangfei, referer_zhangfei = get_env()
 
     i = 0
     while i < len(cookie_zhangfei):
-        msg += f"第 {i+1} 个账号开始执行任务\n"
-        msg += run(cookie_zhangfei[i].replace(' ', ''),
-                   url_zhangfei[i].replace(' ', ''))
-        i += 1
+        # 获取user_data参数
+        user_data = {}
+        for a in referer_zhangfei[i].split('?')[1].split('&'):
+            if len(a) > 0:
+                user_data.update(
+                    {a.split('=')[0]: unquote(a.split('=')[1])})
+        # print(user_data)
+        # 获取累计信息、奖励信息、特别福利日期
+        count_list, giftId_list, date_list = getHtml(referer_zhangfei[i])
 
-    print(msg[:-1])
+        # 开始任务
+        log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务"
+        msg += log + '\n'
+        print(log)
+        # 签到
+        log = checkIn(cookie_zhangfei[i].replace(
+            ' ', ''), user_data, giftId_list[0])
+        msg += log + '\n'
+        print(log)
+        # 累计签到奖励
+        log = getGift(cookie_zhangfei[i].replace(
+            ' ', ''), count_list, giftId_list, user_data)
+        msg += log + '\n'
+        # 特别福利
+        if datetime.datetime.now().strftime('%m月%d日') == date_list[0]:
+            log = getGiftDays(cookie_zhangfei[i].replace(
+                ' ', ''), count_list, giftId_list, user_data)
+        else:
+            print(f"今日{datetime.datetime.now().strftime('%m月%d日')}无特殊福利礼物")
+        msg += log + '\n\n'
+
+        i += 1
 
     if sendnoty:
         try:
