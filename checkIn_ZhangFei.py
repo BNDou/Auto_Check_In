@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-18 04:11:26
+LastEditTime : 2022-12-18 04:20:24
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
@@ -277,7 +277,7 @@ def main(*arg):
                 ' ', ''), count_list, giftId_list, user_data)
         else:
             print(f"今日{datetime.datetime.now().strftime('%m月%d日')}无特殊福利礼物\n")
-        msg += log + '\n\n'
+        msg += log + '\n'
 
         i += 1
 
