@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-18 03:58:10
+LastEditTime : 2022-12-18 04:11:26
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
@@ -232,9 +232,9 @@ def getGiftDays(cookie, count_list, giftId_list, user_data):
                 f"今日{datetime.datetime.now().strftime('%m月%d日')}特殊福利:{a.get('data', '')}")
             if 'send_result' in a:
                 msg += a.get('send_result').get('sMsg', '') + '\n'
-                print(a.get('send_result').get('sMsg', ''))
+                print(a.get('send_result').get('sMsg', '') + '\n')
         else:
-            print(f"今日{datetime.datetime.now().strftime('%m月%d日')}特殊福利 已领取过")
+            print(f"今日{datetime.datetime.now().strftime('%m月%d日')}特殊福利 已领取过\n")
 
     return msg
 
@@ -276,7 +276,7 @@ def main(*arg):
             log = getGiftDays(cookie_zhangfei[i].replace(
                 ' ', ''), count_list, giftId_list, user_data)
         else:
-            print(f"今日{datetime.datetime.now().strftime('%m月%d日')}无特殊福利礼物")
+            print(f"今日{datetime.datetime.now().strftime('%m月%d日')}无特殊福利礼物\n")
         msg += log + '\n\n'
 
         i += 1
