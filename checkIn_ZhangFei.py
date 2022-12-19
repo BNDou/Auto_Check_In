@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-18 04:20:24
+LastEditTime : 2022-12-20 00:53:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
@@ -146,9 +146,6 @@ def getGift(cookie, count_list, giftId_list, user_data):
         'Cookie': cookie,
     }
 
-    print(count_list[0] + ' 用户:' + user_data.get('roleName') + ' 累计签到' +
-          count_list[1] + '天\n当月礼物有:' + str(giftId_list))
-
     num = 3
     for num in range(len(count_list)-3):
         # 累计签到天数是否足够，否则退出
@@ -168,7 +165,7 @@ def getGift(cookie, count_list, giftId_list, user_data):
             'gift_id': giftId_list[num+1]  # 礼物id
         }
 
-        # 延迟1秒执行，防止频繁
+        # 延迟2秒执行，防止频繁
         time.sleep(2)
 
         r = s.post(url=url, data=data, headers=headers)
@@ -219,7 +216,7 @@ def getGiftDays(cookie, count_list, giftId_list, user_data):
         'gift_id': giftId_list[len(count_list)-2]  # 礼物id
     }
 
-    # 延迟1秒执行，防止频繁
+    # 延迟2秒执行，防止频繁
     time.sleep(2)
 
     r = s.post(url=url, data=data, headers=headers)
@@ -260,17 +257,24 @@ def main(*arg):
 
         # 开始任务
         log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务"
-        msg += log + '\n'
+        msg += log + '\n' + count_list[0] + \
+            ' 累计签到' + str(int(count_list[1])+1) + '天\n'
         print(log)
+        print(count_list[0] + ' 累计签到' + str(int(count_list[1]) +
+              1) + '天\n当月礼物有:' + str(giftId_list))
+
         # 签到
         log = checkIn(cookie_zhangfei[i].replace(
             ' ', ''), user_data, giftId_list[0])
-        msg += log + '\n'
-        print(log)
+        msg += f"今日{datetime.datetime.now().strftime(' % m月 % d日')} " + \
+            log + '\n'
+        print(f"今日{datetime.datetime.now().strftime(' % m月 % d日')} " + log)
+
         # 累计签到奖励
         log = getGift(cookie_zhangfei[i].replace(
             ' ', ''), count_list, giftId_list, user_data)
         msg += log + '\n'
+
         # 特别福利
         if datetime.datetime.now().strftime('%m月%d日') == date_list[0]:
             log = getGiftDays(cookie_zhangfei[i].replace(
