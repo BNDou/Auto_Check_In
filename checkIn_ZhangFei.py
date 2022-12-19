@@ -3,9 +3,9 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-20 00:53:10
+LastEditTime : 2022-12-20 01:00:14
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
-Description  : 
+Description  :
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
 值分别是cookie和referer
 '''
@@ -149,7 +149,7 @@ def getGift(cookie, count_list, giftId_list, user_data):
     num = 3
     for num in range(len(count_list)-3):
         # 累计签到天数是否足够，否则退出
-        if int(count_list[1]) < int(count_list[num+3]):
+        if int(count_list[1])+1 < int(count_list[num+3]):
             break
 
         # 生成表单
@@ -258,17 +258,17 @@ def main(*arg):
         # 开始任务
         log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务"
         msg += log + '\n' + count_list[0] + \
-            ' 累计签到' + str(int(count_list[1])+1) + '天\n'
+            ' 已累计签到' + count_list[1] + '天\n'
         print(log)
-        print(count_list[0] + ' 累计签到' + str(int(count_list[1]) +
-              1) + '天\n当月礼物有:' + str(giftId_list))
+        print(count_list[0] + ' 已累计签到' + count_list[1] +
+              '天\n当月礼物有:' + str(giftId_list))
 
         # 签到
         log = checkIn(cookie_zhangfei[i].replace(
             ' ', ''), user_data, giftId_list[0])
-        msg += f"今日{datetime.datetime.now().strftime(' % m月 % d日')} " + \
+        msg += f"今日{datetime.datetime.now().strftime('%m月%d日')} " + \
             log + '\n'
-        print(f"今日{datetime.datetime.now().strftime(' % m月 % d日')} " + log)
+        print(f"今日{datetime.datetime.now().strftime('%m月%d日')} " + log)
 
         # 累计签到奖励
         log = getGift(cookie_zhangfei[i].replace(
