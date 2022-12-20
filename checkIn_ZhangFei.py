@@ -279,9 +279,11 @@ def main(*arg):
         if datetime.datetime.now().strftime('%m月%d日') == date_list[0]:
             log = getGiftDays(cookie_zhangfei[i].replace(
                 ' ', ''), count_list, giftId_list, user_data)
+            msg += log + '\n'
         else:
-            print(f"今日{datetime.datetime.now().strftime('%m月%d日')}无特殊福利礼物\n")
-        msg += log + '\n'
+            log = f"今日{datetime.datetime.now().strftime('%m月%d日')}无特殊福利礼物\n"
+            print(log)
+            msg += log + '\n'
 
         i += 1
 
