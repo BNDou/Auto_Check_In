@@ -273,7 +273,8 @@ def main(*arg):
         # 累计签到奖励
         log = getGift(cookie_zhangfei[i].replace(
             ' ', ''), count_list, giftId_list, user_data)
-        msg += log + '\n'
+        if len(log) > 0:
+            msg += log + '\n'
 
         # 特别福利
         if datetime.datetime.now().strftime('%m月%d日') == date_list[0]:
