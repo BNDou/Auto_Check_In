@@ -3,7 +3,7 @@ new Env('掌上飞车-0点开30个金丝篓')
 cron: 0 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-29 02:08:13
+LastEditTime : 2022-12-29 02:15:18
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 金丝篓开永久雷诺
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
@@ -100,7 +100,7 @@ def openBox(cookie, user_data):
         if 'itemList' in a.get('data'):
             itemList = a.get('data').get('itemList')
             num = 0
-            for num in range(len(list)):
+            for num in range(len(itemList)):
                 msg += f"{itemList[num].get('avtarname')} * {itemList[num].get('num')} "
                 print(
                     f"{itemList[num].get('avtarname')} * {itemList[num].get('num')}")
