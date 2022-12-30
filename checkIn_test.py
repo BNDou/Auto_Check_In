@@ -1,9 +1,7 @@
 '''
-new Env('测试TEST')
-cron: 11 11 11 * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-30 23:30:05
+LastEditTime : 2022-12-30 23:54:17
 FilePath     : /Auto_Check_In/checkIn_test.py
 Description  : 
 '''
