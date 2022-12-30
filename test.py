@@ -1,13 +1,11 @@
 '''
 new Env('测试TEST')
-cron: 0 0 * * *
+cron: 11 11 11 * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-30 22:47:48
+LastEditTime : 2022-12-30 22:52:45
 FilePath     : /Auto_Check_In/test.py
-Description  : 金丝篓开永久雷诺
-添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
-值分别是cookie和referer
+Description  : 
 '''
 from urllib.parse import unquote
 import requests
