@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2023-01-26 22:12:51
- * @LastEditTime : 2023-03-01 00:10:50
+ * @LastEditTime : 2023-03-01 00:26:58
  * @FilePath     : /Auto_Check_In/feiche_code.md
  * @Description  :
 -->
@@ -68,3 +68,7 @@
 ```
 /<customlink=cmd_EnterMapDIY() >赛车随心造模式
 ```
+
+---
+
+[![](https://komarev.com/ghpvc/?username=BNDou&&label=Views "To Github")](https://github.com/BNDou/)
