@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2023-01-26 22:12:51
- * @LastEditTime : 2023-01-26 22:32:22
+ * @LastEditTime : 2023-03-01 00:10:50
  * @FilePath     : /Auto_Check_In/feiche_code.md
  * @Description  :
 -->
@@ -16,10 +16,36 @@
 
 大号查看邮件，发现收到的是超链接，点击即可运行
 
-> 秒开金丝篓（可自行设置数量 注意这个 0 点前提前点击一次，会弹出空白窗口，关闭即可，然后等 0 点 点击超链接即可 1 秒开 30 个）
+> 秒开道具（可自行设置数量 注意这个 0 点前！！提前点击一次！！会弹出空白窗口，关闭即可，然后等 0 点 点击超链接即可 1 秒开 30 个）
 
 ```
 /<customlink=cmd_showTreasureBox(17455); for i = 30, 1, -1 do UI.children.AffirmMsgBox.children.comfirmButton.OnClick() end>秒开金丝篓30个
+
+/<customlink=cmd_showTreasureBox(19019); for i = 30, 1, -1 do UI.children.AffirmMsgBox.children.comfirmButton.OnClick() end>秒开大青虫30个
+
+/<customlink=cmd_showTreasureBox(16318); for i = 30, 1, -1 do UI.children.AffirmMsgBox.children.comfirmButton.OnClick() end>秒开黑美人西瓜30个
+
+/<customlink=cmd_showTreasureBox(16340); for i = 30, 1, -1 do UI.children.AffirmMsgBox.children.comfirmButton.OnClick() end>秒开紫砂西瓜30个
+
+/<customlink=cmd_showTreasureBox(19020); for i = 30, 1, -1 do UI.children.AffirmMsgBox.children.comfirmButton.OnClick() end>秒开小青虫30个
+
+/<customlink=cmd_showTreasureBox(16336); for i = 30, 1, -1 do UI.children.AffirmMsgBox.children.comfirmButton.OnClick() end>秒开玉石卷轴30个
+
+/<customlink=cmd_showTreasureBox(19396); for i = 30, 1, -1 do UI.children.AffirmMsgBox.children.comfirmButton.OnClick() end>秒开草莓30个
+```
+
+> 秒开道具（无需提前点击 时间到了点击即可）
+
+```
+/<customlink=for i = 30, 1, -1 do cmd_OpenTreasureBox(82762) end;>秒开亲密宝箱30个
+
+/<customlink=for i = 30, 1, -1 do cmd_OpenTreasureBox(25858) end;>秒开幸运星宝瓶30个
+
+/<customlink=for i = 30, 1, -1 do cmd_OpenTreasureBox(70910) end;>秒开宝宝狂欢礼盒30个
+
+/<customlink=for i = 30, 1, -1 do cmd_OpenTreasureBox(70909) end;>秒开宝宝开心礼盒30个
+
+/<customlink=for i = 30, 1, -1 do cmd_OpenTreasureBox(70906) end;>秒开爱心礼盒30个
 ```
 
 > 卡游戏背景（重新登录飞车后依旧有效，点击即可切换）
