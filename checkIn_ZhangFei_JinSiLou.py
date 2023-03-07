@@ -6,7 +6,7 @@ Date         : 2022-12-28 23:58:11
 LastEditTime : 2023-03-07 22:17:22
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
-添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为整数
+添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为大于零的整数
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
 值分别是cookie、referer和User-Agent
 '''
@@ -77,11 +77,11 @@ def get_env():
     if "zhangFei_jinSiLouNum" in os.environ:
         if len(os.environ.get('zhangFei_jinSiLouNum')) <= 0 or int(os.environ.get('zhangFei_jinSiLouNum')) == 0:
             print(
-                '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为整数')
+                '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
             send('掌上飞车开金丝篓', '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
             sys.exit(1)
     else:
-        print('使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为整数')
+        print('使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
         send('掌上飞车开金丝篓', '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
         sys.exit(0)
 
