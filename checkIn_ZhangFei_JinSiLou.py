@@ -3,7 +3,7 @@ new Env('掌上飞车-0点开30个金丝篓')
 cron: 0 0 * * *
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime : 2023-03-07 21:49:16
+LastEditTime : 2023-03-07 21:58:43
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
 添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为整数
@@ -166,7 +166,7 @@ def main(*arg):
 
         # 开金丝篓
         num = 0
-        for num in range(os.environ.get('zhangFei_jinSiLouNum')):
+        for num in range(int(os.environ.get('zhangFei_jinSiLouNum'))):
             print(f"开第{num+1}个：")
 
             # 开箱子
