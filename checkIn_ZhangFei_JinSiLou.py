@@ -3,11 +3,11 @@ new Env('掌上飞车-0点开30个金丝篓')
 cron: 0 0 * * *
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime : 2023-02-12 19:01:08
+LastEditTime : 2023-03-07 19:28:08
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
-添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
-值分别是cookie和referer
+添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
+值分别是cookie、referer和User-Agent
 '''
 from urllib.parse import unquote
 import requests
@@ -19,6 +19,7 @@ requests.packages.urllib3.disable_warnings()
 # 测试用环境变量
 # os.environ['COOKIE_ZHANGFEI'] = ''
 # os.environ['REFERER_ZHANGFEI'] = ''
+# os.environ['USER_AGENT_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -58,18 +59,30 @@ def get_env():
         send('掌上飞车开金丝篓', '未添加REFERER_ZHANGFEI变量')
         sys.exit(0)
 
-    return cookie_list, referer_list
+    # 判断 USER_AGENT_ZHANGFEI是否存在于环境变量
+    if "USER_AGENT_ZHANGFEI" in os.environ:
+        userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
+        if len(userAgent) <= 0:
+            print('USER_AGENT_ZHANGFEI变量未启用')
+            send('掌上飞车签到', 'USER_AGENT_ZHANGFEI变量未启用')
+            sys.exit(1)
+    else:
+        print('未添加USER_AGENT_ZHANGFEI变量')
+        send('掌上飞车签到', '未添加USER_AGENT_ZHANGFEI变量')
+        sys.exit(0)
+
+    return cookie_list, referer_list, userAgent
 
 
 # 开箱子
 def openBox(cookie, user_data):
     msg = ''
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778'})
+    s.headers.update({'User-Agent': user_data.get('userAgent')})
 
     url = "https://bang.qq.com/app/speed/chest/ajax/openBoxByKey"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
+        'User-Agent': user_data.get('userAgent'),
         'Connection': 'keep-alive',
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -119,7 +132,7 @@ def main(*arg):
     sendnoty = 'true'
     global cookie_zhangfei
     global referer_zhangfei
-    cookie_zhangfei, referer_zhangfei = get_env()
+    cookie_zhangfei, referer_zhangfei, userAgent = get_env()
 
     i = 0
     while i < len(cookie_zhangfei):
@@ -131,6 +144,7 @@ def main(*arg):
                     {a.split('=')[0]: unquote(a.split('=')[1])})
         if 'speedm' in referer_zhangfei[i]:
             print(f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} {'端游' if 'speed' == user_data.get('game') else '手游'} 暂无开道具")
+        user_data.update({'userAgent': userAgent})
         # print(user_data)
 
         # 开始任务
