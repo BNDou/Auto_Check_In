@@ -3,9 +3,10 @@ new Env('掌上飞车-0点开30个金丝篓')
 cron: 0 0 * * *
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime : 2023-03-07 19:28:08
+LastEditTime : 2023-03-07 21:49:16
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
+添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为整数
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
 值分别是cookie、referer和User-Agent
 '''
@@ -17,6 +18,7 @@ sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
+# os.environ['zhangFei_jinSiLouNum'] = ''
 # os.environ['COOKIE_ZHANGFEI'] = ''
 # os.environ['REFERER_ZHANGFEI'] = ''
 # os.environ['USER_AGENT_ZHANGFEI'] = ''
@@ -64,12 +66,23 @@ def get_env():
         userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
         if len(userAgent) <= 0:
             print('USER_AGENT_ZHANGFEI变量未启用')
-            send('掌上飞车签到', 'USER_AGENT_ZHANGFEI变量未启用')
+            send('掌上飞车开金丝篓', 'USER_AGENT_ZHANGFEI变量未启用')
             sys.exit(1)
     else:
         print('未添加USER_AGENT_ZHANGFEI变量')
-        send('掌上飞车签到', '未添加USER_AGENT_ZHANGFEI变量')
+        send('掌上飞车开金丝篓', '未添加USER_AGENT_ZHANGFEI变量')
         sys.exit(0)
+
+    # 判断 zhangFei_jinSiLouNum是否存在于环境变量
+    if "zhangFei_jinSiLouNum" in os.environ:
+        # 判断变量是否为空
+        if len(os.environ.get('zhangFei_jinSiLouNum')) <= 0:
+            # 标准日志输出
+            print(
+                '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为整数')
+            send('掌上飞车开金丝篓', '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为整数')
+            # 脚本退出
+            sys.exit(0)
 
     return cookie_list, referer_list, userAgent
 
@@ -151,9 +164,9 @@ def main(*arg):
         print(
             f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务")
 
-        # 开金丝篓 * 30
+        # 开金丝篓
         num = 0
-        for num in range(30):
+        for num in range(os.environ.get('zhangFei_jinSiLouNum')):
             print(f"开第{num+1}个：")
 
             # 开箱子
