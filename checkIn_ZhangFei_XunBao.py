@@ -3,13 +3,12 @@ new Env('掌上飞车每日寻宝')
 cron: 0 0 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2023-02-28 04:21:23
+LastEditTime : 2023-03-07 19:24:02
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
 Description  : 启动寻宝后最少需要10秒领取，所以建议时间定到开奖时间前10秒运行
 测试用，目前只能！！！开始和结束！！！领取奖励报错不能用！！！
 
-添加环境变量ZHANGFEI_XUNBAO、COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
-值分别是cookie和referer
+添加环境变量ZHANGFEI_XUNBAO、COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
 '''
 import re
 import time
@@ -27,6 +26,7 @@ MAP_STARID = ''
 # os.environ['ZHANGFEI_XUNBAO'] = ''
 # os.environ['COOKIE_ZHANGFEI'] = ''
 # os.environ['REFERER_ZHANGFEI'] = ''
+# os.environ['USER_AGENT_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -76,7 +76,19 @@ def get_env():
         send('掌上飞车每日寻宝', '未添加REFERER_ZHANGFEI变量')
         sys.exit(0)
 
-    return cookie_list, referer_list
+    # 判断 USER_AGENT_ZHANGFEI是否存在于环境变量
+    if "USER_AGENT_ZHANGFEI" in os.environ:
+        userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
+        if len(userAgent) <= 0:
+            print('USER_AGENT_ZHANGFEI变量未启用')
+            send('掌上飞车签到', 'USER_AGENT_ZHANGFEI变量未启用')
+            sys.exit(1)
+    else:
+        print('未添加USER_AGENT_ZHANGFEI变量')
+        send('掌上飞车签到', '未添加USER_AGENT_ZHANGFEI变量')
+        sys.exit(0)
+
+    return cookie_list, referer_list, userAgent
 
 
 # 定义一个获取url页面下label标签的attr属性的函数
@@ -123,11 +135,11 @@ def getHtml(url):
 def startDigTreasure(cookie, user_data):
     msg = ""
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103050011'})
+    s.headers.update({'User-Agent': user_data.get('userAgent')})
 
     url = 'https://bang.qq.com/app/speed/treasure/ajax/startDigTreasure'
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103050011',
+        'User-Agent': user_data.get('userAgent'),
         'Connection': 'keep-alive',
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate',
@@ -162,11 +174,11 @@ def startDigTreasure(cookie, user_data):
 def endDigTreasure(cookie, user_data):
     msg = ''
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103050011'})
+    s.headers.update({'User-Agent': user_data.get('userAgent')})
 
     url = "https://bang.qq.com/app/speed/treasure/ajax/endDigTreasure"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103050011',
+        'User-Agent': user_data.get('userAgent'),
         'Connection': 'keep-alive',
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate',
@@ -201,11 +213,11 @@ def endDigTreasure(cookie, user_data):
 def getGift(cookie, user_data):
     msg = ''
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103050011'})
+    s.headers.update({'User-Agent': user_data.get('userAgent')})
 
     url = "http://act.game.qq.com/ams/ame/amesvr?ameVersion=0.3& =bb&iActivityId=468228&sServiceDepartment=xinyue&sSDID=42a6eb3c5e2fec32f90c3b085368457a&sMiloTag=AMS-MILO-468228-856162-3CCD3D9E40083C0B4A9EB2BE6F073116-1676831452329-d5zK3l&_=1676831452333"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
+        'User-Agent': user_data.get('userAgent'),
         'Connection': 'keep-alive',
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -288,7 +300,7 @@ def main(*arg):
     sendnoty = 'true'
     global cookie_zhangfei
     global referer_zhangfei
-    cookie_zhangfei, referer_zhangfei = get_env()
+    cookie_zhangfei, referer_zhangfei, userAgent = get_env()
 
     i = 0
     while i < len(cookie_zhangfei):
@@ -302,6 +314,7 @@ def main(*arg):
             user_data.update({'game': 'speedm'})  # 手游
         else:
             user_data.update({'game': 'speed'})  # 端游
+        user_data.update({'userAgent': userAgent})
         # print(user_data)
 
         # 开始任务
