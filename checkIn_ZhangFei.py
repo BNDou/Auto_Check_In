@@ -3,11 +3,11 @@ new Env('掌上飞车签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2023-02-12 18:57:04
+LastEditTime : 2023-03-07 18:55:57
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 支持端游、手游双端的签到和领取
-添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
-值分别是cookie和referer
+添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
+值分别是cookie、referer和User-Agent
 '''
 import datetime
 import time
@@ -22,6 +22,7 @@ requests.packages.urllib3.disable_warnings()
 # 测试用环境变量
 # os.environ['COOKIE_ZHANGFEI'] = ''
 # os.environ['REFERER_ZHANGFEI'] = ''
+# os.environ['USER_AGENT_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -61,7 +62,19 @@ def get_env():
         send('掌上飞车签到', '未添加REFERER_ZHANGFEI变量')
         sys.exit(0)
 
-    return cookie_list, referer_list
+    # 判断 USER_AGENT_ZHANGFEI是否存在于环境变量
+    if "USER_AGENT_ZHANGFEI" in os.environ:
+        userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
+        if len(userAgent) <= 0:
+            print('USER_AGENT_ZHANGFEI变量未启用')
+            send('掌上飞车签到', 'USER_AGENT_ZHANGFEI变量未启用')
+            sys.exit(1)
+    else:
+        print('未添加USER_AGENT_ZHANGFEI变量')
+        send('掌上飞车签到', '未添加USER_AGENT_ZHANGFEI变量')
+        sys.exit(0)
+
+    return cookie_list, referer_list, userAgent
 
 
 # 定义一个获取url页面下label标签的attr属性的函数
@@ -108,11 +121,11 @@ def getHtml(url):
 def checkIn(cookie, user_data, giftid):
     msg = ""
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778'})
+    s.headers.update({'User-Agent': user_data.get('userAgent')})
 
     url = f"https://mwegame.qq.com/ams/sign/doSign/month?userId={user_data.get('userId')}&uin={user_data.get('uin')}&roleId={user_data.get('roleId')}&uniqueRoleId={user_data.get('uniqueRoleId')}&areaId={user_data.get('areaId')}&accessToken={user_data.get('accessToken')}&token={user_data.get('token')}&gift_id={giftid}&game={user_data.get('game')}"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
+        'User-Agent': user_data.get('userAgent'),
         'Connection': 'keep-alive',
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -133,11 +146,11 @@ def checkIn(cookie, user_data, giftid):
 def getGift(cookie, count_list, giftId_list, user_data):
     msg = ''
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778'})
+    s.headers.update({'User-Agent': user_data.get('userAgent')})
 
     url = "https://mwegame.qq.com/ams/send/handle"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
+        'User-Agent': user_data.get('userAgent'),
         'Connection': 'keep-alive',
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -192,11 +205,11 @@ def getGift(cookie, count_list, giftId_list, user_data):
 def getGiftDays(cookie, count_list, giftId_list, user_data):
     msg = ''
     s = requests.Session()
-    s.headers.update({'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778'})
+    s.headers.update({'User-Agent': user_data.get('userAgent')})
 
     url = "https://mwegame.qq.com/ams/send/handle"
     headers = {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; Mi 10 Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/96.0.4664.104 Mobile Safari/537.36 GH_QQConnect GameHelper_1003/2103040778',
+        'User-Agent': user_data.get('userAgent'),
         'Connection': 'keep-alive',
         'Accept': 'application/json',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -243,7 +256,7 @@ def main(*arg):
     sendnoty = 'true'
     global cookie_zhangfei
     global referer_zhangfei
-    cookie_zhangfei, referer_zhangfei = get_env()
+    cookie_zhangfei, referer_zhangfei, userAgent = get_env()
 
     i = 0
     while i < len(cookie_zhangfei):
@@ -257,6 +270,7 @@ def main(*arg):
             user_data.update({'game': 'speedm'})  # 手游
         else:
             user_data.update({'game': 'speed'})  # 端游
+        user_data.update({'userAgent': userAgent})  # 端游
         # print(user_data)
         # 获取累计信息、奖励信息、特别福利日期
         count_list, giftId_list, date_list = getHtml(referer_zhangfei[i])
