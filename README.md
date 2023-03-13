@@ -42,7 +42,7 @@ ql repo https://ghproxy.com/https://github.com/BNDou/Auto_Check_In.git "checkIn_
 
 3. [BNDou](https://github.com/BNDou)：使用”[快捷指令](/feiche_code.md "飞车快捷指令")“开出 帝王-永久 \* 1
 
-> <img src="https://user-images.githubusercontent.com/67632799/224759523-f7ce8502-c768-47c1-b080-8c24642376ee.jpg" width="40%">
+> <img src="https://user-images.githubusercontent.com/67632799/224760768-2d2f519c-3159-4597-8db5-e5d2c82a3291.jpg" width="40%">
 
 ---
 
