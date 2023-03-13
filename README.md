@@ -40,6 +40,10 @@ ql repo https://ghproxy.com/https://github.com/BNDou/Auto_Check_In.git "checkIn_
 
 > <img src="https://user-images.githubusercontent.com/67632799/220165600-54610693-8434-4fe9-9130-a917aac6705b.jpg" width="40%">
 
+3. [BNDou](https://github.com/BNDou)：使用”[快捷指令](/feiche_code.md "飞车快捷指令")“开出 帝王-永久 \* 1
+
+> <img src="https://user-images.githubusercontent.com/67632799/224759523-f7ce8502-c768-47c1-b080-8c24642376ee.jpg" width="40%">
+
 ---
 
 [![](https://komarev.com/ghpvc/?username=BNDou&&label=Views "To Github")](https://github.com/BNDou/)
