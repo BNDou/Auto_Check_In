@@ -3,10 +3,10 @@ new Env('掌上飞车每日寻宝')
 cron: 0 0 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2023-03-07 19:24:02
+LastEditTime : 2023-03-07 21:52:33
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
 Description  : 启动寻宝后最少需要10秒领取，所以建议时间定到开奖时间前10秒运行
-测试用，目前只能！！！开始和结束！！！领取奖励报错不能用！！！
+测试用，目前只能！！！开始和结束！！！\n领取奖励报错不能用！！！浪费次数不负责哦
 
 添加环境变量ZHANGFEI_XUNBAO、COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
 '''
@@ -41,8 +41,9 @@ def get_env():
         # 判断变量是否为空
         if len(os.environ.get('ZHANGFEI_XUNBAO')) <= 0:
             # 标准日志输出
-            print('测试用，目前只能！！！开始和结束！！！领取奖励报错不能用！！\n使用请添加ZHANGFEI_XUNBAO变量')
-            send('掌上飞车每日寻宝', '测试用，目前只能！！！开始和结束！！！领取奖励报错不能用！！\n使用请添加ZHANGFEI_XUNBAO变量')
+            print('测试用，目前只能！！！开始和结束！！！\n领取奖励报错不能用！！浪费次数不负责哦\n使用请添加ZHANGFEI_XUNBAO变量')
+            send(
+                '掌上飞车每日寻宝', '测试用，目前只能！！！开始和结束！！！\n领取奖励报错不能用！！浪费次数不负责哦\n使用请添加ZHANGFEI_XUNBAO变量')
             # 脚本退出
             sys.exit(0)
 
@@ -81,11 +82,11 @@ def get_env():
         userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
         if len(userAgent) <= 0:
             print('USER_AGENT_ZHANGFEI变量未启用')
-            send('掌上飞车签到', 'USER_AGENT_ZHANGFEI变量未启用')
+            send('掌上飞车每日寻宝', 'USER_AGENT_ZHANGFEI变量未启用')
             sys.exit(1)
     else:
         print('未添加USER_AGENT_ZHANGFEI变量')
-        send('掌上飞车签到', '未添加USER_AGENT_ZHANGFEI变量')
+        send('掌上飞车每日寻宝', '未添加USER_AGENT_ZHANGFEI变量')
         sys.exit(0)
 
     return cookie_list, referer_list, userAgent
