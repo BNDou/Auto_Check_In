@@ -1,9 +1,9 @@
 '''
 new Env('掌上飞车签到')
-cron: 1 0 * * *
+cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2023-03-07 18:55:57
+LastEditTime : 2023-03-18 23:03:43
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  : 支持端游、手游双端的签到和领取
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
