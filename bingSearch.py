@@ -1,5 +1,5 @@
 '''
-new Env('必应手机端搜索')
+new Env('必应搜索')
 cron: 19 9 * * *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
