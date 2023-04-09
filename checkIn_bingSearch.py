@@ -130,7 +130,7 @@ def main(*arg):
             print(f"手机端搜索{num}-" + log)
             if log not in 'OK':
                 err += 1
-        log = f"手机端成功{20-err}次"
+        log = f"手机端成功✅✅{20-err}次"
         msg += log + '\n'
         print(log)
         # PC端
@@ -139,12 +139,11 @@ def main(*arg):
             print(f"PC端搜索{num}-" + log)
             if log not in 'OK':
                 err += 1
-        log = f"PC端成功{30-err}次"
+        log = f"PC端成功✅✅{30-err}次"
         msg += log + '\n'
         print(log)
 
         i += 1
-    print(msg)
 
     if sendnoty:
         try:
