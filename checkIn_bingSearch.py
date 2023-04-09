@@ -3,12 +3,12 @@ new Env('必应搜索')
 cron: 0 1 * * *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
-LastEditTime : 2023-04-09 17:17:26
+LastEditTime : 2023-04-09 17:31:44
 FilePath     : /Auto_Check_In/checkIn_bingSearch.py
 Description  : 
 '''
-import datetime
 import requests
+import time
 import os
 import sys
 sys.path.append('.')
@@ -73,6 +73,8 @@ def search1(cookie, num):
     }
 
     r = s.get(url=url, headers=headers, timeout=120)
+    # 延迟2秒执行，防止频繁
+    time.sleep(2)
 
     return r.reason
 
@@ -103,6 +105,8 @@ def search2(cookie, num):
     }
 
     r = s.get(url=url, headers=headers, timeout=120)
+    # 延迟2秒执行，防止频繁
+    time.sleep(2)
 
     return r.reason
 
@@ -126,14 +130,18 @@ def main(*arg):
             print(f"手机端搜索{num}-" + log)
             if log not in 'OK':
                 err += 1
-        msg += f"手机端成功{20-err}次\n"
+        log = f"手机端成功{20-err}次"
+        msg += log + '\n'
+        print(log)
         # PC端
         for num in range(30, 60):
             log = search2(cookie_bing[i].replace(' ', ''), num)
             print(f"PC端搜索{num}-" + log)
             if log not in 'OK':
                 err += 1
-        msg += f"PC端成功{30-err}次\n"
+        log = f"PC端成功{30-err}次"
+        msg += log + '\n'
+        print(log)
 
         i += 1
     print(msg)
