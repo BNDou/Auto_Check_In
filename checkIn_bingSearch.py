@@ -3,7 +3,7 @@ new Env('必应搜索')
 cron: 0 1 * * *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
-LastEditTime : 2023-04-09 17:13:54
+LastEditTime : 2023-04-09 17:17:26
 FilePath     : /Auto_Check_In/checkIn_bingSearch.py
 Description  : 
 '''
@@ -136,6 +136,7 @@ def main(*arg):
         msg += f"PC端成功{30-err}次\n"
 
         i += 1
+    print(msg)
 
     if sendnoty:
         try:
