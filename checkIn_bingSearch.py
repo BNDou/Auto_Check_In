@@ -1,10 +1,10 @@
 '''
 new Env('必应搜索')
-cron: 19 9 * * *
+cron: 0 1 * * *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
-LastEditTime : 2023-04-09 02:33:08
-FilePath     : /zhuabao/bingSearch.py
+LastEditTime : 2023-04-09 17:17:26
+FilePath     : /Auto_Check_In/checkIn_bingSearch.py
 Description  : 
 '''
 import datetime
@@ -116,20 +116,27 @@ def main(*arg):
     i = 0
     while i < len(cookie_bing):
         # 搜索
+        err = 0
+        log = f"第 {i+1} 个账号开始执行任务"
+        msg += log + '\n'
+        print(log)
         # 手机端
         for num in range(20):
             log = search1(cookie_bing[i].replace(' ', ''), num)
             print(f"手机端搜索{num}-" + log)
             if log not in 'OK':
-                msg += f"手机端搜索{num}-" + log + '\n'
+                err += 1
+        msg += f"手机端成功{20-err}次\n"
         # PC端
         for num in range(30, 60):
             log = search2(cookie_bing[i].replace(' ', ''), num)
             print(f"PC端搜索{num}-" + log)
             if log not in 'OK':
-                msg += f"PC端搜索{num}-" + log + '\n'
+                err += 1
+        msg += f"PC端成功{30-err}次\n"
 
         i += 1
+    print(msg)
 
     if sendnoty:
         try:
