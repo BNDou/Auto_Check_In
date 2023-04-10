@@ -1,6 +1,6 @@
 '''
 new Env('必应搜索')
-cron: 0 1 * * *
+cron: 0 13 * * *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
 LastEditTime : 2023-04-09 17:31:44
@@ -53,7 +53,7 @@ def search1(cookie, num):
     s.headers.update(
         {'User-Agent': 'Mozilla/5.0 (Linux; Android 10; HLK-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Mobile Safari/537.36 EdgA/104.0.1293.70'})
 
-    url = f"https://www.bing.com/search?q={num}"
+    url = f"https://cn.bing.com/search?q={num}"
     headers = {
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
@@ -66,7 +66,7 @@ def search1(cookie, num):
         'sec-ch-ua': '"Edge";v="104", "Chromium";v="104", "Not=A?Brand";v="24"',
         'sec-ch-ua-mobile': '?1',
         'sec-ch-ua-platform': '"Android"',
-        'Referer': 'https://www.bing.com/',
+        'Referer': 'https://cn.bing.com/',
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'Cookie': cookie
@@ -85,7 +85,7 @@ def search2(cookie, num):
     s.headers.update(
         {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5026.0 Safari/537.36 Edg/103.0.1254.0'})
 
-    url = f"https://www.bing.com/search?q={num}"
+    url = f"https://cn.bing.com/search?q={num}"
     headers = {
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
@@ -98,7 +98,7 @@ def search2(cookie, num):
         'sec-ch-ua': '"Edge";v="103", "Chromium";v="103", "Not=A?Brand";v="24"',
         'sec-ch-ua-mobile': '?1',
         'sec-ch-ua-platform': '"Windows"',
-        'Referer': 'https://www.bing.com/',
+        'Referer': 'https://cn.bing.com/',
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'Cookie': cookie
