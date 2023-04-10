@@ -143,7 +143,7 @@ def main(*arg):
         for num in range(30):
             str = generate_random_str(6)
             log = search1(cookie_bing[i].replace(' ', ''), str)
-            print(f"手机端搜索{num}--“{str}”" + log)
+            print(f"手机端搜索{num}-“{str}”-" + log)
             if log not in 'OK':
                 err += 1
         log = f"手机端成功✅✅{20-err}次"
@@ -153,7 +153,7 @@ def main(*arg):
         for num in range(30, 70):
             str = generate_random_str(6)
             log = search2(cookie_bing[i].replace(' ', ''), str)
-            print(f"PC端搜索{num}--“{str}”" + log)
+            print(f"PC端搜索{num}-“{str}”-" + log)
             if log not in 'OK':
                 err += 1
         log = f"PC端成功✅✅{30-err}次"
