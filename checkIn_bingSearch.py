@@ -3,10 +3,12 @@ new Env('必应搜索')
 cron: 0 13 * * *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
-LastEditTime : 2023-04-09 17:31:44
+LastEditTime : 2023-04-10 22:09:42
 FilePath     : /Auto_Check_In/checkIn_bingSearch.py
 Description  : 
 '''
+import random
+import string
 import requests
 import time
 import os
@@ -111,6 +113,19 @@ def search2(cookie, num):
     return r.reason
 
 
+# 搜索随机内容
+def generate_random_str(randomlength):
+    '''
+    string.digits = 0123456789
+    string.ascii_letters = 26个小写,26个大写
+    '''
+    str_list = random.sample(
+        string.digits + string.ascii_letters, randomlength)
+    random_str = ''.join(str_list)
+
+    return random_str
+
+
 def main(*arg):
     msg = ""
     sendnoty = 'true'
@@ -126,8 +141,9 @@ def main(*arg):
         print(log)
         # 手机端
         for num in range(20):
-            log = search1(cookie_bing[i].replace(' ', ''), num)
-            print(f"手机端搜索{num}-" + log)
+            str = generate_random_str(6)
+            log = search1(cookie_bing[i].replace(' ', ''), str)
+            print(f"手机端搜索{num}--“{str}”" + log)
             if log not in 'OK':
                 err += 1
         log = f"手机端成功✅✅{20-err}次"
@@ -135,8 +151,9 @@ def main(*arg):
         print(log)
         # PC端
         for num in range(30, 60):
-            log = search2(cookie_bing[i].replace(' ', ''), num)
-            print(f"PC端搜索{num}-" + log)
+            str = generate_random_str(6)
+            log = search2(cookie_bing[i].replace(' ', ''), str)
+            print(f"PC端搜索{num}--“{str}”" + log)
             if log not in 'OK':
                 err += 1
         log = f"PC端成功✅✅{30-err}次"
