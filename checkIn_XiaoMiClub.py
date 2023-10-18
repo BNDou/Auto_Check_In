@@ -1,6 +1,6 @@
 '''
-new Env('小米社区日常')
-cron: 1 0 * * *
+new Env('')
+cron: 11 11 11 11 *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
 LastEditTime : 2022-12-29 02:08:50
