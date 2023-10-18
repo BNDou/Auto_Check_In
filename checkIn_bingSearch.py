@@ -1,5 +1,6 @@
 '''
-
+new Env('必应搜索')
+cron: 11 11 11 11 *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
 LastEditTime : 2023-04-10 22:09:42
