@@ -1,14 +1,16 @@
 '''
 new Env('必应搜索')
-cron: 0 1 * * *
+cron: 0 13 * * *
 Author       : BNDou
 Date         : 2023-04-09 01:07:07
-LastEditTime : 2023-04-09 17:17:26
+LastEditTime : 2023-04-10 22:09:42
 FilePath     : /Auto_Check_In/checkIn_bingSearch.py
 Description  : 
 '''
-import datetime
+import random
+import string
 import requests
+import time
 import os
 import sys
 sys.path.append('.')
@@ -53,7 +55,7 @@ def search1(cookie, num):
     s.headers.update(
         {'User-Agent': 'Mozilla/5.0 (Linux; Android 10; HLK-AL00) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.102 Mobile Safari/537.36 EdgA/104.0.1293.70'})
 
-    url = f"https://www.bing.com/search?q={num}"
+    url = f"https://cn.bing.com/search?q={num}"
     headers = {
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
@@ -66,13 +68,15 @@ def search1(cookie, num):
         'sec-ch-ua': '"Edge";v="104", "Chromium";v="104", "Not=A?Brand";v="24"',
         'sec-ch-ua-mobile': '?1',
         'sec-ch-ua-platform': '"Android"',
-        'Referer': 'https://www.bing.com/',
+        'Referer': 'https://cn.bing.com/',
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'Cookie': cookie
     }
 
     r = s.get(url=url, headers=headers, timeout=120)
+    # 延迟2秒执行，防止频繁
+    time.sleep(2)
 
     return r.reason
 
@@ -83,7 +87,7 @@ def search2(cookie, num):
     s.headers.update(
         {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5026.0 Safari/537.36 Edg/103.0.1254.0'})
 
-    url = f"https://www.bing.com/search?q={num}"
+    url = f"https://cn.bing.com/search?q={num}"
     headers = {
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
@@ -96,15 +100,30 @@ def search2(cookie, num):
         'sec-ch-ua': '"Edge";v="103", "Chromium";v="103", "Not=A?Brand";v="24"',
         'sec-ch-ua-mobile': '?1',
         'sec-ch-ua-platform': '"Windows"',
-        'Referer': 'https://www.bing.com/',
+        'Referer': 'https://cn.bing.com/',
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
         'Cookie': cookie
     }
 
     r = s.get(url=url, headers=headers, timeout=120)
+    # 延迟2秒执行，防止频繁
+    time.sleep(2)
 
     return r.reason
+
+
+# 搜索随机内容
+def generate_random_str(randomlength):
+    '''
+    string.digits = 0123456789
+    string.ascii_letters = 26个小写,26个大写
+    '''
+    str_list = random.sample(
+        string.digits + string.ascii_letters, randomlength)
+    random_str = ''.join(str_list)
+
+    return random_str
 
 
 def main(*arg):
@@ -121,22 +140,27 @@ def main(*arg):
         msg += log + '\n'
         print(log)
         # 手机端
-        for num in range(20):
-            log = search1(cookie_bing[i].replace(' ', ''), num)
-            print(f"手机端搜索{num}-" + log)
+        for num in range(30):
+            str = generate_random_str(6)
+            log = search1(cookie_bing[i].replace(' ', ''), str)
+            print(f"手机端搜索{num}-“{str}”-" + log)
             if log not in 'OK':
                 err += 1
-        msg += f"手机端成功{20-err}次\n"
+        log = f"手机端成功✅✅{20-err}次"
+        msg += log + '\n'
+        print(log)
         # PC端
-        for num in range(30, 60):
-            log = search2(cookie_bing[i].replace(' ', ''), num)
-            print(f"PC端搜索{num}-" + log)
+        for num in range(30, 70):
+            str = generate_random_str(6)
+            log = search2(cookie_bing[i].replace(' ', ''), str)
+            print(f"PC端搜索{num}-“{str}”-" + log)
             if log not in 'OK':
                 err += 1
-        msg += f"PC端成功{30-err}次\n"
+        log = f"PC端成功✅✅{30-err}次"
+        msg += log + '\n'
+        print(log)
 
         i += 1
-    print(msg)
 
     if sendnoty:
         try:
