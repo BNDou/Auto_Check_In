@@ -8,19 +8,15 @@
 
 # Auto_Check_In
 
-> 每日自动签到集合：~~小米社区~~ | ~~掌上飞车~~ | 恩山论坛
+> 每日自动签到集合
 
-> 部分脚本已失效
+~~小米社区~~ | ~~掌飞签到~~ | 掌飞寻宝 | 恩山论坛 | ~~必应搜索~~
+
+- 新版掌飞寻宝已修复，签到功能再缓缓
 
 ## 青龙部署
 
 1. 拉库指令
-
-> 拉库指令更新了一下，指令后面添加了指定拉取“main”分支
-
-> ❗❗❗ 代码更新失败 ❗❗❗ 解决方法：把本地原来的脚本文件夹删除，编辑粘贴新拉库指令后再拉取
-
-国内机用下面指令（带代理），国外机把代理地址删掉即可：
 
 ```
 ql repo https://ghproxy.com/https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNotify" "main"
@@ -57,5 +53,8 @@ ql repo https://ghproxy.com/https://github.com/BNDou/Auto_Check_In.git "checkIn_
 - 任何以任何方式查看此项目的人或直接或间接使用该 Script 项目的任何脚本的使用者都应仔细阅读此声明。 该项目的归属者保留随时更改或补充此免责声明的权利。一旦使用并复制了任何相关脚本或 Script 项目的规则，则视为您已接受此免责声明。
 
 ---
+
+## 感谢
+[@chiupam](https://github.com/chiupam)
 
 [![](https://komarev.com/ghpvc/?username=BNDou&&label=Views "To Github")](https://github.com/BNDou/)

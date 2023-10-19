@@ -1,32 +1,34 @@
 '''
 new Env('掌上飞车每日寻宝')
-cron: 0 0 * * *
+cron: 10 0 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2023-03-07 21:52:33
+LastEditTime : 2023-10-20 00:56:33
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
-Description  : 启动寻宝后最少需要10秒领取，所以建议时间定到开奖时间前10秒运行
-测试用，目前只能！！！开始和结束！！！\n领取奖励报错不能用！！！浪费次数不负责哦
+Description  :
+感谢@chiupam(https://github.com/chiupam)寻宝脚本
 
-添加环境变量ZHANGFEI_XUNBAO、COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
+每日登录掌上飞车可获得3次寻宝机会，紫钻玩家可额外获得1次，每日登录游戏可获得1次寻宝机会，共5次
+建议启动前先领取5次机会
+浪费次数不负责哦
+
+添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
+
+访问寻宝页面时候抓包获取Referer,即环境变量REFERER_ZHANGFEI的值
 '''
+import json
 import re
 import time
 from urllib.parse import unquote
-from bs4 import BeautifulSoup
 import requests
 import os
 import sys
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
-# 自定义寻宝地图星级: 1 2 3 4 5 6（必须是已解锁的）
-MAP_STARID = ''
 # 测试用环境变量
-# os.environ['ZHANGFEI_XUNBAO'] = ''
 # os.environ['COOKIE_ZHANGFEI'] = ''
 # os.environ['REFERER_ZHANGFEI'] = ''
-# os.environ['USER_AGENT_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -36,17 +38,6 @@ except Exception as err:  # 异常捕捉
 
 # 获取环境变量
 def get_env():
-    # 判断 ZHANGFEI_XUNBAO是否存在于环境变量
-    if "ZHANGFEI_XUNBAO" in os.environ:
-        # 判断变量是否为空
-        if len(os.environ.get('ZHANGFEI_XUNBAO')) <= 0:
-            # 标准日志输出
-            print('测试用，目前只能！！！开始和结束！！！\n领取奖励报错不能用！！浪费次数不负责哦\n使用请添加ZHANGFEI_XUNBAO变量')
-            send(
-                '掌上飞车每日寻宝', '测试用，目前只能！！！开始和结束！！！\n领取奖励报错不能用！！浪费次数不负责哦\n使用请添加ZHANGFEI_XUNBAO变量')
-            # 脚本退出
-            sys.exit(0)
-
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
         # 读取系统变量 以 \n 分割变量
@@ -82,218 +73,103 @@ def get_env():
         userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
         if len(userAgent) <= 0:
             print('USER_AGENT_ZHANGFEI变量未启用')
-            send('掌上飞车每日寻宝', 'USER_AGENT_ZHANGFEI变量未启用')
+            send('掌上飞车签到', 'USER_AGENT_ZHANGFEI变量未启用')
             sys.exit(1)
     else:
         print('未添加USER_AGENT_ZHANGFEI变量')
-        send('掌上飞车每日寻宝', '未添加USER_AGENT_ZHANGFEI变量')
+        send('掌上飞车签到', '未添加USER_AGENT_ZHANGFEI变量')
         sys.exit(0)
 
     return cookie_list, referer_list, userAgent
 
 
-# 定义一个获取url页面下label标签的attr属性的函数
-def getHtml(url):
-    count_list = []
-    giftId_list = []
-    date_list = []
-    response = requests.get(url)
-    response.encoding = 'utf-8'
-    html = response.text
-    soup = BeautifulSoup(html, 'html.parser')
-
-    for target in soup.find_all('span'):
-        try:
-            value = target.text
-        except:
-            value = ''
-        if value:
-            count_list.append(value)
-
-    for target in soup.find_all('a'):
-        try:
-            value = target.get('giftid')
-        except:
-            value = ''
-        if value:
-            giftId_list.append(value)
-
-    for target in soup.find_all('div'):
-        try:
-            if 'text2' in target.get('class'):
-                value = target.text
-            else:
-                value = ''
-        except:
-            value = ''
-        if value:
-            date_list.append(value)
-
-    return count_list, giftId_list, date_list
-
-
-# 快速寻宝-10s
-def startDigTreasure(cookie, user_data):
-    msg = ""
-    s = requests.Session()
-    s.headers.update({'User-Agent': user_data.get('userAgent')})
-
-    url = 'https://bang.qq.com/app/speed/treasure/ajax/startDigTreasure'
+# 寻宝
+def dig(status, user_data):
+    # 只需要抓 https://bang.qq.com/app/speed/treasure/ajax/startDigTreasure 包就可以获取了
+    url = f"https://bang.qq.com/app/speed/treasure/ajax/{status}DigTreasure"
     headers = {
-        'User-Agent': user_data.get('userAgent'),
-        'Connection': 'keep-alive',
-        'Accept': 'application/json',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Referer': f"https://bang.qq.com/app/speed/treasure/index?uin={user_data.get('roleId')}&roleId={user_data.get('roleId')}&uniqueRoleId={user_data.get('uniqueRoleId')}&accessToken={user_data.get('accessToken')}&userId={user_data.get('userId')}&token={user_data.get('token')}&areaId={user_data.get('areaId')}&",
-        'Cookie': cookie
+        "Referer": "https://bang.qq.com/app/speed/treasure/index",
+        "Cookie": f"access_token={user_data.get('accessToken')}; "
+                  f"acctype={user_data.get('accType')}; "
+                  f"appid={user_data.get('appid')}; "
+                  f"openid={user_data.get('appOpenid')}"
     }
-
-    # 生成表单
     data = {
-        'userId': user_data.get('userId'),  # 掌飞id
-        'uin': user_data.get('uin'),  # QQ账号
-        'roleId': user_data.get('roleId'),  # QQ账号
-        'areaId': user_data.get('areaId'),  # 大区
-        'token': user_data.get('token'),  # 令牌
-        'mapId': user_data.get('mapId'),  # 地图id
-        'starId': user_data.get('starId'),  # 地图星级id
-        'type': '2',  # 1普通寻宝 or 2快速寻宝
-        'game': user_data.get('game')  # 端游 or 手游
+        "mapId": user_data.get('mapId'),  # 地图Id
+        "starId": user_data.get('starId'),  # 地图星级Id
+        "areaId": user_data.get('areaId'),  # 1是电信区，2是联通
+        "type": user_data.get('type'),  # 1是普通寻宝，2是快速寻宝（紫钻用户）
+        "roleId": user_data.get('roleId'),  # QQ号
+        "userId": user_data.get('userId'),  # 掌飞号
+        "uin": user_data.get('uin'),  # QQ号
+        "token": user_data.get('token')
     }
+    response = requests.post(url, headers=headers, data=data)
 
-    r = s.post(url=url, data=data, headers=headers)
-    a = r.json()
-    # 是否成功
-    if 'msg' in a:
-        msg += a.get('msg', '')
-
-    return msg
-
-
-# 结束寻宝
-def endDigTreasure(cookie, user_data):
-    msg = ''
-    s = requests.Session()
-    s.headers.update({'User-Agent': user_data.get('userAgent')})
-
-    url = "https://bang.qq.com/app/speed/treasure/ajax/endDigTreasure"
-    headers = {
-        'User-Agent': user_data.get('userAgent'),
-        'Connection': 'keep-alive',
-        'Accept': 'application/json',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Referer': f"https://bang.qq.com/app/speed/treasure/index?uin={user_data.get('roleId')}&roleId={user_data.get('roleId')}&uniqueRoleId={user_data.get('uniqueRoleId')}&accessToken={user_data.get('accessToken')}&userId={user_data.get('userId')}&token={user_data.get('token')}&areaId={user_data.get('areaId')}&",
-        'Cookie': cookie
-    }
-
-    # 生成表单
-    data = {
-        'userId': user_data.get('userId'),  # 掌飞id
-        'uin': user_data.get('uin'),  # QQ账号
-        'roleId': user_data.get('roleId'),  # QQ账号
-        'areaId': user_data.get('areaId'),  # 大区
-        'token': user_data.get('token'),  # 令牌
-        'mapId': user_data.get('mapId'),  # 地图id
-        'starId': user_data.get('starId'),  # 地图星级id
-        'type': '2',  # 1普通寻宝 or 2快速寻宝
-        'game': user_data.get('game')  # 端游 or 手游
-    }
-
-    r = s.post(url=url, data=data, headers=headers)
-    a = r.json()
-    # 是否成功
-    if 'msg' in a:
-        msg += a.get('msg', '')
-
-    return msg
+    return False if response.json()['res'] == 0 else True
 
 
 # 领取奖励
-def getGift(cookie, user_data):
-    msg = ''
-    s = requests.Session()
-    s.headers.update({'User-Agent': user_data.get('userAgent')})
-
-    url = "http://act.game.qq.com/ams/ame/amesvr?ameVersion=0.3& =bb&iActivityId=468228&sServiceDepartment=xinyue&sSDID=42a6eb3c5e2fec32f90c3b085368457a&sMiloTag=AMS-MILO-468228-856162-3CCD3D9E40083C0B4A9EB2BE6F073116-1676831452329-d5zK3l&_=1676831452333"
+def get_treasure(iFlowId, user_data):
+    url = "https://act.game.qq.com/ams/ame/amesvr?ameVersion=0.3&iActivityId=468228"
     headers = {
-        'User-Agent': user_data.get('userAgent'),
-        'Connection': 'keep-alive',
-        'Accept': 'application/json',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-        'Cookie': cookie,
+        "Cookie": f"access_token={user_data.get('accessToken')}; "
+                  f"acctype={user_data.get('accType')}; "
+                  f"appid={user_data.get('appid')}; "
+                  f"openid={user_data.get('appOpenid')}"
     }
-
-    # 生成表单
     data = {
-        'sRoleId':	user_data.get('roleId'),  # QQ账号
-        'accessToken':	user_data.get('accessToken'),  # 访问令牌
-        'iActivityId':	'468228',
-        'iFlowId':	'856162',
-        'g_tk':	'1842395457',
-        'game': user_data.get('game')  # 端游 or 手游
+        'appid': user_data.get('appid'),
+        'sArea': '2',
+        'sRoleId': user_data.get('roleId'),
+        'accessToken': user_data.get('accessToken'),
+        'iActivityId': "468228",
+        'iFlowId': iFlowId,
+        'g_tk': '1842395457',
+        'sServiceType': 'bb'
     }
+    response = requests.post(url, headers=headers, data=data)
 
-    r = s.post(url=url, data=data, headers=headers)
-    a = r.json()
-    # # 是否成功
-    if 'modRet' in a:
-        if 'sMsg' in a.get('modRet'):
-            msg += a.get('msg', '')
-    else:
-        msg += a.get('msg', '')
-
-    return msg
+    return str(response.json()['modRet']['sMsg']) if response.json()['ret'] == '0' else '非常抱歉，您还不满足参加该活动的条件！'
 
 
 # 今日大吉筛选
-def isdaji(user_data):
-    response = requests.get(
-        f"https://bang.qq.com/app/speed/treasure/index?uin={user_data.get('roleId')}&roleId={user_data.get('roleId')}&uniqueRoleId={user_data.get('uniqueRoleId')}&accessToken={user_data.get('accessToken')}&userId={user_data.get('userId')}&token={user_data.get('token')}&areaId={user_data.get('areaId')}&")
+def luck_day(user_data):
+    # 这里只需要填写查询的QQ号就行
+    def extract(_html, _pattern):
+        match = re.search(_pattern, _html)
+        if match:
+            return json.loads(re.sub(r'^\((.*)\)$', r'\1', match.group(1)))
+        return None
+
+    url = "https://bang.qq.com/app/speed/treasure/index"
+    params = {
+        "roleId": user_data.get('roleId'),  # QQ帐号，抓包抓取
+        "areaId": user_data.get('areaId'),  # 1是电信区，抓包抓取
+        "uin": user_data.get('uin')  # QQ帐号，抓包抓取
+    }
+
+    response = requests.get(url, params=params)
     response.encoding = 'utf-8'
-    soup = BeautifulSoup(response.text, 'lxml')
-    tagList = soup.find_all("script")
-    for tag in tagList:
-        # 获取用户地图解锁信息
-        if 'window.userInfo' in tag.text:
-            userInfo = re.findall(
-                r"window.userInfo = eval\(\'\((.*?)\)\'\);", tag.text)
-            # print(userInfo)
-        # 获取地图信息
-        if 'window.mapInfo' in tag.text:
-            mapInfo = re.findall(
-                r"window.mapInfo = eval\(\'\((.*?)\)\'\);", tag.text)
-            # print(mapInfo)
-            break
+    user = extract(response.text, r'window\.userInfo\s*=\s*eval\(\'([^\']+)\'\);')
 
-    # 星级地图解锁信息
-    starInfo = eval(userInfo[0].encode(
-        'utf-8').decode('unicode_escape'))['starInfo']
-    for i in range(6):
-        starId = 6 - i
-        if starInfo[f'{starId}'] == 1:
-            print(f'最高地图解锁星级[{starId}]')
-            break
-
-    if MAP_STARID:
-        starId = MAP_STARID
-        print(f'自定义寻宝星级[{starId}]')
+    if user:
+        vip_flag = bool(user.get('vip_flag'))
+        print("紫钻用户:", vip_flag)
+        starId = max([key for key, value in user.get('starInfo', {}).items() if value == 1])
+        print("最高地图解锁星级:", starId)
     else:
-        print(f'默认最高寻宝星级[{starId}]，如需自定义请修改变量MAP_STARID的值!')
+        print("未找到用户信息")
 
-    # 大吉地图信息
-    daji = eval(mapInfo[0].encode(
-        'utf-8').decode('unicode_escape'))[f'{starId}']
-    for i in daji:
-        if i['isdaji'] == 1:
-            mapId = i['id']
-            mapName = i['name']
-            print(f'今日大吉地图是[{mapName}] 地图id是[{mapId}]')
-            break
+    if starId:
+        map_dicts = extract(response.text, r'window\.mapInfo\s*=\s*eval\(\'([^\']+)\'\);')
+        luck_dicts = [item for item in map_dicts[starId] if item.get('isdaji') == 1]
+        mapId, mapName = (luck_dicts[0]['id'], luck_dicts[0]['name']) if luck_dicts else (False, False)
+        print(f'今日大吉地图是[{mapName}] 地图id是[{mapId}]')
+    else:
+        print("未找到地图信息")
 
-    return starId, mapId
+    return 2 if vip_flag == True else 1, starId, mapId
 
 
 def main(*arg):
@@ -311,41 +187,47 @@ def main(*arg):
             if len(a) > 0:
                 user_data.update(
                     {a.split('=')[0]: unquote(a.split('=')[1])})
-        if 'speedm' in referer_zhangfei[i]:
-            user_data.update({'game': 'speedm'})  # 手游
-        else:
-            user_data.update({'game': 'speed'})  # 端游
         user_data.update({'userAgent': userAgent})
         # print(user_data)
 
         # 开始任务
-        log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} {'端游' if 'speed' == user_data.get('game') else '手游'} 开始执行任务"
+        log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务"
         msg += log + '\n'
         print(log)
-        # 设置寻宝地图星级: 1 2 3 4 5 6（必须是已解锁的）
-        user_data['starId'], user_data['mapId'] = isdaji(user_data)
+        # 获取紫钻信息、地图解锁信息
+        user_data['type'], user_data['starId'], user_data['mapId'] = luck_day(user_data)
+        # 星级地图对应的iFlowId
+        iFlowId_dict = {'1':['856152', '856155'], '2':['856156', '856157'], '3':['856158', '856159'], '4':['856160', '856161'], '5':['856162', '856163'], '6':['856164', '856165']}
 
         # 每日5次寻宝
         for n in range(5):
             n += 1
-            # 快速寻宝
-            log = startDigTreasure(
-                cookie_zhangfei[i].replace(' ', ''), user_data)
-            print(f"第{n}次寻宝：" + log)
+            # 寻宝
+            if dig('start', user_data):
+                msg += f"第{n}次寻宝...对不起，当天的寻宝次数已用完\n"
+                print(f"第{n}次寻宝...对不起，当天的寻宝次数已用完")
+                break
+            msg += f"第{n}次寻宝...\n"
+            print(f"第{n}次寻宝...")
 
-            # 10s后结束寻宝
-            print("等待11秒寻宝时间...")
-            time.sleep(11)
+            # 寻宝倒计时
+            if user_data['type'] == 2:
+                print("等待10秒寻宝时间...")
+                time.sleep(10)
+            else:
+                print("等待十分钟寻宝时间...")
+                time.sleep(600)
 
             # 结束寻宝
-            log = endDigTreasure(
-                cookie_zhangfei[i].replace(' ', ''), user_data)
-            print(f"结束寻宝：" + log)
+            if not dig('end', user_data):
+                msg += '结束寻宝...\n'
+                print('结束寻宝...')
 
             # 领取奖励
-            log = getGift(cookie_zhangfei[i].replace(' ', ''), user_data)
-            msg += f"第{n}次寻宝：" + log + '\n'
-            print(f"领取奖励：" + log)
+            for iflowid in iFlowId_dict[user_data['starId']]:
+                log = get_treasure(iflowid, user_data)
+                msg += log + '\n'
+                print(log)
 
         i += 1
 
