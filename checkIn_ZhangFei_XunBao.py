@@ -159,7 +159,7 @@ def main(*arg):
         # print(user_data)
 
         # 开始任务
-        log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务"
+        log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
         msg += log + '\n'
         print(log)
         # 获取紫钻信息、地图解锁信息
@@ -188,7 +188,6 @@ def main(*arg):
 
             # 结束寻宝
             if not dig('end', user_data):
-                msg += '结束寻宝...\n'
                 print('结束寻宝...')
 
             # 领取奖励
