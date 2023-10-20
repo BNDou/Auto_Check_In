@@ -3,7 +3,7 @@ new Env('掌上飞车每日寻宝')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2023-10-20 00:56:33
+LastEditTime : 2023-10-20 14:39:33
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
 Description  :
 感谢@chiupam(https://github.com/chiupam)寻宝脚本
@@ -17,17 +17,20 @@ Description  :
 访问寻宝页面时候抓包获取Referer,即环境变量REFERER_ZHANGFEI的值
 '''
 import json
+import os
 import re
+import sys
+import threading
 import time
 from urllib.parse import unquote
+
 import requests
-import os
-import sys
+
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
-# os.environ['REFERER_ZHANGFEI'] = ''
+os.environ['REFERER_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -142,9 +145,83 @@ def luck_day(user_data):
     return 2 if vip_flag == True else 1, starId, mapId
 
 
-def main(*arg):
-    msg = ""
+# 开始任务
+lock = threading.RLock()  # 创建锁
+
+
+def run(user_data):
     sendnoty = 'true'
+    msg = ""
+    log = f"账号 {user_data.get('uin')} {user_data.get('roleName')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
+    msg += log + '\n'
+    lock.acquire()
+    print(log)
+    lock.release()
+    # 获取紫钻信息、地图解锁信息
+    user_data['type'], user_data['starId'], user_data['mapId'] = luck_day(user_data)
+    # 星级地图对应的iFlowId
+    iFlowId_dict = {'1': ['856152', '856155'], '2': ['856156', '856157'], '3': ['856158', '856159'],
+                    '4': ['856160', '856161'], '5': ['856162', '856163'], '6': ['856164', '856165']}
+
+    # 每日5次寻宝
+    for n in range(5):
+        n += 1
+        # 寻宝
+        if dig('start', user_data):
+            msg += f"第{n}次寻宝...对不起，当天的寻宝次数已用完\n"
+            lock.acquire()
+            print(f"第{n}次寻宝...对不起，当天的寻宝次数已用完")
+            lock.release()
+            break
+        msg += f"第{n}次寻宝...\n"
+        lock.acquire()
+        print(f"第{n}次寻宝...")
+        lock.release()
+
+        # 寻宝倒计时
+        if user_data['type'] == 2:
+            lock.acquire()
+            print("等待10秒寻宝时间...")
+            lock.release()
+            time.sleep(10)
+        else:
+            lock.acquire()
+            print("等待十分钟寻宝时间...")
+            lock.release()
+            time.sleep(600)
+
+        # 结束寻宝
+        if not dig('end', user_data):
+            lock.acquire()
+            print('结束寻宝...')
+            lock.release()
+
+        # 领取奖励
+        for iflowid in iFlowId_dict[user_data['starId']]:
+            log = get_treasure(iflowid, user_data)
+            msg += log + '\n'
+            lock.acquire()
+            print(log)
+            lock.release()
+
+    if sendnoty:
+        try:
+            send('掌上飞车每日寻宝', msg)
+        except Exception as err:
+            print('%s\n错误，请查看运行日志！' % err)
+            send('掌上飞车每日寻宝', '%s\n错误，请查看运行日志！' % err)
+
+
+# def main(*arg):
+#
+#
+#     return msg[:-1]
+
+
+if __name__ == "__main__":
+    print("----------掌上飞车开始尝试每日寻宝----------")
+
+    thread = []
     global referer_zhangfei
     referer_zhangfei = get_env()
 
@@ -158,57 +235,14 @@ def main(*arg):
                     {a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
 
-        # 开始任务
-        log = f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
-        msg += log + '\n'
-        print(log)
-        # 获取紫钻信息、地图解锁信息
-        user_data['type'], user_data['starId'], user_data['mapId'] = luck_day(user_data)
-        # 星级地图对应的iFlowId
-        iFlowId_dict = {'1':['856152', '856155'], '2':['856156', '856157'], '3':['856158', '856159'], '4':['856160', '856161'], '5':['856162', '856163'], '6':['856164', '856165']}
-
-        # 每日5次寻宝
-        for n in range(5):
-            n += 1
-            # 寻宝
-            if dig('start', user_data):
-                msg += f"第{n}次寻宝...对不起，当天的寻宝次数已用完\n"
-                print(f"第{n}次寻宝...对不起，当天的寻宝次数已用完")
-                break
-            msg += f"第{n}次寻宝...\n"
-            print(f"第{n}次寻宝...")
-
-            # 寻宝倒计时
-            if user_data['type'] == 2:
-                print("等待10秒寻宝时间...")
-                time.sleep(10)
-            else:
-                print("等待十分钟寻宝时间...")
-                time.sleep(600)
-
-            # 结束寻宝
-            if not dig('end', user_data):
-                print('结束寻宝...')
-
-            # 领取奖励
-            for iflowid in iFlowId_dict[user_data['starId']]:
-                log = get_treasure(iflowid, user_data)
-                msg += log + '\n'
-                print(log)
+        # 传个任务,和参数进来
+        thread.append(threading.Thread(target=run, args=[user_data]))
 
         i += 1
 
-    if sendnoty:
-        try:
-            send('掌上飞车每日寻宝', msg)
-        except Exception as err:
-            print('%s\n错误，请查看运行日志！' % err)
-            send('掌上飞车每日寻宝', '%s\n错误，请查看运行日志！' % err)
+    for t in thread:
+        t.start()
+    for t in thread:
+        t.join()
 
-    return msg[:-1]
-
-
-if __name__ == "__main__":
-    print("----------掌上飞车开始尝试每日寻宝----------")
-    main()
     print("----------掌上飞车每日寻宝执行完毕----------")
