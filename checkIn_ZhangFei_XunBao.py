@@ -108,6 +108,8 @@ def get_treasure(iFlowId, user_data):
 
 # 今日大吉筛选
 def luck_day(user_data):
+    t = f"账号 {user_data.get('uin')} "
+
     # 这里只需要填写查询的QQ号就行
     def extract(_html, _pattern):
         match = re.search(_pattern, _html)
@@ -128,35 +130,38 @@ def luck_day(user_data):
 
     if user:
         vip_flag = bool(user.get('vip_flag'))
-        print("紫钻用户:", vip_flag)
+        print(t, "紫钻用户:", vip_flag)
         starId = max([key for key, value in user.get('starInfo', {}).items() if value == 1])
-        print("最高地图解锁星级:", starId)
+        print(t, "最高地图解锁星级:", starId)
     else:
-        print("未找到用户信息")
+        print(t, "未找到用户信息")
 
     if starId:
         map_dicts = extract(response.text, r'window\.mapInfo\s*=\s*eval\(\'([^\']+)\'\);')
         luck_dicts = [item for item in map_dicts[starId] if item.get('isdaji') == 1]
         mapId, mapName = (luck_dicts[0]['id'], luck_dicts[0]['name']) if luck_dicts else (False, False)
-        print(f'今日大吉地图是[{mapName}] 地图id是[{mapId}]')
+        print(f"{t}今日大吉地图是[{mapName}] 地图id是[{mapId}]")
     else:
-        print("未找到地图信息")
+        print(t, "未找到地图信息")
 
     return 2 if vip_flag == True else 1, starId, mapId
 
 
+# 创建锁
+lock = threading.RLock()
+
+
 # 开始任务
-lock = threading.RLock()  # 创建锁
-
-
 def run(user_data):
     sendnoty = 'true'
     msg = ""
-    log = f"账号 {user_data.get('uin')} {user_data.get('roleName')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
+    t = f"账号 {user_data.get('uin')} "
+    log = f"{t}{user_data.get('roleName')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
     msg += log + '\n'
     lock.acquire()
     print(log)
     lock.release()
+
     # 获取紫钻信息、地图解锁信息
     user_data['type'], user_data['starId'], user_data['mapId'] = luck_day(user_data)
     # 星级地图对应的iFlowId
@@ -170,30 +175,30 @@ def run(user_data):
         if dig('start', user_data):
             msg += f"第{n}次寻宝...对不起，当天的寻宝次数已用完\n"
             lock.acquire()
-            print(f"第{n}次寻宝...对不起，当天的寻宝次数已用完")
+            print(f"{t}第{n}次寻宝...对不起，当天的寻宝次数已用完")
             lock.release()
             break
         msg += f"第{n}次寻宝...\n"
         lock.acquire()
-        print(f"第{n}次寻宝...")
+        print(f"{t}第{n}次寻宝...")
         lock.release()
 
         # 寻宝倒计时
         if user_data['type'] == 2:
             lock.acquire()
-            print("等待10秒寻宝时间...")
+            print(t, "等待10秒寻宝时间...")
             lock.release()
             time.sleep(10)
         else:
             lock.acquire()
-            print("等待十分钟寻宝时间...")
+            print(t, "等待十分钟寻宝时间...")
             lock.release()
             time.sleep(600)
 
         # 结束寻宝
         if not dig('end', user_data):
             lock.acquire()
-            print('结束寻宝...')
+            print(t, '结束寻宝...')
             lock.release()
 
         # 领取奖励
@@ -201,15 +206,17 @@ def run(user_data):
             log = get_treasure(iflowid, user_data)
             msg += log + '\n'
             lock.acquire()
-            print(log)
+            print(t, log)
             lock.release()
 
     if sendnoty:
+        lock.acquire()
         try:
             send('掌上飞车每日寻宝', msg)
         except Exception as err:
             print('%s\n错误，请查看运行日志！' % err)
             send('掌上飞车每日寻宝', '%s\n错误，请查看运行日志！' % err)
+        lock.release()
 
 
 # def main(*arg):
@@ -224,6 +231,8 @@ if __name__ == "__main__":
     thread = []
     global referer_zhangfei
     referer_zhangfei = get_env()
+
+    print("检测到共", len(referer_zhangfei), "个飞车账号\n")
 
     i = 0
     while i < len(referer_zhangfei):
