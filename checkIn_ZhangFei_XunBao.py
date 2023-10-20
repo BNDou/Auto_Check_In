@@ -12,7 +12,7 @@ Description  :
 建议启动前先领取5次机会
 浪费次数不负责哦
 
-添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI，多账号用回车换行分开
+添加环境变量REFERER_ZHANGFEI，多账号用回车换行分开
 
 访问寻宝页面时候抓包获取Referer,即环境变量REFERER_ZHANGFEI的值
 '''
@@ -27,7 +27,6 @@ sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
-# os.environ['COOKIE_ZHANGFEI'] = ''
 # os.environ['REFERER_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
@@ -38,24 +37,6 @@ except Exception as err:  # 异常捕捉
 
 # 获取环境变量
 def get_env():
-    # 判断 COOKIE_ZHANGFEI是否存在于环境变量
-    if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量 以 \n 分割变量
-        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('\n')
-        # 判断 cookie 数量 大于 0 个
-        if len(cookie_list) <= 0:
-            # 标准日志输出
-            print('COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车每日寻宝', 'COOKIE_ZHANGFEI变量未启用')
-            # 脚本退出
-            sys.exit(1)
-    else:
-        # 标准日志输出
-        print('未添加COOKIE_ZHANGFEI变量')
-        send('掌上飞车每日寻宝', '未添加COOKIE_ZHANGFEI变量')
-        # 脚本退出
-        sys.exit(0)
-
     # 判断 REFERER_ZHANGFEI是否存在于环境变量
     if "REFERER_ZHANGFEI" in os.environ:
         referer_list = os.environ.get('REFERER_ZHANGFEI').split('\n')
@@ -68,19 +49,7 @@ def get_env():
         send('掌上飞车每日寻宝', '未添加REFERER_ZHANGFEI变量')
         sys.exit(0)
 
-    # 判断 USER_AGENT_ZHANGFEI是否存在于环境变量
-    if "USER_AGENT_ZHANGFEI" in os.environ:
-        userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
-        if len(userAgent) <= 0:
-            print('USER_AGENT_ZHANGFEI变量未启用')
-            send('掌上飞车签到', 'USER_AGENT_ZHANGFEI变量未启用')
-            sys.exit(1)
-    else:
-        print('未添加USER_AGENT_ZHANGFEI变量')
-        send('掌上飞车签到', '未添加USER_AGENT_ZHANGFEI变量')
-        sys.exit(0)
-
-    return cookie_list, referer_list, userAgent
+    return referer_list
 
 
 # 寻宝
@@ -120,7 +89,7 @@ def get_treasure(iFlowId, user_data):
     }
     data = {
         'appid': user_data.get('appid'),
-        'sArea': '2',
+        'sArea': user_data.get('areaId'),
         'sRoleId': user_data.get('roleId'),
         'accessToken': user_data.get('accessToken'),
         'iActivityId': "468228",
@@ -129,6 +98,7 @@ def get_treasure(iFlowId, user_data):
         'sServiceType': 'bb'
     }
     response = requests.post(url, headers=headers, data=data)
+    response.encoding = "utf-8"
 
     return str(response.json()['modRet']['sMsg']) if response.json()['ret'] == '0' else '非常抱歉，您还不满足参加该活动的条件！'
 
@@ -175,19 +145,17 @@ def luck_day(user_data):
 def main(*arg):
     msg = ""
     sendnoty = 'true'
-    global cookie_zhangfei
     global referer_zhangfei
-    cookie_zhangfei, referer_zhangfei, userAgent = get_env()
+    referer_zhangfei = get_env()
 
     i = 0
-    while i < len(cookie_zhangfei):
+    while i < len(referer_zhangfei):
         # 获取user_data参数
         user_data = {}
         for a in referer_zhangfei[i].split('?')[1].split('&'):
             if len(a) > 0:
                 user_data.update(
                     {a.split('=')[0]: unquote(a.split('=')[1])})
-        user_data.update({'userAgent': userAgent})
         # print(user_data)
 
         # 开始任务
