@@ -30,7 +30,7 @@ sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
-os.environ['REFERER_ZHANGFEI'] = ''
+# os.environ['REFERER_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
