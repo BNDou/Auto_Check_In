@@ -74,8 +74,6 @@ def getHtml(url):
             if str(target.get('class')).find('tab2_number') + 1:
                 date_list.append(target.text)
 
-    giftid_list[-len(date_list):]
-
     return giftid_list, date_list
 
 
@@ -115,7 +113,7 @@ def main(*arg):
     while i < len(cookie_zhangfei):
         # 获取user_data参数
         user_data = {}
-        for a in cookie_zhangfei[i].split('; '):
+        for a in cookie_zhangfei[i].replace(" ","").split(';'):
             if not a == '':
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
