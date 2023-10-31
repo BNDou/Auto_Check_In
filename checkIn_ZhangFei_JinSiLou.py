@@ -10,10 +10,12 @@ Description  : 端游 金丝篓开永久雷诺
 添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
 值分别是cookie、referer和User-Agent
 '''
-from urllib.parse import unquote
-import requests
 import os
 import sys
+from urllib.parse import unquote
+
+import requests
+
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
@@ -78,11 +80,14 @@ def get_env():
         if len(os.environ.get('zhangFei_jinSiLouNum')) <= 0 or int(os.environ.get('zhangFei_jinSiLouNum')) == 0:
             print(
                 '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
-            send('掌上飞车开金丝篓', '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
+            send('掌上飞车开金丝篓',
+                 '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
             sys.exit(1)
     else:
-        print('使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
-        send('掌上飞车开金丝篓', '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
+        print(
+            '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
+        send('掌上飞车开金丝篓',
+             '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
         sys.exit(0)
 
     return cookie_list, referer_list, userAgent
@@ -157,18 +162,19 @@ def main(*arg):
                 user_data.update(
                     {a.split('=')[0]: unquote(a.split('=')[1])})
         if 'speedm' in referer_zhangfei[i]:
-            print(f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} {'端游' if 'speed' == user_data.get('game') else '手游'} 暂无开道具")
+            print(
+                f"第 {i + 1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} {'端游' if 'speed' == user_data.get('game') else '手游'} 暂无开道具")
         user_data.update({'userAgent': userAgent})
         # print(user_data)
 
         # 开始任务
         print(
-            f"第 {i+1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务")
+            f"第 {i + 1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务")
 
         # 开金丝篓
         num = 0
         for num in range(int(os.environ.get('zhangFei_jinSiLouNum'))):
-            print(f"开第{num+1}个：")
+            print(f"开第{num + 1}个：")
 
             # 开箱子
             log = openBox(cookie_zhangfei[i].replace(' ', ''), user_data)

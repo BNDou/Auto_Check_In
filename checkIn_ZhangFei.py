@@ -3,16 +3,27 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2023-10-21 8:16:10
+LastEditTime : 2023-11-01 2:26:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  :
-抓包流程：开启抓包-进入签到页面-等待上方账号信息加载出来-停止抓包
+抓包流程：
+(推荐)
+开启抓包-进入签到页面-等待上方账号信息加载出来-停止抓包
 选请求这个url的包-https://speed.qq.com/lbact/
+
+(抓不到的话)
+可以选择抓取其他页面的包，前提是下面7个值一个都不能少
+
 添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
 只需要添加7个值即可，分别是
 roleId=xxx; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+
+其中
+speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分
+token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import datetime
+import re
 import os
 import sys
 from urllib.parse import unquote
@@ -31,6 +42,11 @@ try:  # 异常捕捉
 except Exception as err:  # 异常捕捉
     print('%s\n加载通知服务失败~' % err)
 
+
+# 用户信息、奖励信息、特别福利日期
+user_data = {}
+giftid_list = []
+date_list = []
 
 # 获取环境变量
 def get_env():
@@ -57,11 +73,9 @@ def get_env():
 
 # 定义一个获取url页面下label标签的attr属性的函数
 def getHtml(url):
-    giftid_list = []
-    date_list = []
-    response = requests.get(f"http://speed.qq.com/lbact/{url}/zfmrqd.html")
-    response.encoding = 'utf-8'
-    html = response.text
+    zfmrqd = requests.get(f"http://speed.qq.com/lbact/{url}/zfmrqd.html")
+    zfmrqd.encoding = 'utf-8'
+    html = zfmrqd.text
     soup = BeautifulSoup(html, 'html.parser')
 
     for target in soup.find_all('a'):
@@ -74,14 +88,18 @@ def getHtml(url):
             if str(target.get('class')).find('tab2_number') + 1:
                 date_list.append(target.text)
 
-    return giftid_list, date_list
+    # 获取活动ID: iActivityId
+    bridgeTpl_2373 = requests.get(f"http://speed.qq.com/lbact/{url}/bridgeTpl_2373.js")
+    bridgeTpl_2373.encoding = 'utf-8'
+    regex = r'window.iActivityId=(.*?);'
+    user_data.update({"iActivityId": re.findall(regex, bridgeTpl_2373.text)[0]})
 
 
 # 签到
 def sign_gift(user_data, iflowid):
     msg = ""
 
-    url = "https://comm.ams.game.qq.com/ams/ame/amesvr?iActivityId=587170"
+    url = f"https://comm.ams.game.qq.com/ams/ame/amesvr?iActivityId={user_data.get('iActivityId')}"
     headers = {
         'Cookie': f"access_token={user_data.get('accessToken')}; "
                   f"acctype=qc; "
@@ -89,10 +107,10 @@ def sign_gift(user_data, iflowid):
                   f"openid={user_data.get('openid')}; "
     }
     data = {
-        "iActivityId": "587170",
+        "iActivityId": user_data.get('iActivityId'),
+        "iFlowId": iflowid,
         "g_tk": "1842395457",
-        "sServiceType": "speed",
-        "iFlowId": iflowid
+        "sServiceType": "speed"
     }
 
     response = requests.post(url, headers=headers, data=data)
@@ -112,14 +130,13 @@ def main(*arg):
     i = 0
     while i < len(cookie_zhangfei):
         # 获取user_data参数
-        user_data = {}
         for a in cookie_zhangfei[i].replace(" ","").split(';'):
             if not a == '':
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
 
         # 获取累计信息、奖励信息、特别福利日期
-        giftid_list, date_list = getHtml(user_data['speedqqcomrouteLine'])
+        getHtml(user_data['speedqqcomrouteLine'])
 
         # 开始任务
         log = f"第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"

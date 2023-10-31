@@ -57,7 +57,6 @@ def get_env():
 
 # 寻宝
 def dig(status, user_data):
-    # 只需要抓 https://bang.qq.com/app/speed/treasure/ajax/startDigTreasure 包就可以获取了
     url = f"https://bang.qq.com/app/speed/treasure/ajax/{status}DigTreasure"
     headers = {
         "Referer": "https://bang.qq.com/app/speed/treasure/index",
@@ -110,7 +109,6 @@ def get_treasure(iFlowId, user_data):
 def luck_day(user_data):
     t = f"账号 {user_data.get('uin')} "
 
-    # 这里只需要填写查询的QQ号就行
     def extract(_html, _pattern):
         match = re.search(_pattern, _html)
         if match:
