@@ -43,11 +43,6 @@ except Exception as err:  # 异常捕捉
     print('%s\n加载通知服务失败~' % err)
 
 
-# 用户信息、奖励信息、特别福利日期
-user_data = {}
-giftid_list = []
-date_list = []
-
 # 获取环境变量
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
@@ -73,16 +68,22 @@ def get_env():
 
 # 定义一个获取url页面下label标签的attr属性的函数
 def getHtml(url):
+    user_data = {} # 用户信息
+    giftid_list = [] # 奖励信息
+    date_list = [] # 特别福利日期
+
     zfmrqd = requests.get(f"http://speed.qq.com/lbact/{url}/zfmrqd.html")
     zfmrqd.encoding = 'utf-8'
     html = zfmrqd.text
     soup = BeautifulSoup(html, 'html.parser')
 
+    # 获取奖励信息
     for target in soup.find_all('a'):
         if target.get('id'):
             if target.get('id').find('Hold_') + 1:
                 giftid_list.append(target.get('id').split('Hold_')[-1])
 
+    # 获取特别福利日期
     for target in soup.find_all('p'):
         if target.get('class'):
             if str(target.get('class')).find('tab2_number') + 1:
@@ -92,7 +93,9 @@ def getHtml(url):
     bridgeTpl_2373 = requests.get(f"http://speed.qq.com/lbact/{url}/bridgeTpl_2373.js")
     bridgeTpl_2373.encoding = 'utf-8'
     regex = r'window.iActivityId=(.*?);'
-    user_data.update({"iActivityId": re.findall(regex, bridgeTpl_2373.text)[0]})
+    iactivityid = re.findall(regex, bridgeTpl_2373.text)[0]
+
+    return giftid_list, date_list, iactivityid
 
 
 # 签到
@@ -130,13 +133,15 @@ def main(*arg):
     i = 0
     while i < len(cookie_zhangfei):
         # 获取user_data参数
+        user_data = {}  # 用户信息
         for a in cookie_zhangfei[i].replace(" ","").split(';'):
             if not a == '':
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
 
-        # 获取累计信息、奖励信息、特别福利日期
-        getHtml(user_data['speedqqcomrouteLine'])
+        # 获取奖励信息、特别福利日期、活动id
+        giftid_list, date_list, iactivityid = getHtml(user_data['speedqqcomrouteLine'])
+        user_data.update({"iActivityId": iactivityid})
 
         # 开始任务
         log = f"第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
