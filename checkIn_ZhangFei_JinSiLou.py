@@ -6,6 +6,7 @@ Date         : 2022-12-28 23:58:11
 LastEditTime : 2023-11-3 00:59:00
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
+默认只有出货才推送通知
 
 ①添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为大于零的整数
 ②添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
@@ -13,7 +14,7 @@ Description  : 端游 金丝篓开永久雷诺
 roleId=xxx; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
 其中
-speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分
+speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分（金丝篓不需要这个参数，如只用本库金丝篓脚本，可不添加此参数）
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import os
