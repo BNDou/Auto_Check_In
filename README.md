@@ -16,10 +16,10 @@
 
 ## 青龙部署
 
-1. 拉库指令
+1. 拉库指令（拉库失败请自行添加代理）
 
 ```
-ql repo https://ghproxy.com/https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNotify" "main"
+ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNotify" "main"
 ```
 
 2. 根据“**_代码文件头部注释_**”或者“**_运行提示_**”添加对应的“**_环境变量_**”
@@ -42,6 +42,9 @@ ql repo https://ghproxy.com/https://github.com/BNDou/Auto_Check_In.git "checkIn_
 
 > <img src="https://user-images.githubusercontent.com/67632799/224760768-2d2f519c-3159-4597-8db5-e5d2c82a3291.jpg" width="40%">
 
+## 感谢
+[@chiupam](https://github.com/chiupam)
+
 ---
 
 - 这里的脚本只是自己学习 python 的一个实践。
@@ -53,8 +56,5 @@ ql repo https://ghproxy.com/https://github.com/BNDou/Auto_Check_In.git "checkIn_
 - 任何以任何方式查看此项目的人或直接或间接使用该 Script 项目的任何脚本的使用者都应仔细阅读此声明。 该项目的归属者保留随时更改或补充此免责声明的权利。一旦使用并复制了任何相关脚本或 Script 项目的规则，则视为您已接受此免责声明。
 
 ---
-
-## 感谢
-[@chiupam](https://github.com/chiupam)
 
 [![](https://komarev.com/ghpvc/?username=BNDou&&label=Views "To Github")](https://github.com/BNDou/)

@@ -1,14 +1,20 @@
 '''
 new Env('掌上飞车-0点开金丝篓')
-cron: 0 0 * * *
+cron: 59 59 23 * * *
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime : 2023-03-07 22:17:22
+LastEditTime : 2023-11-3 00:59:00
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
-添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为大于零的整数
-添加环境变量COOKIE_ZHANGFEI、REFERER_ZHANGFEI、USER_AGENT_ZHANGFEI，多账号用回车换行分开
-值分别是cookie、referer和User-Agent
+
+①添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为大于零的整数
+②添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
+同签到的环境变量，只需要添加7个值即可，分别是
+roleId=xxx; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+
+其中
+speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分
+token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import os
 import sys
@@ -22,8 +28,6 @@ requests.packages.urllib3.disable_warnings()
 # 测试用环境变量
 # os.environ['zhangFei_jinSiLouNum'] = ''
 # os.environ['COOKIE_ZHANGFEI'] = ''
-# os.environ['REFERER_ZHANGFEI'] = ''
-# os.environ['USER_AGENT_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -51,30 +55,6 @@ def get_env():
         # 脚本退出
         sys.exit(0)
 
-    # 判断 REFERER_ZHANGFEI是否存在于环境变量
-    if "REFERER_ZHANGFEI" in os.environ:
-        referer_list = os.environ.get('REFERER_ZHANGFEI').split('\n')
-        if len(referer_list) <= 0:
-            print('REFERER_ZHANGFEI变量未启用')
-            send('掌上飞车开金丝篓', 'REFERER_ZHANGFEI变量未启用')
-            sys.exit(1)
-    else:
-        print('未添加REFERER_ZHANGFEI变量')
-        send('掌上飞车开金丝篓', '未添加REFERER_ZHANGFEI变量')
-        sys.exit(0)
-
-    # 判断 USER_AGENT_ZHANGFEI是否存在于环境变量
-    if "USER_AGENT_ZHANGFEI" in os.environ:
-        userAgent = os.environ.get('USER_AGENT_ZHANGFEI')
-        if len(userAgent) <= 0:
-            print('USER_AGENT_ZHANGFEI变量未启用')
-            send('掌上飞车开金丝篓', 'USER_AGENT_ZHANGFEI变量未启用')
-            sys.exit(1)
-    else:
-        print('未添加USER_AGENT_ZHANGFEI变量')
-        send('掌上飞车开金丝篓', '未添加USER_AGENT_ZHANGFEI变量')
-        sys.exit(0)
-
     # 判断 金丝篓开启个数 变量zhangFei_jinSiLouNum是否存在于环境变量
     if "zhangFei_jinSiLouNum" in os.environ:
         if len(os.environ.get('zhangFei_jinSiLouNum')) <= 0 or int(os.environ.get('zhangFei_jinSiLouNum')) == 0:
@@ -90,7 +70,7 @@ def get_env():
              '使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n直接在config.sh添加export zhangFei_jinSiLouNum=**\n变量为大于零的整数')
         sys.exit(0)
 
-    return cookie_list, referer_list, userAgent
+    return cookie_list
 
 
 # 开箱子
@@ -101,12 +81,7 @@ def openBox(cookie, user_data):
 
     url = "https://bang.qq.com/app/speed/chest/ajax/openBoxByKey"
     headers = {
-        'User-Agent': user_data.get('userAgent'),
-        'Connection': 'keep-alive',
-        'Accept': 'application/json',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
-        'Referer': f"https://bang.qq.com/app/speed/chest/index/v2?uin={user_data.get('roleId')}&roleId={user_data.get('roleId')}&uniqueRoleId={user_data.get('uniqueRoleId')}&accessToken={user_data.get('accessToken')}&userId={user_data.get('userId')}&token={user_data.get('token')}&areaId={user_data.get('areaId')}&",
+        'Referer': f"https://bang.qq.com/app/speed/chest/index/v2?uin={user_data.get('roleId')}&roleId={user_data.get('roleId')}&accessToken={user_data.get('accessToken')}&userId={user_data.get('userId')}&token={user_data.get('token')}&areaId={user_data.get('areaId')}&",
         'Cookie': cookie
     }
 
@@ -133,9 +108,9 @@ def openBox(cookie, user_data):
             itemList = a.get('data').get('itemList')
             num = 0
             for num in range(len(itemList)):
-                msg += f"{itemList[num].get('avtarname')} * {itemList[num].get('num')} "
+                msg += f"{itemList[num].get('avtarname')}*{itemList[num].get('num')} "
                 print(
-                    f"{itemList[num].get('avtarname')} * {itemList[num].get('num')}")
+                    f"{itemList[num].get('avtarname')}*{itemList[num].get('num')}", end=' ')
                 num += 1
 
         if 'msg' in a.get('data'):
@@ -150,34 +125,27 @@ def main(*arg):
     log_push = ""
     sendnoty = 'true'
     global cookie_zhangfei
-    global referer_zhangfei
-    cookie_zhangfei, referer_zhangfei, userAgent = get_env()
+    cookie_zhangfei = get_env()
 
     i = 0
     while i < len(cookie_zhangfei):
         # 获取user_data参数
-        user_data = {}
-        for a in referer_zhangfei[i].split('?')[1].split('&'):
-            if len(a) > 0:
-                user_data.update(
-                    {a.split('=')[0]: unquote(a.split('=')[1])})
-        if 'speedm' in referer_zhangfei[i]:
-            print(
-                f"第 {i + 1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} {'端游' if 'speed' == user_data.get('game') else '手游'} 暂无开道具")
-        user_data.update({'userAgent': userAgent})
-        # print(user_data)
+        user_data = {}  # 用户信息
+        for a in cookie_zhangfei[i].replace(" ", "").split(';'):
+            if not a == '':
+                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
 
         # 开始任务
         print(
-            f"第 {i + 1} 个账号 {user_data.get('uin')} {user_data.get('roleName')} 开始执行任务")
+            f"第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务")
 
         # 开金丝篓
         num = 0
         for num in range(int(os.environ.get('zhangFei_jinSiLouNum'))):
-            print(f"开第{num + 1}个：")
-
+            print(f"开第{num + 1}个：", end='')
             # 开箱子
             log = openBox(cookie_zhangfei[i].replace(' ', ''), user_data)
+            print()
             msg += log + '\n'
             if '不足' in log:
                 break
