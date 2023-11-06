@@ -3,7 +3,7 @@ new Env('掌上飞车每日寻宝')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2023-10-20 14:39:33
+LastEditTime : 2023-11-6 20:41:20
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
 Description  :
 感谢@chiupam(https://github.com/chiupam)寻宝脚本
@@ -12,9 +12,21 @@ Description  :
 建议启动前先领取5次机会
 浪费次数不负责哦
 
-添加环境变量REFERER_ZHANGFEI，多账号用回车换行分开
+抓包流程：
+(推荐)
+开启抓包-进入签到页面-等待上方账号信息加载出来-停止抓包
+选请求这个url的包-https://speed.qq.com/lbact/
 
-访问寻宝页面时候抓包获取Referer,即环境变量REFERER_ZHANGFEI的值
+(抓不到的话)
+可以选择抓取其他页面的包，前提是下面8个值一个都不能少
+
+添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
+只需要添加8个值即可，分别是
+roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+
+其中
+speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分
+token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import json
 import os
@@ -30,7 +42,7 @@ sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
-# os.environ['REFERER_ZHANGFEI'] = ''
+# os.environ['COOKIE_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -40,19 +52,25 @@ except Exception as err:  # 异常捕捉
 
 # 获取环境变量
 def get_env():
-    # 判断 REFERER_ZHANGFEI是否存在于环境变量
-    if "REFERER_ZHANGFEI" in os.environ:
-        referer_list = os.environ.get('REFERER_ZHANGFEI').split('\n')
-        if len(referer_list) <= 0:
-            print('REFERER_ZHANGFEI变量未启用')
-            send('掌上飞车每日寻宝', 'REFERER_ZHANGFEI变量未启用')
+    # 判断 COOKIE_ZHANGFEI是否存在于环境变量
+    if "COOKIE_ZHANGFEI" in os.environ:
+        # 读取系统变量 以 \n 分割变量
+        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('\n')
+        # 判断 cookie 数量 大于 0 个
+        if len(cookie_list) <= 0:
+            # 标准日志输出
+            print('COOKIE_ZHANGFEI变量未启用')
+            send('掌上飞车签到', 'COOKIE_ZHANGFEI变量未启用')
+            # 脚本退出
             sys.exit(1)
     else:
-        print('未添加REFERER_ZHANGFEI变量')
-        send('掌上飞车每日寻宝', '未添加REFERER_ZHANGFEI变量')
+        # 标准日志输出
+        print('未添加COOKIE_ZHANGFEI变量')
+        send('掌上飞车签到', '未添加COOKIE_ZHANGFEI变量')
+        # 脚本退出
         sys.exit(0)
 
-    return referer_list
+    return cookie_list
 
 
 # 寻宝
@@ -61,9 +79,9 @@ def dig(status, user_data):
     headers = {
         "Referer": "https://bang.qq.com/app/speed/treasure/index",
         "Cookie": f"access_token={user_data.get('accessToken')}; "
-                  f"acctype={user_data.get('accType')}; "
+                  f"acctype=qc; "
                   f"appid={user_data.get('appid')}; "
-                  f"openid={user_data.get('appOpenid')}"
+                  f"openid={user_data.get('openid')}"
     }
     data = {
         "mapId": user_data.get('mapId'),  # 地图Id
@@ -72,7 +90,7 @@ def dig(status, user_data):
         "type": user_data.get('type'),  # 1是普通寻宝，2是快速寻宝（紫钻用户）
         "roleId": user_data.get('roleId'),  # QQ号
         "userId": user_data.get('userId'),  # 掌飞号
-        "uin": user_data.get('uin'),  # QQ号
+        "uin": user_data.get('roleId'),  # QQ号
         "token": user_data.get('token')
     }
     response = requests.post(url, headers=headers, data=data)
@@ -85,9 +103,9 @@ def get_treasure(iFlowId, user_data):
     url = "https://act.game.qq.com/ams/ame/amesvr?ameVersion=0.3&iActivityId=468228"
     headers = {
         "Cookie": f"access_token={user_data.get('accessToken')}; "
-                  f"acctype={user_data.get('accType')}; "
+                  f"acctype=qc; "
                   f"appid={user_data.get('appid')}; "
-                  f"openid={user_data.get('appOpenid')}"
+                  f"openid={user_data.get('openid')}"
     }
     data = {
         'appid': user_data.get('appid'),
@@ -107,7 +125,7 @@ def get_treasure(iFlowId, user_data):
 
 # 今日大吉筛选
 def luck_day(user_data):
-    t = f"账号 {user_data.get('uin')} "
+    t = f"账号 {user_data.get('roleId')} "
 
     def extract(_html, _pattern):
         match = re.search(_pattern, _html)
@@ -119,7 +137,7 @@ def luck_day(user_data):
     params = {
         "roleId": user_data.get('roleId'),  # QQ帐号，抓包抓取
         "areaId": user_data.get('areaId'),  # 1是电信区，抓包抓取
-        "uin": user_data.get('uin')  # QQ帐号，抓包抓取
+        "uin": user_data.get('roleId')  # QQ帐号，抓包抓取
     }
 
     response = requests.get(url, params=params)
@@ -153,8 +171,8 @@ lock = threading.RLock()
 def run(user_data):
     sendnoty = 'true'
     msg = ""
-    t = f"账号 {user_data.get('uin')} "
-    log = f"{t}{user_data.get('roleName')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
+    t = f"账号 {user_data.get('roleId')}"
+    log = f"{t} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
     msg += log + '\n'
     lock.acquire()
     print(log)
@@ -217,30 +235,22 @@ def run(user_data):
         lock.release()
 
 
-# def main(*arg):
-#
-#
-#     return msg[:-1]
-
-
 if __name__ == "__main__":
     print("----------掌上飞车开始尝试每日寻宝----------")
 
     thread = []
-    global referer_zhangfei
-    referer_zhangfei = get_env()
+    global cookie_zhangfei
+    cookie_zhangfei = get_env()
 
-    print("检测到共", len(referer_zhangfei), "个飞车账号\n")
+    print("检测到共", len(cookie_zhangfei), "个飞车账号\n")
 
     i = 0
-    while i < len(referer_zhangfei):
+    while i < len(cookie_zhangfei):
         # 获取user_data参数
-        user_data = {}
-        for a in referer_zhangfei[i].split('?')[1].split('&'):
-            if len(a) > 0:
-                user_data.update(
-                    {a.split('=')[0]: unquote(a.split('=')[1])})
-        # print(user_data)
+        user_data = {}  # 用户信息
+        for a in cookie_zhangfei[i].replace(" ","").split(';'):
+            if not a == '':
+                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
 
         # 传个任务,和参数进来
         thread.append(threading.Thread(target=run, args=[user_data]))

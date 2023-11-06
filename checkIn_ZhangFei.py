@@ -12,11 +12,11 @@ Description  :
 选请求这个url的包-https://speed.qq.com/lbact/
 
 (抓不到的话)
-可以选择抓取其他页面的包，前提是下面7个值一个都不能少
+可以选择抓取其他页面的包，前提是下面8个值一个都不能少
 
 添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
-只需要添加7个值即可，分别是
-roleId=xxx; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+只需要添加8个值即可，分别是
+roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
 其中
 speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分

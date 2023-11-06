@@ -10,8 +10,8 @@ Description  : 端游 金丝篓开永久雷诺
 
 ①添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为大于零的整数
 ②添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
-同签到的环境变量，只需要添加7个值即可，分别是
-roleId=xxx; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+同签到的环境变量，只需要添加8个值即可，分别是
+roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
 其中
 speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分（金丝篓不需要这个参数，如只用本库金丝篓脚本，可不添加此参数）
