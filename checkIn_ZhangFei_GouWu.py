@@ -190,7 +190,6 @@ def searchShop(user_data, shopName):
     if len(response.json()['data']) == 1:
         return process_data(response.json()['data'][0])
     else:
-        print(f"❗❗❗检测道具”{shopName}“在商店中未售卖或不唯一，请在掌飞商城中认真核对商品名全称")
         return None
 
 
@@ -294,18 +293,25 @@ def main():
         # 获取当前点券、消费券
         purse = getPackInfo(user_data, "before")
         log = f"第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务\n截至{day}共有 {purse['money']}点券 {purse['coupons']}消费券"
-        msg += log + '\n'
+        msg += log + "\n"
         print(log)
 
         # 搜索商品信息
         itme_data = searchShop(user_data, os.environ.get('zhangFei_shopName'))
+        if not itme_data:
+            log = f"❗❗❗检测道具”{os.environ.get('zhangFei_shopName')}“在商店中未售卖或不唯一，请在掌飞商城中认真核对商品名全称"
+            msg += log + "\n"
+            print(log)
+            i += 1
+            continue
         # 获取商城列表
         # getMallList(user_data)
         # 生成购物车列表
         shopArray, total, unit = getShopItems(itme_data, purse)
         # 开始购买循环
         if shopArray:
-            log = f"预计可购买 {total if total == 0 else ''} {unit} {os.environ.get('zhangFei_shopName')}\n"
+            log = f"预计可购买 {'' if total == 0 else total} {unit} {os.environ.get('zhangFei_shopName')}"
+            msg += log + "\n"
             print(log)
             successBuyCounts = 0
             failedBuyCounts = 0
@@ -319,17 +325,27 @@ def main():
             #
             if successBuyCounts > 0:
                 successBuyCounts = "" if successBuyCounts == 99999999 else successBuyCounts
-                log = f"成功购买 {successBuyCounts} {unit} {os.environ.get('zhangFei_shopName')}\n"
+                log = f"成功购买 {successBuyCounts} {unit} {os.environ.get('zhangFei_shopName')}"
+                msg += log + "\n"
                 if failedBuyCounts > 0:
                     log = f"未购买成功 {failedBuyCounts} {unit}\n"
+                    msg += log + "\n"
             else:
-                log = f"全部购买失败，共计 {total if total == 0 else ''} {unit}\n"
-            msg += log
+                log = f"全部购买失败，共计 {total if total == 0 else ''} {unit}"
+                msg += log + "\n"
+            msg += log + "\n"
             print(log)
+
         else:
-            log = f"{'本月余额' if is_last_day_of_month() else '今日消费券'}不足以购买 {os.environ.get('zhangFei_shopName')}\n"
-            msg += log
+            log = f"{'本月余额' if is_last_day_of_month() else '今日消费券'}不足以购买 {os.environ.get('zhangFei_shopName')}"
+            msg += log + "\n"
             print(log)
+
+        # 获取剩余余额
+        purse = getPackInfo(user_data, "before")
+        log = f"----剩余 {purse['money']}点券 {purse['coupons']}消费券\n"
+        msg += log + "\n"
+        print(log)
 
         i += 1
 
