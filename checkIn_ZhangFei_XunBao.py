@@ -60,13 +60,13 @@ def get_env():
         if len(cookie_list) <= 0:
             # 标准日志输出
             print('COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车签到', 'COOKIE_ZHANGFEI变量未启用')
+            send('掌上飞车每日寻宝', 'COOKIE_ZHANGFEI变量未启用')
             # 脚本退出
             sys.exit(1)
     else:
         # 标准日志输出
         print('未添加COOKIE_ZHANGFEI变量')
-        send('掌上飞车签到', '未添加COOKIE_ZHANGFEI变量')
+        send('掌上飞车每日寻宝', '未添加COOKIE_ZHANGFEI变量')
         # 脚本退出
         sys.exit(0)
 

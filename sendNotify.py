@@ -1,7 +1,7 @@
 '''
 Author       : BNDou
 Date         : 2022-11-01 00:18:08
-LastEditTime : 2022-11-01 00:18:51
+LastEditTime : 2023-11-07 04:03:11
 FilePath     : \DailyCheckin_EnShan\sendNotify.py
 Description  : 
 '''
@@ -266,7 +266,6 @@ def pushplus_bot(title, content):
 
 
 
-print("xxxxxxxxxxxx")
 def wecom_key(title, content):
     print("\n")
     if not QYWX_KEY:
