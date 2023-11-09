@@ -267,7 +267,7 @@ def getPurchase(user_data, buyInfo):
     response.encoding = "utf-8"
 
     if "恭喜购买成功" in response.json()['msg']:
-        total = buyInfo['count']
+        total = int(buyInfo['count'])
     else:
         print(f"❗❗❗{response.json()['msg']}")
 
@@ -305,7 +305,7 @@ def main():
         shopArray, total, unit = getShopItems(itme_data, purse)
         # 开始购买循环
         if shopArray:
-            log = f"预计可购买{total if total == 0 else ''}{unit} {os.environ.get('zhangFei_shopName')}\n"
+            log = f"预计可购买 {total if total == 0 else ''} {unit} {os.environ.get('zhangFei_shopName')}\n"
             print(log)
             successBuyCounts = 0
             failedBuyCounts = 0
@@ -319,15 +319,15 @@ def main():
             #
             if successBuyCounts > 0:
                 successBuyCounts = "" if successBuyCounts == 99999999 else successBuyCounts
-                log = f"成功购买{successBuyCounts}${unit}${os.environ.get('zhangFei_shopName')}\n"
+                log = f"成功购买 {successBuyCounts} {unit} {os.environ.get('zhangFei_shopName')}\n"
                 if failedBuyCounts > 0:
-                    log = f"未购买成功{failedBuyCounts}${unit}\n"
+                    log = f"未购买成功 {failedBuyCounts} {unit}\n"
             else:
-                log = f"全部购买失败，共计{total if total == 0 else ''}{unit}\n"
+                log = f"全部购买失败，共计 {total if total == 0 else ''} {unit}\n"
             msg += log
             print(log)
         else:
-            log = f"{'本月余额' if isLastDays() else '今日消费券'}不足以购买{os.environ.get('zhangFei_shopName')}\n"
+            log = f"{'本月余额' if is_last_day_of_month() else '今日消费券'}不足以购买 {os.environ.get('zhangFei_shopName')}\n"
             msg += log
             print(log)
 
