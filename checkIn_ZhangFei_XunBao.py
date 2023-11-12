@@ -176,10 +176,10 @@ def run(user_data):
     sendnoty = 'true'
     msg = ""
     t = f"🚗账号 {user_data.get('roleId')}"
-    log = f"{t} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
+    log = f"{t} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
     msg += log + '\n'
     lock.acquire()
-    print(log)
+    print(f"{log} 开始执行任务")
     lock.release()
 
     # 获取紫钻信息、地图解锁信息
