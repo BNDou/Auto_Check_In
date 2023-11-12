@@ -130,12 +130,13 @@ def process_data(input_dict):
 
     # 构建 price_idx 词典信息
     for index, value in enumerate(item_array):
-        key = value if item.get("ItemNum") else "99999999" if value == "-1" else str(int(value) / 24)
-        item_price = input_dict["szPrices"][index]["SuperMoneyPrice"]
-        price_idx[key] = {
-            "index": str(index),  # 价格索引
-            "price": item_price
-        }
+        if value:
+            key = value if item.get("ItemNum") else "99999999" if value == "-1" else str(int(value) / 24)
+            item_price = input_dict["szPrices"][index]["SuperMoneyPrice"]
+            price_idx[key] = {
+                "index": str(index),  # 价格索引
+                "price": item_price
+            }
 
     # 构建最终结果对象，包括单位信息
     output_dict[input_dict["szName"]] = {
