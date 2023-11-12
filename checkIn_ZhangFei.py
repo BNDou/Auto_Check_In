@@ -144,9 +144,9 @@ def main(*arg):
         user_data.update({"iActivityId": iactivityid})
 
         # 开始任务
-        log = f"🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
+        log = f"\n🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
         msg += log + '\n'
-        print(f"{log} 开始执行任务\n✅{datetime.datetime.now().strftime('%m月')}有{len(giftid_list) - 1}个礼物")
+        print(f"{log} 开始执行任务\n🎁{datetime.datetime.now().strftime('%m月')}有{len(giftid_list) - 1}个礼物")
 
         # 签到
         log = sign_gift(user_data, giftid_list[0])
