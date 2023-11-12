@@ -355,7 +355,7 @@ def main():
 
         # 获取剩余余额
         purse = getPackInfo(user_data)
-        log = f"✅剩余 {purse['money']}点券 {purse['coupons']}消费券\n"
+        log = f"💰剩余 {purse['money']}点券 {purse['coupons']}消费券\n"
         msg += log + "\n"
         print(log)
 
