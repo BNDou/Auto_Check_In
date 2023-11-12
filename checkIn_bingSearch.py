@@ -167,7 +167,6 @@ def main(*arg):
             send('必应手机端搜索', msg)
         except Exception as err:
             print('%s\n错误，请查看运行日志！' % err)
-            send('必应手机端搜索', '%s\n错误，请查看运行日志！' % err)
 
     return msg[:-1]
 

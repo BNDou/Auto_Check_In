@@ -193,7 +193,6 @@ def main(*arg):
             send('小米社区日常', msg)
         except Exception as err:
             print('%s\n错误，请查看运行日志！' % err)
-            send('小米社区日常', '%s\n错误，请查看运行日志！' % err)
 
     return msg[:-1]
 

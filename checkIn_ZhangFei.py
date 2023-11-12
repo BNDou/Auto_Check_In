@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2023-11-01 2:26:10
+LastEditTime : 2023-11-13 3:14:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -23,8 +23,8 @@ speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import datetime
-import re
 import os
+import re
 import sys
 from urllib.parse import unquote
 
@@ -40,7 +40,7 @@ requests.packages.urllib3.disable_warnings()
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print('%s\n加载通知服务失败~' % err)
+    print('%s\n❌加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -52,14 +52,14 @@ def get_env():
         # 判断 cookie 数量 大于 0 个
         if len(cookie_list) <= 0:
             # 标准日志输出
-            print('COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车签到', 'COOKIE_ZHANGFEI变量未启用')
+            print('❌COOKIE_ZHANGFEI变量未启用')
+            send('掌上飞车签到', '❌COOKIE_ZHANGFEI变量未启用')
             # 脚本退出
             sys.exit(1)
     else:
         # 标准日志输出
-        print('未添加COOKIE_ZHANGFEI变量')
-        send('掌上飞车签到', '未添加COOKIE_ZHANGFEI变量')
+        print('❌未添加COOKIE_ZHANGFEI变量')
+        send('掌上飞车签到', '❌未添加COOKIE_ZHANGFEI变量')
         # 脚本退出
         sys.exit(0)
 
@@ -68,9 +68,9 @@ def get_env():
 
 # 定义一个获取url页面下label标签的attr属性的函数
 def getHtml(url):
-    user_data = {} # 用户信息
-    giftid_list = [] # 奖励信息
-    date_list = [] # 特别福利日期
+    user_data = {}  # 用户信息
+    giftid_list = []  # 奖励信息
+    date_list = []  # 特别福利日期
 
     zfmrqd = requests.get(f"http://speed.qq.com/lbact/{url}/zfmrqd.html")
     zfmrqd.encoding = 'utf-8'
@@ -134,7 +134,7 @@ def main(*arg):
     while i < len(cookie_zhangfei):
         # 获取user_data参数
         user_data = {}  # 用户信息
-        for a in cookie_zhangfei[i].replace(" ","").split(';'):
+        for a in cookie_zhangfei[i].replace(" ", "").split(';'):
             if not a == '':
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
@@ -144,14 +144,14 @@ def main(*arg):
         user_data.update({"iActivityId": iactivityid})
 
         # 开始任务
-        log = f"第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
+        log = f"🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务"
         msg += log + '\n'
         print(f"{log}\n{datetime.datetime.now().strftime('%m月')}礼物有:{str(giftid_list)}")
 
         # 签到
         log = sign_gift(user_data, giftid_list[0])
-        msg += f"今日{day} {log}\n"
-        print(f"今日{day} {log}")
+        msg += f"✅今日{day} {log}\n"
+        print(f"✅今日{day} {log}")
 
         # 特别福利
         date_dict = dict(zip(date_list, giftid_list[-len(date_list):]))
@@ -159,18 +159,18 @@ def main(*arg):
             log = sign_gift(user_data, date_dict[day])
             if '非常抱歉！您的资格已用尽！' in log:
                 log = "已领取完^!^请勿贪心哦"
-            msg += f"特殊福利:{log}\n"
-            print(f"特殊福利:{log}")
+            msg += f"✅特殊福利:{log}\n"
+            print(f"✅特殊福利:{log}")
         else:
-            msg += "今日无特殊福利礼物\n"
-            print("今日无特殊福利礼物")
+            msg += "✅今日无特殊福利礼物\n"
+            print("✅今日无特殊福利礼物")
 
         # 累计签到奖励
         for gift in giftid_list[1:-len(date_list)]:
             log = sign_gift(user_data, gift)
             if log not in ['您已领取过奖励！', '非常抱歉，您的签到天数不足！']:
-                msg += f"累计签到礼物id[{gift}]：{log}\n"
-            print(f"累计签到礼物id[{gift}]：{log}")
+                msg += f"✅累计签到礼物id[{gift}]：{log}\n"
+            print(f"✅累计签到礼物id[{gift}]：{log}")
 
         i += 1
 
@@ -178,8 +178,7 @@ def main(*arg):
         try:
             send('掌上飞车签到', msg)
         except Exception as err:
-            print('%s\n错误，请查看运行日志！' % err)
-            send('掌上飞车签到', '%s\n错误，请查看运行日志！' % err)
+            print('%s\n❌错误，请查看运行日志！' % err)
 
     return msg[:-1]
 

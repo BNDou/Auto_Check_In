@@ -3,7 +3,7 @@ new Env('掌上飞车购物')
 cron: 50 23 * * *
 Author       : BNDou
 Date         : 2023-11-7 01:11:27
-LastEditTime : 2023-11-01 2:26:10
+LastEditTime : 2023-11-13 2:53:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_GouWu.py
 Description  :每日定时执行消费券购物，月末执行点券+消费券购物
 
@@ -31,7 +31,6 @@ import datetime
 import os
 import re
 import sys
-import time
 from urllib.parse import unquote
 
 import requests
@@ -46,7 +45,7 @@ requests.packages.urllib3.disable_warnings()
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print('%s\n加载通知服务失败~' % err)
+    print('%s\n❌加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -58,42 +57,39 @@ def get_env():
         # 判断 cookie 数量 大于 0 个
         if len(cookie_list) <= 0:
             # 标准日志输出
-            print('COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车购物', 'COOKIE_ZHANGFEI变量未启用')
+            print('❌COOKIE_ZHANGFEI变量未启用')
+            send('掌上飞车购物', '❌COOKIE_ZHANGFEI变量未启用')
             # 脚本退出
             sys.exit(1)
     else:
         # 标准日志输出
-        print('未添加COOKIE_ZHANGFEI变量')
-        send('掌上飞车购物', '未添加COOKIE_ZHANGFEI变量')
+        print('❌未添加COOKIE_ZHANGFEI变量')
+        send('掌上飞车购物', '❌未添加COOKIE_ZHANGFEI变量')
         # 脚本退出
         sys.exit(0)
 
     # 判断 设置商品名称 变量zhangFei_shopName是否存在于环境变量
     if "zhangFei_shopName" in os.environ:
         if len(os.environ.get('zhangFei_shopName')) <= 0:
-            print('使用请添加zhangFei_shopName变量设置需要购买的商品名称')
-            print('直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n变量值为掌飞商城道具名全称')
+            print('❌使用请添加zhangFei_shopName变量设置需要购买的商品名称')
+            print('❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
             send('掌上飞车购物',
-                 '使用请添加zhangFei_shopName变量设置需要购买的商品名称\n直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n变量值为掌飞商城道具名全称')
+                 '❌使用请添加zhangFei_shopName变量设置需要购买的商品名称\n❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
             sys.exit(1)
     else:
-        print('使用请添加zhangFei_shopName变量设置需要购买的商品名称')
-        print('直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n变量值为掌飞商城道具名全称')
+        print('❌使用请添加zhangFei_shopName变量设置需要购买的商品名称')
+        print('❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
         send('掌上飞车购物',
-             '使用请添加zhangFei_shopName变量设置需要购买的商品名称\n直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n变量值为掌飞商城道具名全称')
+             '❌使用请添加zhangFei_shopName变量设置需要购买的商品名称\n❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
         sys.exit(0)
 
     return cookie_list
 
 
 # 获取点券、消费券信息
-def getPackInfo(user_data, argument):
+def getPackInfo(user_data):
     # 创建一个空对象，用于存储点券和消费券信息
     purse = {}
-
-    # 根据参数值设置状态文本
-    statu = "当前" if (argument == "before") else "剩余"
 
     url = f"https://bang.qq.com/app/speed/mall/main2"
     # 获取 url 中的查询参数
@@ -107,35 +103,46 @@ def getPackInfo(user_data, argument):
     response.encoding = "utf-8"
 
     # 使用正则表达式匹配点券和消费券数量
-    purse['money'] = re.findall(r'<b id="super_money">(\d+)<', response.text)[0]
-    purse['coupons'] = re.findall(r'<b id="coupons">(\d+)<', response.text)[0]
+    try:
+        purse['money'] = re.findall(r'<b id="super_money">(\d+)<', response.text)[0]
+        purse['coupons'] = re.findall(r'<b id="coupons">(\d+)<', response.text)[0]
+    except IndexError:
+        print(
+            "❌获取点券、消费券信息时索引错误！\n👇👇👇请核对环境变量中\nroleId\nuserId\nareaId\ntoken\n👆👆👆四个属性是否都存在和正确")
+        sys.exit(0)
 
     return purse
 
 
+# 格式化道具信息
 def process_data(input_dict):
-    item = input_dict['szItems'][0]
-    if item['ItemNum'] == "":
-        mapping = {
-            "4320,720,": "180,30",
-            "4320,720,-1,": "180,30,99999999",
-            "720,168,-1,": "30,7,99999999",
-            "168,720,-1,": "7,30,99999999",
-            "-1,": "99999999"
+    # 初始化一些变量
+    output_dict = {}
+    price_idx = {}
+    item = input_dict["szItems"][0]
+
+    # 准备工作：去除可能的逗号结尾
+    if item.get("ItemNum") == "":
+        item["ItemAvailPeriod"] = item["ItemAvailPeriod"][:-1]
+
+    # 对每个项目数量或可用期限和价格执行逻辑
+    item_array = item["ItemNum"].split(',') if item.get("ItemNum") else item["ItemAvailPeriod"].split(',')
+
+    # 构建 price_idx 词典信息
+    for index, value in enumerate(item_array):
+        key = value if item.get("ItemNum") else "99999999" if value == "-1" else str(int(value) / 24)
+        item_price = input_dict["szPrices"][index]["SuperMoneyPrice"]
+        price_idx[key] = {
+            "index": str(index),  # 价格索引
+            "price": item_price
         }
-        item['ItemNum'] = mapping.get(item['ItemAvailPeriod'], "")
-    price_idx = {
-        item_num: {
-            "index": str(i),
-            "price": int(price['SuperMoneyPrice'])
-        } for i, (item_num, price) in enumerate(zip(item.get('ItemNum', '180,30').split(','), input_dict['szPrices']))
-    }
-    output_dict = {
-        input_dict['szName']: {
-            "commodity_id": input_dict['iId'],
-            "price_idx": sorted(price_idx.items(), key=lambda x: int(x[0]), reverse=True),  # 道具可购买数量和价格由高到低排序
-            "unit": "个" if item['ItemNum'] else "天"
-        }
+
+    # 构建最终结果对象，包括单位信息
+    output_dict[input_dict["szName"]] = {
+        "commodity_id": input_dict["iId"],
+        "price_idx": sorted(price_idx.items(), key=lambda x: int(x[0]) if item.get("ItemNum") else float(x[0]),
+                            reverse=True),  # 道具可购买数量和价格由高到低排序
+        "unit": "个" if item.get("ItemNum") else "天"  # 根据 ItemNum 存在与否确定单位
     }
 
     return output_dict
@@ -205,7 +212,7 @@ def is_last_day_of_month():
 # 根据当前余额和道具价格生成购物列表
 def getShopItems(itme_data, purse):
     # 初始化总购物数量和购物列表
-    money = int(purse['money']) + int(purse['coupons']) if is_last_day_of_month() else int(purse['coupons'])
+    money = (int(purse['money']) + int(purse['coupons'])) if is_last_day_of_month() else int(purse['coupons'])
     total = 0
     shopArray = []
 
@@ -216,7 +223,8 @@ def getShopItems(itme_data, purse):
             shopIdx = itme_data[item]['price_idx'][i][0]
 
             # 如果购买的商品可以购买永久且当前余额可以购买永久
-            if itme_data[item]['price_idx'][i][0] == "99999999" and money > itme_data[item]['price_idx'][i][1]['price']:
+            if itme_data[item]['price_idx'][i][0] == "99999999" and money > int(
+                    itme_data[item]['price_idx'][i][1]['price']):
                 shopArray.append({"name": item, "count": "99999999", "commodity_id": itme_data[item]['commodity_id'],
                                   "price_idx": shopIdx})
                 itme_data[item]['unit'] = "永久"
@@ -224,11 +232,11 @@ def getShopItems(itme_data, purse):
 
             # 计算当前余额可以购买的最大道具数量
             # 这是一个计算出的整数，表示根据当前余额和道具价格，最多可以购买的道具数量
-            maxCounts = money // itme_data[item]['price_idx'][i][1]['price']
+            maxCounts = money // int(itme_data[item]['price_idx'][i][1]['price'])
             # 这是一个累加的变量，用于跟踪购买的总道具数量
             total += maxCounts * int(itme_data[item]['price_idx'][i][0])
             # 这是当前可用的余额。在每次购买道具后，余额会根据购买的道具数量和价格进行更新，以反映购买后的余额
-            money -= maxCounts * itme_data[item]['price_idx'][i][1]['price']
+            money -= maxCounts * int(itme_data[item]['price_idx'][i][1]['price'])
 
             if maxCounts:
                 # 将可购买的道具添加到购物列表
@@ -237,11 +245,11 @@ def getShopItems(itme_data, purse):
                     shopArray.append(
                         {"name": item, "count": itme_data[item]['price_idx'][i][0],
                          "commodity_id": itme_data[item]['commodity_id'],
-                         "price_idx": shopIdx})
+                         "price_idx": itme_data[item]['price_idx'][i][1]['index']})
                     m += 1
 
             # 如果当前余额不足以购买最便宜的道具，跳出循环
-            if money < itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['price']:
+            if money < int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['price']):
                 break
 
             i += 1
@@ -264,14 +272,14 @@ def getPurchase(user_data, buyInfo):
         "price_idx": buyInfo['price_idx']
     }
     # 延迟1秒执行，防止频繁
-    time.sleep(1)
+    # time.sleep(1)
     response = requests.post(url, headers=headers, data=data)
     response.encoding = "utf-8"
 
     if "恭喜购买成功" in response.json()['msg']:
         total = int(buyInfo['count'])
     else:
-        print(f"❗❗❗{response.json()['msg']}")
+        print(f"❌{response.json()['msg']}")
 
     return total
 
@@ -281,7 +289,7 @@ def main():
     sendnoty = 'true'
     global cookie_zhangfei
     cookie_zhangfei = get_env()
-    day = datetime.datetime.now().strftime('%m月%d日')
+    day = datetime.datetime.now().strftime('%m月%d日%H时%M分%S秒')
 
     i = 0
     while i < len(cookie_zhangfei):
@@ -294,15 +302,15 @@ def main():
 
         # 开始任务
         # 获取当前点券、消费券
-        purse = getPackInfo(user_data, "before")
-        log = f"第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务\n截至{day}共有 {purse['money']}点券 {purse['coupons']}消费券"
+        purse = getPackInfo(user_data)
+        log = f"🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'} 开始执行任务\n✅截至{day}共有 {purse['money']}点券 {purse['coupons']}消费券"
         msg += log + "\n"
         print(log)
 
         # 搜索商品信息
         itme_data = searchShop(user_data, os.environ.get('zhangFei_shopName'))
         if not itme_data:
-            log = f"❗❗❗检测道具”{os.environ.get('zhangFei_shopName')}“在商店中未售卖或不唯一，请在掌飞商城中认真核对商品名全称"
+            log = f"❌检测道具”{os.environ.get('zhangFei_shopName')}“在商店中未售卖或不唯一，请在掌飞商城中认真核对商品名全称"
             msg += log + "\n"
             print(log)
             i += 1
@@ -313,7 +321,7 @@ def main():
         shopArray, total, unit = getShopItems(itme_data, purse)
         # 开始购买循环
         if shopArray:
-            log = f"预计可购买 {'' if total == 0 else total} {unit} {os.environ.get('zhangFei_shopName')}"
+            log = f"✅预计可购买 {'' if total == 0 else total} {unit} {os.environ.get('zhangFei_shopName')}"
             msg += log + "\n"
             print(log)
             successBuyCounts = 0
@@ -328,25 +336,25 @@ def main():
             #
             if successBuyCounts > 0:
                 successBuyCounts = "" if successBuyCounts == 99999999 else successBuyCounts
-                log = f"成功购买 {successBuyCounts} {unit} {os.environ.get('zhangFei_shopName')}"
+                log = f"✅成功购买 {successBuyCounts} {unit} {os.environ.get('zhangFei_shopName')}"
                 msg += log + "\n"
                 if failedBuyCounts > 0:
-                    log = f"未购买成功 {failedBuyCounts} {unit}\n"
+                    log = f"❌未购买成功 {failedBuyCounts} {unit}\n"
                     msg += log + "\n"
             else:
-                log = f"全部购买失败，共计 {total if total == 0 else ''} {unit}"
+                log = f"❌全部购买失败，共计 {total} {unit}"
                 msg += log + "\n"
             msg += log + "\n"
             print(log)
 
         else:
-            log = f"{'本月余额' if is_last_day_of_month() else '今日消费券'}不足以购买 {os.environ.get('zhangFei_shopName')}"
+            log = f"✅{'本月余额' if is_last_day_of_month() else '今日消费券'}不足以购买 {os.environ.get('zhangFei_shopName')}"
             msg += log + "\n"
             print(log)
 
         # 获取剩余余额
-        purse = getPackInfo(user_data, "before")
-        log = f"----剩余 {purse['money']}点券 {purse['coupons']}消费券\n"
+        purse = getPackInfo(user_data)
+        log = f"✅----剩余 {purse['money']}点券 {purse['coupons']}消费券\n"
         msg += log + "\n"
         print(log)
 
@@ -356,8 +364,7 @@ def main():
         try:
             send('掌上飞车购物', msg)
         except Exception as err:
-            print('%s\n错误，请查看运行日志！' % err)
-            send('掌上飞车购物', '%s\n错误，请查看运行日志！' % err)
+            print('%s\n❌错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
