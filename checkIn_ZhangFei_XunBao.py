@@ -245,7 +245,7 @@ if __name__ == "__main__":
     global cookie_zhangfei
     cookie_zhangfei = get_env()
 
-    print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n🔎🔎🔎")
+    print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n")
 
     i = 0
     while i < len(cookie_zhangfei):
