@@ -290,7 +290,6 @@ def main():
     sendnoty = 'true'
     global cookie_zhangfei
     cookie_zhangfei = get_env()
-    day = datetime.datetime.now().strftime('%m月%d日%H时%M分%S秒')
 
     i = 0
     while i < len(cookie_zhangfei):
@@ -305,7 +304,7 @@ def main():
         # 获取当前点券、消费券
         purse = getPackInfo(user_data)
         log1 = f"🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
-        log2 = f"📅截至{day}\n💰共有 {purse['money']}点券 {purse['coupons']}消费券"
+        log2 = f"📅截至{datetime.datetime.now().strftime('%m月%d日%H时%M分%S秒')}\n💰共有 {purse['money']}点券 {purse['coupons']}消费券"
         msg += log1 + "\n" + log2 + "\n"
         print(f"{log1} 开始执行任务\n{log2}")
 
