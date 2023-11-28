@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime : 2023-11-13 04:25:47
+ * @LastEditTime : 2023-11-28 15:13:13
  * @FilePath     : /Auto_Check_In/README.md
  * @Description  :
 -->
@@ -23,10 +23,6 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 ```
 
 2. 根据“**_代码文件头部注释_**”或者“**_运行提示_**”添加对应的“**_环境变量_**”
-
-## 飞车快捷指令
-
-[传送门](/feiche_code.md "飞车快捷指令")
 
 ## 飞车端游圆梦榜
 

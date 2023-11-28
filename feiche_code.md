@@ -1,12 +1,12 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2023-01-26 22:12:51
- * @LastEditTime : 2023-03-01 00:26:58
+ * @LastEditTime : 2023-11-28 15:13:13
  * @FilePath     : /Auto_Check_In/feiche_code.md
  * @Description  :
 -->
 
-# 飞车快捷指令
+# ~~飞车快捷指令~~（已失效）
 
 ## 说明
 
