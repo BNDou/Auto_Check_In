@@ -31,6 +31,7 @@ import datetime
 import os
 import re
 import sys
+import time
 from urllib.parse import unquote
 
 import requests
@@ -271,8 +272,8 @@ def getPurchase(user_data, buyInfo):
         "commodity_id": buyInfo['commodity_id'],
         "price_idx": buyInfo['price_idx']
     }
-    # 延迟1秒执行，防止频繁
-    # time.sleep(1)
+    # 延迟400毫秒执行，防止频繁
+    time.sleep(0.4)
     response = requests.post(url, headers=headers, data=data)
     response.encoding = "utf-8"
 
