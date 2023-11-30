@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2023-11-13 3:14:10
+LastEditTime : 2023-12-01 00:37:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -19,7 +19,7 @@ Description  :
 roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
 其中
-speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分
+speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分（每月更新一次）
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import datetime
@@ -130,6 +130,8 @@ def main(*arg):
     cookie_zhangfei = get_env()
     day = datetime.datetime.now().strftime('%m月%d日')
 
+    print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n")
+
     i = 0
     while i < len(cookie_zhangfei):
         # 获取user_data参数
@@ -152,6 +154,12 @@ def main(*arg):
         log = sign_gift(user_data, giftid_list[0])
         msg += f"✅今日{day} {log}\n"
         print(f"✅今日{day} {log}")
+        # 判断cookie中speedqqcomrouteLine是否过期
+        if "非常抱歉，该活动已经结束" in log:
+            msg += "❌请更新cookie，确认 speedqqcomrouteLine 参数是否为本月最新（该值每月更新一次）\n"
+            print("❌请更新cookie，确认 speedqqcomrouteLine 参数是否为本月最新（该值每月更新一次）")
+            i += 1
+            continue
 
         # 特别福利
         date_dict = dict(zip(date_list, giftid_list[-len(date_list):]))

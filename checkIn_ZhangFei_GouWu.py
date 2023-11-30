@@ -3,7 +3,7 @@ new Env('掌上飞车购物')
 cron: 50 23 * * *
 Author       : BNDou
 Date         : 2023-11-7 01:11:27
-LastEditTime : 2023-11-13 2:53:10
+LastEditTime : 2023-12-01 00:28:37
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_GouWu.py
 Description  :每日定时执行消费券购物，月末执行点券+消费券购物
 
@@ -109,7 +109,6 @@ def getPackInfo(user_data):
     except IndexError:
         print(
             "❌获取点券、消费券信息时索引错误！\n👇👇👇请核对环境变量中\nroleId\nuserId\nareaId\ntoken\n👆👆👆四个属性是否都存在和正确")
-        sys.exit(0)
 
     return purse
 
@@ -291,6 +290,8 @@ def main():
     global cookie_zhangfei
     cookie_zhangfei = get_env()
 
+    print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n")
+
     i = 0
     while i < len(cookie_zhangfei):
         # 获取user_data参数
@@ -301,12 +302,18 @@ def main():
         # print(user_data)
 
         # 开始任务
+        log1 = f"🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
+        print(f"{log1} 开始执行任务")
         # 获取当前点券、消费券
         purse = getPackInfo(user_data)
-        log1 = f"🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
+        # 判断是否获取成功，否则跳过该用户
+        if not purse:
+            i += 1
+            continue
+
         log2 = f"📅截至{datetime.datetime.now().strftime('%m月%d日%H时%M分%S秒')}\n💰共有 {purse['money']}点券 {purse['coupons']}消费券"
+        print(log2)
         msg += log1 + "\n" + log2 + "\n"
-        print(f"{log1} 开始执行任务\n{log2}")
 
         # 搜索商品信息
         itme_data = searchShop(user_data, os.environ.get('zhangFei_shopName'))
@@ -340,8 +347,8 @@ def main():
                 log = f"✅成功购买 {successBuyCounts} {unit} {os.environ.get('zhangFei_shopName')}"
                 msg += log + "\n"
                 if failedBuyCounts > 0:
-                    log = f"❌未购买成功 {failedBuyCounts} {unit}\n"
-                    msg += log + "\n"
+                    log = f"❌未购买成功 {failedBuyCounts} {unit}"
+                    msg += log + "\n\n"
             else:
                 log = f"❌全部购买失败，共计 {total} {unit}"
                 msg += log + "\n"
