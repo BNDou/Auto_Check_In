@@ -3,7 +3,7 @@ new Env('掌上飞车每日寻宝')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2023-11-13 4:10:20
+LastEditTime : 2023-12-19 1:09:20
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
 Description  :
 感谢@chiupam(https://github.com/chiupam)寻宝脚本
@@ -147,6 +147,8 @@ def luck_day(user_data):
     response = requests.get(url, params=params)
     response.encoding = 'utf-8'
     user = extract(response.text, r'window\.userInfo\s*=\s*eval\(\'([^\']+)\'\);')
+    # 剩余寻宝次数
+    left_times = re.search(r'id="leftTimes">(\d+)</i>', response.text).group(1)
 
     if user:
         vip_flag = bool(user.get('vip_flag'))
@@ -164,7 +166,9 @@ def luck_day(user_data):
     else:
         print(t, "❌未找到地图信息")
 
-    return 2 if vip_flag == True else 1, starId, mapId
+    print("{}⏰剩余寻宝次数：{}".format(t, left_times))
+
+    return 2 if vip_flag == True else 1, starId, mapId, left_times
 
 
 # 创建锁
@@ -183,51 +187,54 @@ def run(user_data):
     lock.release()
 
     # 获取紫钻信息、地图解锁信息
-    user_data['type'], user_data['starId'], user_data['mapId'] = luck_day(user_data)
+    user_data['type'], user_data['starId'], user_data['mapId'], user_data['left_times'] = luck_day(user_data)
     # 星级地图对应的iFlowId
     iFlowId_dict = {'1': ['856152', '856155'], '2': ['856156', '856157'], '3': ['856158', '856159'],
                     '4': ['856160', '856161'], '5': ['856162', '856163'], '6': ['856164', '856165']}
 
-    # 每日5次寻宝
-    for n in range(5):
-        n += 1
-        # 寻宝
-        if dig('start', user_data):
-            msg += f"❌第{n}次寻宝...对不起，当天的寻宝次数已用完\n"
+    if user_data['left_times'] != "0":
+        # 每日5次寻宝
+        for n in range(5):
+            n += 1
+            # 寻宝
+            if dig('start', user_data):
+                msg += f"❌第{n}次寻宝...对不起，当天的寻宝次数已用完\n"
+                lock.acquire()
+                print(f"{t}❌第{n}次寻宝...对不起，当天的寻宝次数已用完")
+                lock.release()
+                break
+            msg += f"✅第{n}次寻宝...\n"
             lock.acquire()
-            print(f"{t}❌第{n}次寻宝...对不起，当天的寻宝次数已用完")
-            lock.release()
-            break
-        msg += f"✅第{n}次寻宝...\n"
-        lock.acquire()
-        print(f"{t}✅第{n}次寻宝...")
-        lock.release()
-
-        # 寻宝倒计时
-        if user_data['type'] == 2:
-            lock.acquire()
-            print(f"{t}🔎等待10秒寻宝时间...")
-            lock.release()
-            time.sleep(10)
-        else:
-            lock.acquire()
-            print(f"{t}🔎等待十分钟寻宝时间...")
-            lock.release()
-            time.sleep(600)
-
-        # 结束寻宝
-        if not dig('end', user_data):
-            lock.acquire()
-            print(f"{t}✅结束寻宝...")
+            print(f"{t}✅第{n}次寻宝...")
             lock.release()
 
-        # 领取奖励
-        for iflowid in iFlowId_dict[user_data['starId']]:
-            log = get_treasure(iflowid, user_data)
-            msg += log + '\n'
-            lock.acquire()
-            print(f"{t}{log}")
-            lock.release()
+            # 寻宝倒计时
+            if user_data['type'] == 2:
+                lock.acquire()
+                print(f"{t}🔎等待10秒寻宝时间...")
+                lock.release()
+                time.sleep(10)
+            else:
+                lock.acquire()
+                print(f"{t}🔎等待十分钟寻宝时间...")
+                lock.release()
+                time.sleep(600)
+
+            # 结束寻宝
+            if not dig('end', user_data):
+                lock.acquire()
+                print(f"{t}✅结束寻宝...")
+                lock.release()
+
+            # 领取奖励
+            for iflowid in iFlowId_dict[user_data['starId']]:
+                log = get_treasure(iflowid, user_data)
+                msg += log + '\n'
+                lock.acquire()
+                print(f"{t}{log}")
+                lock.release()
+    else:
+        print(f"{t}❌对不起，当天的寻宝次数已用完")
 
     if sendnoty:
         lock.acquire()
