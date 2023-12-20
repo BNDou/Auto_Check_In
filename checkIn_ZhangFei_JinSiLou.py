@@ -25,6 +25,8 @@ from urllib.parse import unquote
 
 import requests
 
+from checkIn_ZhangFei_Login import check
+
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
@@ -133,6 +135,11 @@ def main(*arg):
         for a in cookie_zhangfei[i].replace(" ", "").split(';'):
             if not a == '':
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+
+        # 检查token是否过期
+        if not check(user_data, "JinSiLou"):
+            i += 1
+            continue
 
         # 开金丝篓
         for num in range(int(os.environ.get('zhangFei_jinSiLouNum'))):

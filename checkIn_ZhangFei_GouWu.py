@@ -36,6 +36,8 @@ from urllib.parse import unquote
 
 import requests
 
+from checkIn_ZhangFei_Login import check
+
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
@@ -305,6 +307,10 @@ def main():
         # 开始任务
         log1 = f"🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
         print(f"{log1} 开始执行任务")
+        # 检查token是否过期
+        if not check(user_data, "GouWu"):
+            i += 1
+            continue
         # 获取当前点券、消费券
         purse = getPackInfo(user_data)
         # 判断是否获取成功，否则跳过该用户

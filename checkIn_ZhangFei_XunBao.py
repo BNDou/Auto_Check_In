@@ -41,6 +41,8 @@ from urllib.parse import unquote
 
 import requests
 
+from checkIn_ZhangFei_Login import check
+
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
@@ -185,6 +187,10 @@ def run(user_data):
     lock.acquire()
     print(f"{log} 开始执行任务")
     lock.release()
+
+    # 检查token是否过期
+    if not check(user_data, "XunBao"):
+        return
 
     # 获取紫钻信息、地图解锁信息
     user_data['type'], user_data['starId'], user_data['mapId'], user_data['left_times'] = luck_day(user_data)

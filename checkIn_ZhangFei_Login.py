@@ -111,20 +111,24 @@ def login(login_data):
         return "NO"
 
 
-def check(user_data):
+def check(user, branch):
     url = "https://api2.helper.qq.com/report/checklogswitch"
     body = {
         "gameId": "1003",
         "cSystem": "iOS",
         "cGameId": "1003",
-        "userId": user_data.get("userId"),
-        "token": user_data.get("token")
+        "userId": user.get("userId"),
+        "token": user.get("token")
     }
 
     response = requests.post(url, data=body)
     response_json = response.json()
-    print(response_json)
-    print("{}剩余寻宝次数有：{}".format(datetime.datetime.now().strftime('%m月%d日 %H:%M:%S'), get_left_times()))
+
+    if branch == "Login":
+        print(response_json)
+        print("{}剩余寻宝次数有：{}".format(datetime.datetime.now().strftime('%m月%d日 %H:%M:%S'), get_left_times()))
+    elif "GouWu" or "JinSiLou" or "XunBao":
+        print("❌账号{}".format(user.get("userId")), response_json['returnMsg'], "可更新token后重试")
 
     return True if response_json['returnMsg'] == "" else False
 
@@ -167,9 +171,7 @@ if __name__ == '__main__':
         # 登录
         print("开始登录...", login(login_list[i]))
         # 验证
-        log = ("✅今日{}已成功登陆掌飞，data有效\n" if check(
-            user_data) else "❌今日{}未成功登陆掌飞，data无效-请更新\n").format(t, datetime.datetime.now().strftime(
-            '%m月%d日 %H:%M:%S'))
+        log = "✅今日已成功登陆掌飞，data有效\n" if check(user_data, "Login") else "❌今日未成功登陆掌飞，data无效-请更新\n"
         msg += log + "\n"
         print(log)
 
