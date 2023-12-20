@@ -128,7 +128,8 @@ def check(user, branch):
         print(response_json)
         print("{}剩余寻宝次数有：{}".format(datetime.datetime.now().strftime('%m月%d日 %H:%M:%S'), get_left_times()))
     elif "GouWu" or "JinSiLou" or "XunBao":
-        print("❌账号{}".format(user.get("userId")), response_json['returnMsg'], "可更新token后重试")
+        if response_json['returnMsg'] != "":
+            print("❌账号{}".format(user.get("userId")), response_json['returnMsg'], "可更新token后重试")
 
     return True if response_json['returnMsg'] == "" else False
 
