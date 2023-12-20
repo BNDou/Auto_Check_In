@@ -2,7 +2,7 @@
 new Env('掌上飞车login')
 cron: 0 0 * * *
 Author       : BNDou
-Date         : 2023/12/19 1:21
+Date         : 2023/12/21 1:10
 File         : checkIn_ZhangFei_Login.py
 Software     : checkIn_test.py
 Description  : 用于完成每日登录从而增加寻宝次数（仅限安卓，ios可能每天会变，会很不方便，还不如自己每天手动上号）
@@ -27,7 +27,9 @@ Description  : 用于完成每日登录从而增加寻宝次数（仅限安卓�
 import base64
 import datetime
 import os
+import re
 import sys
+import time
 from urllib.parse import unquote
 
 import requests
@@ -65,7 +67,8 @@ def get_env():
     if "zhangFei_login" in os.environ:
         login_list = os.environ.get('zhangFei_login').split('&&')
         if len(login_list) <= 0:
-            print('❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到,比较复杂不懂的就不要用这个脚本了）')
+            print(
+                '❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到,比较复杂不懂的就不要用这个脚本了）')
             print(
                 '❌直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"\n❌变量值为login时data数据包（二进制转base64可以获取到,比较复杂不懂的就不要用这个脚本了）\n多账户用&&分割')
             send('掌上飞车login',
@@ -100,7 +103,12 @@ def login(login_data):
     # responseData = base64.b64encode(response.content).decode('utf-8')
     # print(responseData)
 
-    response = requests.post(url, headers=headers, data=base64.b64decode(login_data))
+    requests.post(url, headers=headers, data=base64.b64decode(login_data))
+
+    try:
+        return "YES"
+    except Exception as err:
+        return "NO"
 
 
 def check(user_data):
@@ -116,14 +124,28 @@ def check(user_data):
     response = requests.post(url, data=body)
     response_json = response.json()
     print(response_json)
+    print("{}剩余寻宝次数有：{}".format(datetime.datetime.now().strftime('%m月%d日 %H:%M:%S'), get_left_times()))
 
     return True if response_json['returnMsg'] == "" else False
+
+
+# 剩余寻宝次数
+def get_left_times():
+    url = "https://bang.qq.com/app/speed/treasure/index"
+    params = {
+        "roleId": user_data.get('roleId'),  # QQ帐号，抓包抓取
+        "areaId": user_data.get('areaId'),  # 1是电信区，抓包抓取
+        "uin": user_data.get('roleId')  # QQ帐号，抓包抓取
+    }
+    response = requests.get(url, params=params)
+    response.encoding = 'utf-8'
+
+    return re.search(r'id="leftTimes">(\d+)</i>', response.text).group(1)
 
 
 if __name__ == '__main__':
     msg = ""
     cookie_zhangfei, login_list = get_env()
-    day = datetime.datetime.now().strftime('%m月%d日')
 
     print("----------掌上飞车尝试login----------")
 
@@ -139,18 +161,17 @@ if __name__ == '__main__':
         # print(user_data)
 
         t = f"🚗账号 {user_data.get('roleId')}"
-        log1 = f"{t}✅今日{day}已成功登陆掌飞，data有效"
-        log2 = f"{t}❌今日{day}未成功登陆掌飞，data无效-请更新"
 
+        # 寻宝次数查询
+        print("{}\n{} 寻宝次数有：{}".format(t, datetime.datetime.now().strftime('%m月%d日 %H:%M:%S'), get_left_times()))
         # 登录
-        login(login_list[i])
+        print("开始登录...", login(login_list[i]))
         # 验证
-        if check(user_data):
-            msg += log1 + "\n"
-            print(log1)
-        else:
-            msg += log2 + "\n"
-            print(log2)
+        log = ("✅今日{}已成功登陆掌飞，data有效\n" if check(
+            user_data) else "❌今日{}未成功登陆掌飞，data无效-请更新\n").format(t, datetime.datetime.now().strftime(
+            '%m月%d日 %H:%M:%S'))
+        msg += log + "\n"
+        print(log)
 
         i += 1
 
