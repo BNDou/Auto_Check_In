@@ -85,6 +85,7 @@ def get_env():
     return cookie_list, login_list
 
 
+# 登录
 def login(login_data):
     url = "https://api2.helper.qq.com/user/login"
     headers = {
@@ -111,6 +112,7 @@ def login(login_data):
         return "NO"
 
 
+# token验证
 def check(user, branch):
     url = "https://api2.helper.qq.com/report/checklogswitch"
     body = {
@@ -123,10 +125,10 @@ def check(user, branch):
 
     response = requests.post(url, data=body)
     response_json = response.json()
+    # print(response_json)
 
     if branch == "Login":
-        print(response_json)
-        print("{}剩余寻宝次数有：{}".format(datetime.datetime.now().strftime('%m月%d日 %H:%M:%S'), get_left_times()))
+        return True if response_json['returnMsg'] == "" else False
     elif "GouWu" or "JinSiLou" or "XunBao":
         if response_json['returnMsg'] != "":
             print("❌账号 {}".format(user.get("userId")), response_json['returnMsg'], "可更新token后重试")
@@ -154,7 +156,8 @@ if __name__ == '__main__':
 
     print("----------掌上飞车尝试login----------")
 
-    print("✅检测到共", len(login_list), "个掌飞账号login\n")
+    print("✅检测到共", len(login_list),
+          "个掌飞账号login\n每天只成功一次,多试无效\n因为是用寻宝次数的先后变化判断是否登录成功\n")
 
     i = 0
     while i < len(login_list):
@@ -165,14 +168,32 @@ if __name__ == '__main__':
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
 
-        t = f"🚗账号 {user_data.get('roleId')}"
+        t = f"🚗账号 {user_data.get('roleId')} token {'有效' if check(user_data, 'Login') else '失效'}"
 
         # 寻宝次数查询
-        print("{}\n{} 寻宝次数有：{}".format(t, datetime.datetime.now().strftime('%m月%d日 %H:%M:%S'), get_left_times()))
+        left_times_before = get_left_times()
+        log = f"{t}\n{datetime.datetime.now().strftime('%m月%d日 %H:%M:%S')} 寻宝次数有：{left_times_before}"
+        msg += log + "\n"
+        print(log)
+
         # 登录
-        print("开始登录...", login(login_list[i]))
+        log = f"开始登录... {login(login_list[i])}"
+        msg += log + "\n"
+        print(log)
+
+        # 等待1秒验证
+        time.sleep(1)
+
         # 验证
-        log = "✅今日已成功登陆掌飞，data有效\n" if check(user_data, "Login") else "❌今日未成功登陆掌飞，data无效-请更新\n"
+        left_times_after = get_left_times()
+        log = f"{datetime.datetime.now().strftime('%m月%d日 %H:%M:%S')} 寻宝次数有：{left_times_after}"
+        msg += log + "\n"
+        print(log)
+
+        if left_times_before != left_times_after:
+            log = f"✅寻宝次数有变化,今日已成功登陆掌飞,data有效\n"
+        else:
+            log = f"❌寻宝次数无变化,可能已经登录过,可能data无效,可能延迟问题等待系统更新\n"
         msg += log + "\n"
         print(log)
 
