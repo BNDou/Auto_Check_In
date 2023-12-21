@@ -14,7 +14,7 @@ Description  : 用于完成每日登录从而增加寻宝次数（仅限安卓�
 1环境变量COOKIE_ZHANGFEI同签到脚本
 2环境变量zhangFei_login🚨🚨🚨这个包比较复杂不懂的就不要用这个脚本了🚨🚨🚨
     直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"
-    变量值为login时data数据包（二进制转base64可以获取到）
+    变量值为login时data数据包（十六进制转base64可以获取到）
     抓包流程：
         （小黄鸟/Fiddler都行）
         ①开启抓包-打开app-等待首页信息加载出来-停止抓包
@@ -22,6 +22,7 @@ Description  : 用于完成每日登录从而增加寻宝次数（仅限安卓�
         ③data是加密的乱码的，把请求文件发到电脑用Fiddler打开，选HexView查看
         ④选中header后面的所有内容，也就是所有加密的data，注意这里双横线 -- 代表换行，data前面应该是有换行，不要选中这个符号，可能有空格，空格要选中
         ⑤右击Copy-Copy as Base64，此时复制到的就是环境变量zhangFei_login的值
+        例图看：https://github.com/BNDou/Auto_Check_In/issues/34#issuecomment-1866609638
 
 '''
 import base64
