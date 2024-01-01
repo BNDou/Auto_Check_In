@@ -265,11 +265,13 @@ def getShopItems(itme_data, purse):
                     if (int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['price']) - money) < int(purse['money']):
                         # 这是一个累加的变量，用于跟踪购买的总道具数量
                         total += int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][0])
+                        # 这是当前可用的余额。在每次购买道具后，余额会根据购买的道具数量和价格进行更新，以反映购买后的余额
+                        money = 0
                         # 将可购买的道具添加到购物列表
                         shopArray.append(
-                            {"name": item, "count": itme_data[item]['price_idx'][i][0],
+                            {"name": item, "count": itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][0],
                              "commodity_id": itme_data[item]['commodity_id'],
-                             "price_idx": itme_data[item]['price_idx'][i][1]['index']})
+                             "price_idx": itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['index']})
 
             i += 1
 
