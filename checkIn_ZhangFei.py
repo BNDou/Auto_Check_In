@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2023-12-01 00:37:10
+LastEditTime : 2024-1-02 00:21:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -178,7 +178,9 @@ def main(*arg):
             log = sign_gift(user_data, gift)
             if log not in ['您已领取过奖励！', '非常抱歉，您的签到天数不足！']:
                 msg += f"✅累计签到礼物id[{gift}]：{log}\n"
-            print(f"✅累计签到礼物id[{gift}]：{log}")
+                print(f"✅累计签到礼物id[{gift}]：{log}")
+            if log in '非常抱歉，您的签到天数不足！':
+                break
 
         i += 1
 

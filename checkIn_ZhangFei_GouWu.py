@@ -3,7 +3,7 @@ new Env('掌上飞车购物')
 cron: 50 23 * * *
 Author       : BNDou
 Date         : 2023-11-7 01:11:27
-LastEditTime : 2023-12-01 00:28:37
+LastEditTime : 2024-1-02 00:12:11
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_GouWu.py
 Description  :每日定时执行消费券购物，月末执行点券+消费券购物
 
@@ -26,6 +26,7 @@ roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; 
 speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
+import json
 import calendar
 import datetime
 import os
@@ -44,6 +45,8 @@ requests.packages.urllib3.disable_warnings()
 # 测试用环境变量
 # os.environ['zhangFei_shopName'] = ""
 # os.environ['COOKIE_ZHANGFEI'] = ""
+# 紫钻身份
+isvip = 0
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
@@ -119,6 +122,11 @@ def getPackInfo(user_data):
 # 格式化道具信息
 def process_data(input_dict):
     # 初始化一些变量
+    if isvip > 0:
+        vip_discount = input_dict["iMemeberRebate"]
+    else:
+        vip_discount = input_dict["iCommonRebate"]
+
     output_dict = {}
     price_idx = {}
     item = input_dict["szItems"][0]
@@ -137,7 +145,7 @@ def process_data(input_dict):
             item_price = input_dict["szPrices"][index]["SuperMoneyPrice"]
             price_idx[key] = {
                 "index": str(index),  # 价格索引
-                "price": item_price
+                "price": str(int(item_price) * int(vip_discount) // 100)
             }
 
     # 构建最终结果对象，包括单位信息
@@ -251,9 +259,17 @@ def getShopItems(itme_data, purse):
                          "price_idx": itme_data[item]['price_idx'][i][1]['index']})
                     m += 1
 
-            # 如果当前余额不足以购买最便宜的道具，跳出循环
-            if money < int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['price']):
-                break
+            # 如果当前余额不足以购买最便宜的道具，判断余额是否大于最便宜道具价格的一半，满足的话再判断点券余额够不够支付消费券和道具价格的差价，够的话加入购物车
+            if money < int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['price']) and not is_last_day_of_month():
+                if (money / int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['price'])) > 0.5:
+                    if (int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][1]['price']) - money) < int(purse['money']):
+                        # 这是一个累加的变量，用于跟踪购买的总道具数量
+                        total += int(itme_data[item]['price_idx'][len(itme_data[item]['price_idx']) - 1][0])
+                        # 将可购买的道具添加到购物列表
+                        shopArray.append(
+                            {"name": item, "count": itme_data[item]['price_idx'][i][0],
+                             "commodity_id": itme_data[item]['commodity_id'],
+                             "price_idx": itme_data[item]['price_idx'][i][1]['index']})
 
             i += 1
 
@@ -287,6 +303,33 @@ def getPurchase(user_data, buyInfo):
     return total
 
 
+# 判断紫钻身份
+def is_vip(user_data):
+    global isvip
+    def extract(_html, _pattern):
+        match = re.search(_pattern, _html)
+        if match:
+            return json.loads(re.sub(r'^\((.*)\)$', r'\1', match.group(1)))
+        return None
+
+    url = "https://bang.qq.com/app/speed/treasure/index"
+    params = {
+        "roleId": user_data.get('roleId'),  # QQ帐号，抓包抓取
+        "areaId": user_data.get('areaId'),  # 1是电信区，抓包抓取
+        "uin": user_data.get('roleId')  # QQ帐号，抓包抓取
+    }
+
+    response = requests.get(url, params=params)
+    response.encoding = 'utf-8'
+    user = extract(response.text, r'window\.userInfo\s*=\s*eval\(\'([^\']+)\'\);')
+
+    if user:
+        isvip = user.get('vip_flag')
+        print(f"💎紫钻用户：{'是' if bool(isvip) else '否'}")
+    else:
+        print("❌未找到用户信息")
+
+
 def main():
     msg = ""
     sendnoty = 'true'
@@ -317,6 +360,9 @@ def main():
         if not purse:
             i += 1
             continue
+
+        # 紫钻身份
+        is_vip(user_data)
 
         log2 = f"📅截至{datetime.datetime.now().strftime('%m月%d日%H时%M分%S秒')}\n💰共有 {purse['money']}点券 {purse['coupons']}消费券"
         print(log2)
