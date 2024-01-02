@@ -1,6 +1,6 @@
 '''
 new Env('掌上飞车每日寻宝')
-cron: 10 0 * * *
+cron: 10 0 0,22 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
 LastEditTime : 2023-12-19 1:09:20
