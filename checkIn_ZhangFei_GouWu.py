@@ -3,7 +3,7 @@ new Env('掌上飞车购物')
 cron: 50 23 * * *
 Author       : BNDou
 Date         : 2023-11-7 01:11:27
-LastEditTime : 2024-1-02 00:12:11
+LastEditTime : 2024-1-03 01:16:11
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_GouWu.py
 Description  :每日定时执行消费券购物，月末执行点券+消费券购物
 
@@ -20,11 +20,13 @@ Description  :每日定时执行消费券购物，月末执行点券+消费券�
 
 添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
 只需要添加8个值即可，分别是
-roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx; shopName=xxx;
 
 其中
 speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
+
+shopName是要购买的商品名（掌飞商城里面的全称）
 '''
 import json
 import calendar
@@ -43,7 +45,6 @@ sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
-# os.environ['zhangFei_shopName'] = ""
 # os.environ['COOKIE_ZHANGFEI'] = ""
 # 紫钻身份
 isvip = 0
@@ -72,21 +73,6 @@ def get_env():
         print('❌未添加COOKIE_ZHANGFEI变量')
         send('掌上飞车购物', '❌未添加COOKIE_ZHANGFEI变量')
         # 脚本退出
-        sys.exit(0)
-
-    # 判断 设置商品名称 变量zhangFei_shopName是否存在于环境变量
-    if "zhangFei_shopName" in os.environ:
-        if len(os.environ.get('zhangFei_shopName')) <= 0:
-            print('❌使用请添加zhangFei_shopName变量设置需要购买的商品名称')
-            print('❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
-            send('掌上飞车购物',
-                 '❌使用请添加zhangFei_shopName变量设置需要购买的商品名称\n❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
-            sys.exit(1)
-    else:
-        print('❌使用请添加zhangFei_shopName变量设置需要购买的商品名称')
-        print('❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
-        send('掌上飞车购物',
-             '❌使用请添加zhangFei_shopName变量设置需要购买的商品名称\n❌直接在config.sh添加，例如export zhangFei_shopName="进气系统+1"\n❌变量值为掌飞商城道具名全称')
         sys.exit(0)
 
     return cookie_list
@@ -189,7 +175,7 @@ def getMallList(user_data):
 
 
 # 搜索商品信息
-def searchShop(user_data, shopName):
+def searchShop(user_data):
     url = f"https://bang.qq.com/app/speed/mall/search"
     params = {
         "uin": user_data.get('roleId'),
@@ -198,7 +184,7 @@ def searchShop(user_data, shopName):
         "start": "0",
         "paytype": "1",  # 按点券筛选
         "order": "2",  # 按点券筛选
-        "text": shopName
+        "text": user_data.get('shopName')
     }
     headers = {"Referer": "https://bang.qq.com/app/speed/mall/main2"}
 
@@ -370,10 +356,19 @@ def main():
         print(log2)
         msg += log1 + "\n" + log2 + "\n"
 
+        # 判断 设置商品名称 变量shopName是否存在于user_data，即环境变量
+        if not user_data.get('shopName'):
+            log = '❌使用请添加shopName变量设置需要购买的商品名称\n❌直接在cookie后面添加\n❌例如roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx; shopName=进气系统+1;\n❌变量值为掌飞商城道具名全称\n'
+            msg += log + "\n"
+            print(log)
+            # 切换下一个账号
+            i += 1
+            continue
+
         # 搜索商品信息
-        itme_data = searchShop(user_data, os.environ.get('zhangFei_shopName'))
+        itme_data = searchShop(user_data)
         if not itme_data:
-            log = f"❌检测道具”{os.environ.get('zhangFei_shopName')}“在商店中未售卖或不唯一，请在掌飞商城中认真核对商品名全称"
+            log = f"❌检测道具”{user_data.get('shopName')}“在商店中未售卖或不唯一，请在掌飞商城中认真核对商品名全称"
             msg += log + "\n"
             print(log)
             i += 1
@@ -384,7 +379,7 @@ def main():
         shopArray, total, unit = getShopItems(itme_data, purse)
         # 开始购买循环
         if shopArray:
-            log = f"✅预计可购买 {'' if total == 0 else total} {unit} {os.environ.get('zhangFei_shopName')}"
+            log = f"✅预计可购买 {'' if total == 0 else total} {unit} {user_data.get('shopName')}"
             msg += log + "\n"
             print(log)
             successBuyCounts = 0
@@ -399,7 +394,7 @@ def main():
             #
             if successBuyCounts > 0:
                 successBuyCounts = "" if successBuyCounts == 99999999 else successBuyCounts
-                log = f"✅成功购买 {successBuyCounts} {unit} {os.environ.get('zhangFei_shopName')}"
+                log = f"✅成功购买 {successBuyCounts} {unit} {user_data.get('shopName')}"
                 msg += log + "\n"
                 if failedBuyCounts > 0:
                     log = f"❌未购买成功 {failedBuyCounts} {unit}"
@@ -410,7 +405,7 @@ def main():
             print(log)
 
         else:
-            log = f"✅{'本月余额' if is_last_day_of_month() else '今日消费券'}不足以购买 {os.environ.get('zhangFei_shopName')}"
+            log = f"✅{'本月余额' if is_last_day_of_month() else '今日消费券'}不足以购买 {user_data.get('shopName')}"
             msg += log + "\n"
             print(log)
 
