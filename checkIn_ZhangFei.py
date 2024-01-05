@@ -128,7 +128,7 @@ def main(*arg):
     sendnoty = 'true'
     global cookie_zhangfei
     cookie_zhangfei = get_env()
-    day = datetime.datetime.now().strftime('%m月%d日')
+    day = datetime.datetime.now().strftime('{}月%d日').format(datetime.datetime.now().month)
 
     print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n")
 
