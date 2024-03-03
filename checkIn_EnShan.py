@@ -3,17 +3,16 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime : 2022-12-05 17:48:35
+LastEditTime : 2024-03-03 15:03:35
 FilePath     : /Auto_Check_In/checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN，多账号用回车换行分开
 '''
 
-from lxml import etree
-import requests
 import os
 import sys
-sys.path.append('.')
-requests.packages.urllib3.disable_warnings()
+
+import requests
+from lxml import etree
 
 # 测试用环境变量
 # os.environ['COOKIE_ENSHAN'] = ''
@@ -49,29 +48,20 @@ def get_env():
 
 def run(cookie):
     msg = ""
-    s = requests.Session()
-    s.headers.update(
-        {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'})
 
     # 签到
     url = "https://www.right.com.cn/forum/home.php?mod=spacecp&ac=credit&op=log&suboperation=creditrulelog"
-    headers = {
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
-        'Connection': 'keep-alive',
-        'Cookie': cookie,
-        'Host': 'www.right.com.cn',
-        'Upgrade-Insecure-Requests': '1',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:85.0) Gecko/20100101 Firefox/85.0'
-    }
     try:
-        r = s.get(url=url, headers=headers, timeout=120)
+        r = requests.get(url=url, headers={'Cookie': cookie}, timeout=120)
         # print(r.text)
         if '每天登录' in r.text:
             h = etree.HTML(r.text)
-            data = h.xpath('//tr/td[6]/text()')
-            msg += f'签到成功或今日已签到\n最后签到时间：{data[0]}'
+
+            user = h.xpath('//strong[@class="vwmy qq"]//a/text()')[0]
+            date = h.xpath('//tr/td[6]/text()')[0]
+            money = h.xpath('//a[@id="extcreditmenu"]/text()')[0]
+
+            msg += f'账号{user} 签到成功或今日已签到\n最后签到时间：{date}\n总恩山币：{money}'
         else:
             msg += '签到失败，可能是cookie失效了！'
     except:
@@ -81,24 +71,20 @@ def run(cookie):
 
 
 def main(*arg):
-    msg = ""
-    sendnoty = 'true'
-    global cookie_enshan
-    cookie_enshan = get_env()
+    msg, cookie_enshan = "", get_env()
 
     i = 0
     while i < len(cookie_enshan):
-        msg += f"第 {i+1} 个账号开始执行任务\n"
-        msg += run(cookie_enshan[i])
+        log = f"第 {i + 1} 个账号开始执行任务\n"
+        log += run(cookie_enshan[i])
+        msg += log
+        print(log)
         i += 1
 
-    print(msg[:-1])
-
-    if sendnoty:
-        try:
-            send('恩山论坛签到', msg)
-        except Exception as err:
-            print('%s\n错误，请查看运行日志！' % err)
+    try:
+        send('恩山论坛签到', msg)
+    except Exception as err:
+        print('%s\n错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
