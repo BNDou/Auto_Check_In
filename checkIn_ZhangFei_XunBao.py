@@ -3,7 +3,7 @@ new Env('掌上飞车每日寻宝')
 cron: 10 0 0,22 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2023-12-19 1:09:20
+LastEditTime : 2024-03-17 18:06:11
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
 Description  :
 感谢@chiupam(https://github.com/chiupam)寻宝脚本
@@ -23,7 +23,7 @@ Description  :
 (抓不到的话)
 可以选择抓取其他页面的包，前提是下面8个值一个都不能少
 
-添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
+添加环境变量COOKIE_ZHANGFEI，多账户用 回车 或 && 分开
 只需要添加8个值即可，分别是
 roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
@@ -43,9 +43,6 @@ import requests
 
 from checkIn_ZhangFei_Login import check
 
-sys.path.append('.')
-requests.packages.urllib3.disable_warnings()
-
 # 测试用环境变量
 # os.environ['COOKIE_ZHANGFEI'] = ''
 
@@ -59,15 +56,8 @@ except Exception as err:  # 异常捕捉
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量 以 \n 分割变量
-        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('\n')
-        # 判断 cookie 数量 大于 0 个
-        if len(cookie_list) <= 0:
-            # 标准日志输出
-            print('❌COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车每日寻宝', '❌COOKIE_ZHANGFEI变量未启用')
-            # 脚本退出
-            sys.exit(1)
+        # 读取系统变量以 \n 或 && 分割变量
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
     else:
         # 标准日志输出
         print('❌未添加COOKIE_ZHANGFEI变量')

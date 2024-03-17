@@ -3,13 +3,13 @@ new Env('掌上飞车-0点开金丝篓')
 cron: 59 59 23 * * *
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime : 2023-11-21 2:08:50
+LastEditTime : 2024-03-17 18:06:11
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
 默认只有出货才推送通知
 
 ①添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为大于零的整数
-②添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
+②添加环境变量COOKIE_ZHANGFEI，多账户用 回车 或 && 分开
 同签到的环境变量，只需要添加8个值即可，分别是
 roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
@@ -18,6 +18,7 @@ speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import os
+import re
 import sys
 import threading
 from queue import Queue
@@ -26,9 +27,6 @@ from urllib.parse import unquote
 import requests
 
 from checkIn_ZhangFei_Login import check
-
-sys.path.append('.')
-requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
 # os.environ['zhangFei_jinSiLouNum'] = '1'
@@ -44,15 +42,8 @@ except Exception as err:  # 异常捕捉
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量 以 \n 分割变量
-        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('\n')
-        # 判断 cookie 数量 大于 0 个
-        if len(cookie_list) <= 0:
-            # 标准日志输出
-            print('❌COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车开金丝篓', '❌COOKIE_ZHANGFEI变量未启用')
-            # 脚本退出
-            sys.exit(1)
+        # 读取系统变量以 \n 或 && 分割变量
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
     else:
         # 标准日志输出
         print('❌未添加COOKIE_ZHANGFEI变量')

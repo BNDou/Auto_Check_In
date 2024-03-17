@@ -2,9 +2,8 @@
 new Env('掌上飞车login')
 cron: 0 0 * * *
 Author       : BNDou
-Date         : 2023/12/21 1:10
+Date         : 2024-03-17 18:06:11
 File         : checkIn_ZhangFei_Login.py
-Software     : checkIn_test.py
 Description  : 用于完成每日登录从而增加寻宝次数（仅限安卓，ios可能每天会变，会很不方便，还不如自己每天手动上号）
 
 ⭕⭕①每日登录掌上飞车可获得3次寻宝机会   （此接口无法对接）
@@ -13,7 +12,7 @@ Description  : 用于完成每日登录从而增加寻宝次数（仅限安卓�
 
 1环境变量COOKIE_ZHANGFEI同签到脚本
 2环境变量zhangFei_login🚨🚨🚨这个包比较复杂不懂的就不要用这个脚本了🚨🚨🚨
-    直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"
+    直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"，多账户用 回车 或 && 分开
     变量值为login时data数据包（十六进制转base64可以获取到）
     抓包流程：
         （小黄鸟/Fiddler都行）
@@ -49,15 +48,8 @@ except Exception as err:  # 异常捕捉
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量 以 \n 分割变量
-        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('\n')
-        # 判断 cookie 数量 大于 0 个
-        if len(cookie_list) <= 0:
-            # 标准日志输出
-            print('❌COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车login', '❌COOKIE_ZHANGFEI变量未启用')
-            # 脚本退出
-            sys.exit(1)
+        # 读取系统变量以 \n 或 && 分割变量
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
     else:
         # 标准日志输出
         print('❌未添加COOKIE_ZHANGFEI变量')
@@ -66,15 +58,7 @@ def get_env():
         sys.exit(0)
 
     if "zhangFei_login" in os.environ:
-        login_list = os.environ.get('zhangFei_login').split('&&')
-        if len(login_list) <= 0:
-            print(
-                '❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到,比较复杂不懂的就不要用这个脚本了）')
-            print(
-                '❌直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"\n❌变量值为login时data数据包（二进制转base64可以获取到,比较复杂不懂的就不要用这个脚本了）\n多账户用&&分割')
-            send('掌上飞车login',
-                 '❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到,比较复杂不懂的就不要用这个脚本了）\n❌直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"\n❌变量值为login时data数据包（二进制转base64可以获取到,比较复杂不懂的就不要用这个脚本了）\n多账户用&&分割')
-            sys.exit(1)
+        login_list = re.split('\n|&&', os.environ.get('zhangFei_login'))
     else:
         print('❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到）')
         print(
@@ -130,7 +114,7 @@ def check(user, branch):
 
     if branch == "Login":
         return True if response_json['returnMsg'] == "" else False
-    elif "GouWu" or "JinSiLou" or "XunBao":
+    elif "" or "GouWu" or "JinSiLou" or "XunBao":
         if response_json['returnMsg'] != "":
             print("❌账号 {}".format(user.get("userId")), response_json['returnMsg'], "可更新token后重试")
 

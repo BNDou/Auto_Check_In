@@ -3,7 +3,7 @@ new Env('掌上飞车购物')
 cron: 50 23 * * *
 Author       : BNDou
 Date         : 2023-11-7 01:11:27
-LastEditTime : 2024-1-03 01:16:11
+LastEditTime : 2024-03-17 18:06:11
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_GouWu.py
 Description  :每日定时执行消费券购物，月末执行点券+消费券购物
 
@@ -18,7 +18,7 @@ Description  :每日定时执行消费券购物，月末执行点券+消费券�
 (抓不到的话)
 可以选择抓取其他页面的包，前提是下面8个值一个都不能少
 
-添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
+添加环境变量COOKIE_ZHANGFEI，多账户用 回车 或 && 分开
 只需要添加8个值即可，分别是
 roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx; shopName=xxx;
 
@@ -41,9 +41,6 @@ import requests
 
 from checkIn_ZhangFei_Login import check
 
-sys.path.append('.')
-requests.packages.urllib3.disable_warnings()
-
 # 测试用环境变量
 # os.environ['COOKIE_ZHANGFEI'] = ""
 # 紫钻身份
@@ -59,15 +56,8 @@ except Exception as err:  # 异常捕捉
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量 以 \n 分割变量
-        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('\n')
-        # 判断 cookie 数量 大于 0 个
-        if len(cookie_list) <= 0:
-            # 标准日志输出
-            print('❌COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车购物', '❌COOKIE_ZHANGFEI变量未启用')
-            # 脚本退出
-            sys.exit(1)
+        # 读取系统变量以 \n 或 && 分割变量
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
     else:
         # 标准日志输出
         print('❌未添加COOKIE_ZHANGFEI变量')

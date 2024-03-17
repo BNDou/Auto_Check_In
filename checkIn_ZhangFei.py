@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2024-1-02 00:21:10
+LastEditTime : 2024-03-17 17:55:10
 FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -14,7 +14,7 @@ Description  :
 (抓不到的话)
 可以选择抓取其他页面的包，前提是下面8个值一个都不能少
 
-添加环境变量COOKIE_ZHANGFEI，多账号用回车换行分开
+添加环境变量COOKIE_ZHANGFEI，多账户用 回车 或 && 分开
 只需要添加8个值即可，分别是
 roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
@@ -31,8 +31,7 @@ from urllib.parse import unquote
 import requests
 from bs4 import BeautifulSoup
 
-sys.path.append('.')
-requests.packages.urllib3.disable_warnings()
+from checkIn_ZhangFei_Login import check
 
 # 测试用环境变量
 # os.environ['COOKIE_ZHANGFEI'] = ''
@@ -47,15 +46,8 @@ except Exception as err:  # 异常捕捉
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量 以 \n 分割变量
-        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('\n')
-        # 判断 cookie 数量 大于 0 个
-        if len(cookie_list) <= 0:
-            # 标准日志输出
-            print('❌COOKIE_ZHANGFEI变量未启用')
-            send('掌上飞车签到', '❌COOKIE_ZHANGFEI变量未启用')
-            # 脚本退出
-            sys.exit(1)
+        # 读取系统变量以 \n 或 && 分割变量
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
     else:
         # 标准日志输出
         print('❌未添加COOKIE_ZHANGFEI变量')
@@ -150,6 +142,11 @@ def main(*arg):
         msg += log + '\n'
         print(f"{log} 开始执行任务\n🎁{datetime.datetime.now().strftime('%m月')}有{len(giftid_list) - 1}个礼物")
 
+        # 检查token是否过期
+        if not check(user_data, ""):
+            i += 1
+            continue
+
         # 签到
         log = sign_gift(user_data, giftid_list[0])
         msg += f"✅今日{day} {log}\n"
@@ -158,6 +155,11 @@ def main(*arg):
         if "非常抱歉，该活动已经结束" in log:
             msg += "❌请更新cookie，确认 speedqqcomrouteLine 参数是否为本月最新（该值每月更新一次）\n"
             print("❌请更新cookie，确认 speedqqcomrouteLine 参数是否为本月最新（该值每月更新一次）")
+            i += 1
+            continue
+        elif "非常抱歉，请先登录！" in log:
+            msg += "❌token已过期，请更新token后重试\n"
+            print("❌token已过期，请更新token后重试")
             i += 1
             continue
 
