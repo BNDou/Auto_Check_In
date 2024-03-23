@@ -1,6 +1,11 @@
 '''
 new Env('夸克自动签到')
 cron: 0 9 * * *
+
+受大佬 @Cp0204 的仓库项目启发改编
+源码来自 GitHub 仓库：https://github.com/Cp0204/quark-auto-save
+提取“登录验证”“签到”“领取”方法封装到下文中的“Quark”类中
+
 Author       : BNDou
 Date         : 2024/3/19 01:06
 File         : checkIn_Quark
