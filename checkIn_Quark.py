@@ -7,7 +7,7 @@ cron: 0 9 * * *
 提取“登录验证”“签到”“领取”方法封装到下文中的“Quark”类中
 
 Author       : BNDou
-Date         : 2024/3/19 01:06
+Date         : 2024/4/10 00:20
 File         : checkIn_Quark
 Description  :
 抓包流程：
@@ -53,8 +53,11 @@ class Quark:
     def get_growth_info(self):
         url = "https://drive-m.quark.cn/1/clouddrive/capacity/growth/info"
         querystring = {"pr": "ucpro", "fr": "pc", "uc_param_str": ""}
-        headers = {"cookie": self.cookie}
-        response = requests.request("GET", url, headers=headers, params=querystring).json()
+        headers = {
+            "content-type": "application/json",
+            "cookie": self.cookie
+        }
+        response = requests.get(url=url, headers=headers, params=querystring).json()
         if response.get("data"):
             return response["data"]
         else:
@@ -64,9 +67,11 @@ class Quark:
         url = "https://drive-m.quark.cn/1/clouddrive/capacity/growth/sign"
         querystring = {"pr": "ucpro", "fr": "pc", "uc_param_str": ""}
         payload = {"sign_cyclic": True}
-        headers = {"cookie": self.cookie}
-        response = requests.request(
-            "POST", url, json=payload, headers=headers, params=querystring).json()
+        headers = {
+            "content-type": "application/json",
+            "cookie": self.cookie
+        }
+        response = requests.post(url=url, json=payload, headers=headers, params=querystring).json()
         if response.get("data"):
             return True, response["data"]["sign_daily_reward"]
         else:
@@ -75,8 +80,11 @@ class Quark:
     def get_account_info(self):
         url = "https://pan.quark.cn/account/info"
         querystring = {"fr": "pc", "platform": "pc"}
-        headers = {"cookie": self.cookie}
-        response = requests.request("GET", url, headers=headers, params=querystring).json()
+        headers = {
+            "content-type": "application/json",
+            "cookie": self.cookie
+        }
+        response = requests.get(url=url, headers=headers, params=querystring).json()
         if response.get("data"):
             return response["data"]
         else:
