@@ -8,3 +8,4 @@ __pycache__
 .idea/Auto_Check_In.iml
 .idea/.name
 sendNotify.py
+.vscode/settings.json
