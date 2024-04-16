@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-04-17 03:03:18
+ * @LastEditTime: 2024-04-17 03:06:39
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -28,7 +28,7 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 
 ## 捐赠支持，用爱发电
 
-<a href="https://github.com/BNDou/"><img height="130px" src="donate.jpg" /></a>
+<a href="https://github.com/BNDou/"><img height="200px" src="donate.jpg" /></a>
 
 您的赞赏，激励我更好的创作！谢谢~
 
@@ -38,7 +38,7 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 
 想投喂 `雪王牌柠檬水 * 1`
 
-那么上面的赞赏码可以扫一扫呢，赞赏时记得留下【`昵称`】和【`留言`】
+那么上面的微信赞赏码可以扫一扫呢，赞赏时记得留下【`昵称`】和【`留言`】
 
 ---
 
