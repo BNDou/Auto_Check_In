@@ -1,4 +1,6 @@
 '''
+new Env('暂时不能用-掌上飞车扫码登陆')
+cron: 1 1 1 1 1
                        _oo0oo_
                       o8888888o
                       88" . "88
@@ -25,7 +27,7 @@
 
 Author: BNDou
 Date: 2024-04-11 22:20:35
-LastEditTime: 2024-04-17 02:14:54
+LastEditTime: 2024-04-17 03:15:47
 FilePath: \Auto_Check_In\checkIn_ZhangFei_getToken.py
 Description: 
 '''
