@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime: 2024-05-06 01:46:29
+LastEditTime: 2024-05-06 01:58:02
 FilePath: \Auto_Check_In\checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -134,7 +134,7 @@ def main(*arg):
     global cookie_zhangfei
     cookie_zhangfei = get_env()
 
-    print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n")
+    print("✅检测到共", len(cookie_zhangfei), "个飞车账号")
 
     i = 0
     while i < len(cookie_zhangfei):
@@ -147,11 +147,26 @@ def main(*arg):
 
         # 获取签到信息
         get_signIn(user_data)
+
+        # 开始任务
+        log = f"\n🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
+        msg += log + '\n'
+        print(f"{log} 开始执行任务...")
+
         # 获取累计信息
-        modRet = commit(user_data,
-                        ['witchDay', (datetime.now().weekday() + 1)])['modRet']
+        ret = commit(user_data, ['witchDay', (datetime.now().weekday() + 1)])
+        if ret['ret'] == '101':
+            # 登录失败
+            log = f"❌账号{user_data.get('roleId')}登录失败，请检查账号信息是否正确"
+            msg += log + '\n'
+            print(log)
+            i += 1
+            continue
+        modRet = ret['modRet']
+
         # 本周已签到天数
         weekSignIn = modRet['sOutValue5']
+
         # 周补签（资格剩余）
         if (datetime.now().weekday() + 1) < 3:
             weekSupplementarySignature = "0"
@@ -165,15 +180,12 @@ def main(*arg):
                     weekSupplementarySignature = "1"
                 else:
                     weekSupplementarySignature = "0"
+
         # 本月已签到天数
         monthSignIn = modRet['sOutValue4']
         if int(monthSignIn) > 25:
             monthSignIn = "25"
 
-        # 开始任务
-        log = f"\n🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
-        msg += log + '\n'
-        print(f"{log} 开始执行任务...")
         log = f"本周签到{weekSignIn}/7天，本月签到{monthSignIn}/25天，有{weekSupplementarySignature}天可补签"
         msg += log + '\n'
         print(log)
