@@ -3,13 +3,13 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2024-03-17 17:55:10
-FilePath     : /Auto_Check_In/checkIn_ZhangFei.py
+LastEditTime: 2024-05-06 01:38:35
+FilePath: \Auto_Check_In\checkIn_ZhangFei.py
 Description  :
 抓包流程：
 (推荐)
 开启抓包-进入签到页面-等待上方账号信息加载出来-停止抓包
-选请求这个url的包-https://speed.qq.com/lbact/
+选请求这个url的包-https://speed.qq.com/cp/
 
 (抓不到的话)
 可以选择抓取其他页面的包，前提是下面8个值一个都不能少
@@ -19,17 +19,16 @@ Description  :
 roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
 
 其中
-speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分（每月更新一次）
+speedqqcomrouteLine就是签到页的url中间段，即https://speed.qq.com/cp/xxxxxxxxxx/index.html中的xxxxxxxxxx部分（每月更新一次）
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
-import datetime
+from datetime import datetime as datetime
 import os
 import re
 import sys
 from urllib.parse import unquote
 
 import requests
-from bs4 import BeautifulSoup
 
 from checkIn_ZhangFei_Login import check
 
@@ -42,8 +41,11 @@ except Exception as err:  # 异常捕捉
     print('%s\n❌加载通知服务失败~' % err)
 
 
-# 获取环境变量
 def get_env():
+    '''
+    获取环境变量
+    :return: 环境变量
+    '''
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
         # 读取系统变量以 \n 或 && 分割变量
@@ -58,61 +60,71 @@ def get_env():
     return cookie_list
 
 
-# 定义一个获取url页面下label标签的attr属性的函数
-def getHtml(url):
-    user_data = {}  # 用户信息
-    giftid_list = []  # 奖励信息
-    date_list = []  # 特别福利日期
+def get_signIn(user_data):
+    '''
+    获取签到信息
+    :param user_data: 用户信息
+    '''
+    flow = requests.get(
+        f"https://speed.qq.com/cp/{user_data['speedqqcomrouteLine']}/index.js")
+    html = flow.text
 
-    zfmrqd = requests.get(f"http://speed.qq.com/lbact/{url}/zfmrqd.html")
-    zfmrqd.encoding = 'utf-8'
-    html = zfmrqd.text
-    soup = BeautifulSoup(html, 'html.parser')
-
-    # 获取奖励信息
-    for target in soup.find_all('a'):
-        if target.get('id'):
-            if target.get('id').find('Hold_') + 1:
-                giftid_list.append(target.get('id').split('Hold_')[-1])
-
-    # 获取特别福利日期
-    for target in soup.find_all('p'):
-        if target.get('class'):
-            if str(target.get('class')).find('tab2_number') + 1:
-                date_list.append(target.text)
-
+    # 获取签到信息
+    flow_strings = re.findall(r"Milo.emit\(flow_(\d+)\)", html)
+    # 累计信息id
+    total_id = flow_strings[1]
+    user_data.update({"total_id": total_id})
+    # 周签到
+    week_signIn = flow_strings[2:10]
+    user_data.update({"week_signIn": week_signIn})
+    # 月签到
+    month_SignIn = flow_strings[10:15]
+    user_data.update({"month_SignIn": month_SignIn})
+    # 任务信息
+    task_id = flow_strings[-5:]
+    user_data.update({"task_id": task_id})
     # 获取活动ID: iActivityId
-    bridgeTpl_2373 = requests.get(f"http://speed.qq.com/lbact/{url}/bridgeTpl_2373.js")
-    bridgeTpl_2373.encoding = 'utf-8'
-    regex = r'window.iActivityId=(.*?);'
-    iactivityid = re.findall(regex, bridgeTpl_2373.text)[0]
-
-    return giftid_list, date_list, iactivityid
+    iactivityid = re.findall(r"actId: '(\d+)'", html)[0]
+    user_data.update({"iActivityId": iactivityid})
 
 
-# 签到
-def sign_gift(user_data, iflowid):
-    msg = ""
-
+def commit(user_data, sData):
+    '''
+    提交签到信息
+    :param user_data: 用户信息
+    :param sData: 签到信息
+    :return: 提交结果
+    '''
     url = f"https://comm.ams.game.qq.com/ams/ame/amesvr?iActivityId={user_data.get('iActivityId')}"
     headers = {
-        'Cookie': f"access_token={user_data.get('accessToken')}; "
-                  f"acctype=qc; "
-                  f"appid={user_data.get('appid')}; "
-                  f"openid={user_data.get('openid')}; "
+        'Cookie':
+        f"access_token={user_data.get('accessToken')}; "
+        f"acctype=qc; "
+        f"appid={user_data.get('appid')}; "
+        f"openid={user_data.get('openid')}; "
     }
+
+    if sData[0] == "witchDay":  # 累计信息
+        iFlowId = user_data.get('total_id')
+    elif sData[0] == "number":  # 补签
+        iFlowId = user_data.get('week_signIn')[-1:]
+    elif sData[0] == "":
+        if sData[1] == "":  # 签到
+            iFlowId = user_data.get('week_signIn')[datetime.now().weekday()]
+        else:  # 月签
+            iFlowId = user_data.get('month_SignIn')[sData[1]]
+
     data = {
         "iActivityId": user_data.get('iActivityId'),
-        "iFlowId": iflowid,
+        "iFlowId": iFlowId,
         "g_tk": "1842395457",
-        "sServiceType": "speed"
+        "sServiceType": "speed",
+        sData[0]: sData[1]
     }
 
     response = requests.post(url, headers=headers, data=data)
-    response.encoding = "utf-8"
 
-    return str(response.json()['modRet']['sMsg']) if response.json()['ret'] == '0' else str(
-        response.json()['flowRet']['sMsg'])
+    return response.json()
 
 
 def main(*arg):
@@ -120,7 +132,6 @@ def main(*arg):
     sendnoty = 'true'
     global cookie_zhangfei
     cookie_zhangfei = get_env()
-    day = datetime.datetime.now().strftime('{}月%d日').format(datetime.datetime.now().month)
 
     print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n")
 
@@ -133,56 +144,138 @@ def main(*arg):
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
 
-        # 获取奖励信息、特别福利日期、活动id
-        giftid_list, date_list, iactivityid = getHtml(user_data['speedqqcomrouteLine'])
-        user_data.update({"iActivityId": iactivityid})
+        # 获取签到信息
+        get_signIn(user_data)
+        # 获取累计信息
+        modRet = commit(user_data,
+                        ['witchDay', (datetime.now().weekday() + 1)])['modRet']
+        # 本周已签到天数
+        weekSignIn = modRet['sOutValue5']
+        # 周补签（资格剩余）
+        if (datetime.now().weekday() + 1) < 3:
+            weekSupplementarySignature = "0"
+        else:
+            weekBuqian = modRet['sOutValue7'].split(',')
+            if int(weekBuqian[1]) == 1:
+                # 已经使用资格
+                weekSupplementarySignature = "0"
+            else:
+                if int(weekBuqian[0]) >= 3:
+                    weekSupplementarySignature = "1"
+                else:
+                    weekSupplementarySignature = "0"
+        # 本月已签到天数
+        monthSignIn = modRet['sOutValue4']
+        if int(monthSignIn) > 25:
+            monthSignIn = "25"
 
         # 开始任务
         log = f"\n🚗第 {i + 1} 个账号 {user_data.get('roleId')} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
         msg += log + '\n'
-        print(f"{log} 开始执行任务\n🎁{datetime.datetime.now().strftime('%m月')}有{len(giftid_list) - 1}个礼物")
-
-        # 检查token是否过期
-        if not check(user_data, ""):
-            i += 1
-            continue
+        print(f"{log} 开始执行任务...")
+        log = f"本周签到{weekSignIn}/7天，本月签到{monthSignIn}/25天，有{weekSupplementarySignature}天可补签"
+        msg += log + '\n'
+        print(log)
 
         # 签到
-        log = sign_gift(user_data, giftid_list[0])
-        msg += f"✅今日{day} {log}\n"
-        print(f"✅今日{day} {log}")
-        # 判断cookie中speedqqcomrouteLine是否过期
-        if "非常抱歉，该活动已经结束" in log:
-            msg += "❌请更新cookie，确认 speedqqcomrouteLine 参数是否为本月最新（该值每月更新一次）\n"
-            print("❌请更新cookie，确认 speedqqcomrouteLine 参数是否为本月最新（该值每月更新一次）")
-            i += 1
-            continue
-        elif "非常抱歉，请先登录！" in log:
-            msg += "❌token已过期，请更新token后重试\n"
-            print("❌token已过期，请更新token后重试")
-            i += 1
-            continue
-
-        # 特别福利
-        date_dict = dict(zip(date_list, giftid_list[-len(date_list):]))
-        if day in date_dict:
-            log = sign_gift(user_data, date_dict[day])
-            if '非常抱歉！您的资格已用尽！' in log:
-                log = "已领取完^!^请勿贪心哦"
-            msg += f"✅特殊福利:{log}\n"
-            print(f"✅特殊福利:{log}")
+        ret = commit(user_data, ['', ''])
+        log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+            ret['flowRet']['sMsg'])
+        if "网络故障" in log:
+            log = f"❌今日{datetime.now().strftime('{}月%d日').format(datetime.now().month)} 星期{datetime.now().weekday() + 1} 已签到"
         else:
-            msg += "✅今日无特殊福利礼物\n"
-            print("✅今日无特殊福利礼物")
+            log = f"✅今日{datetime.now().strftime('{}月%d日').format(datetime.now().month)} 星期{datetime.now().weekday() + 1} {log}"
+        msg += log + '\n'
+        print(log)
 
-        # 累计签到奖励
-        for gift in giftid_list[1:-len(date_list)]:
-            log = sign_gift(user_data, gift)
-            if log not in ['您已领取过奖励！', '非常抱歉，您的签到天数不足！']:
-                msg += f"✅累计签到礼物id[{gift}]：{log}\n"
-                print(f"✅累计签到礼物id[{gift}]：{log}")
-            if log in '非常抱歉，您的签到天数不足！':
-                break
+        # 补签
+        weekStatue = modRet['sOutValue2'].split(',')
+        if weekSupplementarySignature == "1":
+            for index, value in enumerate(weekStatue):
+                if value == "1":
+                    if (datetime.now().weekday() + 1) < index + 1:
+                        print(f"星期{index + 1} 未领取")
+                    elif (datetime.now().weekday() + 1) > index + 1:
+                        # 补签
+                        ret = commit(user_data, ['number', (index + 1)])
+                        log = str(ret['modRet']
+                                  ['sMsg']) if ret['ret'] == '0' else str(
+                                      ret['flowRet']['sMsg'])
+                        msg += f"✅补签：{log}\n"
+                        print(f"✅补签：{log}")
+                else:
+                    print(f"星期{index + 1} 签到已领取")
+        else:
+            print("本周补签资格已用完")
+
+        # 月签（资格剩余）
+        monthStatue = modRet['sOutValue1'].split(',')
+        # 可领取的月签奖励
+        if int(monthSignIn) >= 5:
+            if int(monthStatue[0]) == 0:
+                print("可以领取第一个月签奖励，这个功能暂时还没做")
+                ret = commit(user_data, ['', 0])
+                log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+                    ret['flowRet']['sMsg'])
+                log = f"✅累计签到5天：{log}"
+                msg += log + '\n'
+                print(log)
+            else:
+                print("本月签到已达到5天，已领取第一个月签奖励")
+        else:
+            print("本月签到未达到5天，无法领取奖励")
+        if int(monthSignIn) >= 10:
+            if int(monthStatue[1]) == 0:
+                print("可以领取第二个月签奖励，这个功能暂时还没做")
+                ret = commit(user_data, ['', 1])
+                log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+                    ret['flowRet']['sMsg'])
+                log = f"✅累计签到5天：{log}"
+                msg += log + '\n'
+                print(log)
+            else:
+                print("本月签到已达到10天，已领取第二个月签奖励")
+        else:
+            print("本月签到未达到10天，无法领取奖励")
+        if int(monthSignIn) >= 15:
+            if int(monthStatue[2]) == 0:
+                print("可以领取第三个月签奖励，这个功能暂时还没做")
+                ret = commit(user_data, ['', 2])
+                log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+                    ret['flowRet']['sMsg'])
+                log = f"✅累计签到5天：{log}"
+                msg += log + '\n'
+                print(log)
+            else:
+                print("本月签到已达到15天，已领取第三个月签奖励")
+        else:
+            print("本月签到未达到15天，无法领取奖励")
+        if int(monthSignIn) >= 20:
+            if int(monthStatue[3]) == 0:
+                print("可以领取第四个月签奖励，这个功能暂时还没做")
+                ret = commit(user_data, ['', 3])
+                log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+                    ret['flowRet']['sMsg'])
+                log = f"✅累计签到5天：{log}"
+                msg += log + '\n'
+                print(log)
+            else:
+                print("本月签到已达到20天，已领取第四个月签奖励")
+        else:
+            print("本月签到未达到20天，无法领取奖励")
+        if int(monthSignIn) >= 25:
+            if int(monthStatue[4]) == 0:
+                print("可以领取第五个月签奖励，这个功能暂时还没做")
+                ret = commit(user_data, ['', 4])
+                log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+                    ret['flowRet']['sMsg'])
+                log = f"✅累计签到5天：{log}"
+                msg += log + '\n'
+                print(log)
+            else:
+                print("本月签到已达到25天，已领取第五个月签奖励")
+        else:
+            print("本月签到未达到25天，无法领取奖励")
 
         i += 1
 

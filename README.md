@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-04-17 03:06:39
+ * @LastEditTime: 2024-05-06 01:42:01
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -12,7 +12,7 @@
 
 ~~小米社区~~ | 掌飞签到 | 掌飞购物 | 掌飞寻宝 | 夸克网盘 | 恩山论坛 | ~~必应搜索~~
 
-- 新版掌飞签到、掌飞购物、掌飞寻宝、掌飞开金丝篓已修复
+- 新版掌飞签到已更新（基础功能已完成，日常任务待完善）
 
 ## 青龙部署
 
@@ -28,7 +28,7 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 
 ## 捐赠支持，用爱发电
 
-<a href="https://github.com/BNDou/"><img height="200px" src="donate.jpg" /></a>
+<a href="https://github.com/BNDou/"><img height="200px" src="readme_files\donate.jpg" /></a>
 
 您的赞赏，激励我更好的创作！谢谢~
 
