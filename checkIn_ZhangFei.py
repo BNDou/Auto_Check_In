@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime: 2024-05-06 01:38:35
+LastEditTime: 2024-05-06 01:46:29
 FilePath: \Auto_Check_In\checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -123,6 +123,7 @@ def commit(user_data, sData):
     }
 
     response = requests.post(url, headers=headers, data=data)
+    response.encoding = "utf-8"
 
     return response.json()
 
