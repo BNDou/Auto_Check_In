@@ -1,70 +1,77 @@
 '''
-new Env('测试TEST')
-cron: 11 11 11 11 *
+new Env('test')
+cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2022-12-30 23:56:11
+LastEditTime : 2024-1-15 22:58:10
 FilePath     : /Auto_Check_In/checkIn_test.py
-Description  : 
+Description  :
+
 '''
-from urllib.parse import unquote
-import requests
 import os
 import sys
+from urllib.parse import unquote
+
+import requests
+
 sys.path.append('.')
 requests.packages.urllib3.disable_warnings()
 
 # 测试用环境变量
-# os.environ['COOKIE_ZHANGFEI'] = 'aaaaaa'
-# os.environ['COOKIE_ZHANGFEI'] = 'ssssss'
-# os.environ['REFERER_ZHANGFEI'] = 'qqqqqq'
-# os.environ['REFERER_ZHANGFEI'] = 'wwwwww'
+# os.environ['cookie_test'] = ''
+
+try:  # 异常捕捉
+    from sendNotify import send  # 导入消息通知模块
+except Exception as err:  # 异常捕捉
+    print('%s\n加载通知服务失败~' % err)
 
 
 # 获取环境变量
 def get_env():
-    # 判断 COOKIE_ZHANGFEI是否存在于环境变量
-    if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量 以 & 分割变量
-        cookie_list = os.environ.get('COOKIE_ZHANGFEI').split('&')
+    # 判断 cookie_test是否存在于环境变量
+    if "cookie_test" in os.environ:
+        # 读取系统变量 以 \n 分割变量
+        cookie_list = os.environ.get('cookie_test').split('\n')
         # 判断 cookie 数量 大于 0 个
         if len(cookie_list) <= 0:
             # 标准日志输出
-            print('COOKIE_ZHANGFEI变量未启用')
+            print('cookie_test变量未启用')
+            send('test', 'cookie_test变量未启用')
             # 脚本退出
             sys.exit(1)
     else:
         # 标准日志输出
-        print('未添加COOKIE_ZHANGFEI变量')
+        print('未添加cookie_test变量')
+        send('test', '未添加cookie_test变量')
         # 脚本退出
         sys.exit(0)
 
-    # 判断 REFERER_ZHANGFEI是否存在于环境变量
-    if "REFERER_ZHANGFEI" in os.environ:
-        referer_list = os.environ.get('REFERER_ZHANGFEI').split('&')
-        if len(referer_list) <= 0:
-            print('REFERER_ZHANGFEI变量未启用')
-            sys.exit(1)
-    else:
-        print('未添加REFERER_ZHANGFEI变量')
-        sys.exit(0)
-
-    return cookie_list, referer_list
+    return cookie_list
 
 
 def main(*arg):
-    msg = ""
-    sendnoty = 'true'
-    global cookie_zhangfei
-    global referer_zhangfei
-    cookie_zhangfei, referer_zhangfei = get_env()
+    msg, cookie_test = "", get_env()
 
-    print(cookie_zhangfei)
-    print('\n')
-    print(referer_zhangfei)
+    i = 0
+    while i < len(cookie_test):
+        # 获取user_data参数
+        user_data = {}
+        for a in cookie_test[i].replace(" ", "").split(';'):
+            if not a == '':
+                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+        # print(user_data)
+
+        i += 1
+
+    try:
+        send('test', msg)
+    except Exception as err:
+        print('%s\n错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
 
 if __name__ == "__main__":
+    print("----------test开始尝试签到----------")
     main()
+    print("----------test签到执行完毕----------")

@@ -1,6 +1,6 @@
 '''
 new Env('小米社区日常')
-cron: 1 0 * * *
+cron: 11 11 11 11 *
 Author       : BNDou
 Date         : 2022-12-03 16:58:45
 LastEditTime : 2022-12-29 02:08:50
@@ -193,7 +193,6 @@ def main(*arg):
             send('小米社区日常', msg)
         except Exception as err:
             print('%s\n错误，请查看运行日志！' % err)
-            send('小米社区日常', '%s\n错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
