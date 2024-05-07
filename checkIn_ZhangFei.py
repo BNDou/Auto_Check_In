@@ -243,7 +243,7 @@ def main(*arg):
                 ret = commit(user_data, ['', 1])
                 log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
                     ret['flowRet']['sMsg'])
-                log = f"✅累计签到5天：{log}"
+                log = f"✅累计签到10天：{log}"
                 msg += log + '\n'
                 print(log)
             else:
@@ -256,7 +256,7 @@ def main(*arg):
                 ret = commit(user_data, ['', 2])
                 log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
                     ret['flowRet']['sMsg'])
-                log = f"✅累计签到5天：{log}"
+                log = f"✅累计签到15天：{log}"
                 msg += log + '\n'
                 print(log)
             else:
@@ -269,7 +269,7 @@ def main(*arg):
                 ret = commit(user_data, ['', 3])
                 log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
                     ret['flowRet']['sMsg'])
-                log = f"✅累计签到5天：{log}"
+                log = f"✅累计签到20天：{log}"
                 msg += log + '\n'
                 print(log)
             else:
@@ -282,7 +282,7 @@ def main(*arg):
                 ret = commit(user_data, ['', 4])
                 log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
                     ret['flowRet']['sMsg'])
-                log = f"✅累计签到5天：{log}"
+                log = f"✅累计签到25天：{log}"
                 msg += log + '\n'
                 print(log)
             else:
