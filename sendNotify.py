@@ -129,6 +129,8 @@ def bark_push(title, content):
     except Exception as e:
         print(f"报错信息:{e}")
         print('推送失败！')
+
+
 def serverJ(title, content):
     if not PUSH_KEY:
         print("server酱服务的PUSH_KEY未设置!!\n取消推送")
@@ -412,35 +414,27 @@ def send(title, content):
     """
     # 获取一条一言
     content += f"\n\n{one()}" if HITOKOTO else ""
-    bark(title=title, content=content)
-    print()
-
-    bark_push(title=title, content=content)
-    print()
-
-    serverJ(title=title, content=content)
-    print()
-
-    dingding_bot(title=title, content=content)
-    print()
-
-    telegram_bot(title=title, content=content)
-    print()
-
-    coolpush_bot(title=title, content=content)
-    print()
-
-    pushplus_bot(title=title, content=content)
-    print()
-
-    wecom_app(title=title, content=content)
-    print()
-
-    for i in range(int(len(content) / 2000) + 1):
-        wecom_key(title=title, content=content[i * 2000:(i + 1) * 2000])
-    print()
-
-    fs_key(title=title, content=content)
+    if BARK:
+        bark(title=title, content=content)
+    if BARK_PUSH:
+        bark_push(title=title, content=content)
+    if PUSH_KEY:
+        serverJ(title=title, content=content)
+    if DD_BOT_TOKEN and DD_BOT_TOKEN:
+        dingding_bot(title=title, content=content)
+    if TG_BOT_TOKEN and TG_USER_ID:
+        telegram_bot(title=title, content=content)
+    if QQ_SKEY and QQ_MODE:
+        coolpush_bot(title=title, content=content)
+    if PUSH_PLUS_TOKEN:
+        pushplus_bot(title=title, content=content)
+    if QYWX_AM:
+        wecom_app(title=title, content=content)
+    if QYWX_KEY:
+        for i in range(int(len(content) / 2000) + 1):
+            wecom_key(title=title, content=content[i * 2000:(i + 1) * 2000])
+    if QYWX_KEY:
+        fs_key(title=title, content=content)
 
 
 def main():
