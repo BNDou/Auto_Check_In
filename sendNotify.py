@@ -1,10 +1,10 @@
-"""
-Author       : BNDou
-Date         : 2022-11-01 00:18:08
-LastEditTime : 2024-03-17 20:31:50
-FilePath     : /Auto_Check_In/sendNotify.py
-Description  :
-"""
+'''
+Author: BNDou
+Date: 2023-10-18 20:55:31
+LastEditTime: 2024-05-10 04:36:08
+FilePath: \Auto_Check_In\sendNotify.py
+Description: 
+'''
 # !/usr/bin/env python3
 # _*_ coding:utf-8 _*_
 
@@ -56,17 +56,20 @@ if "BARK_PUSH" in os.environ and os.environ["BARK_PUSH"]:
     BARK_PUSH = os.environ["BARK_PUSH"]
 if "PUSH_KEY" in os.environ and os.environ["PUSH_KEY"]:
     PUSH_KEY = os.environ["PUSH_KEY"]
-if "TG_BOT_TOKEN" in os.environ and os.environ["TG_BOT_TOKEN"] and "TG_USER_ID" in os.environ and os.environ[
-    "TG_USER_ID"]:
+if "TG_BOT_TOKEN" in os.environ and os.environ[
+        "TG_BOT_TOKEN"] and "TG_USER_ID" in os.environ and os.environ[
+            "TG_USER_ID"]:
     TG_BOT_TOKEN = os.environ["TG_BOT_TOKEN"]
     TG_USER_ID = os.environ["TG_USER_ID"]
 if "TG_API_HOST" in os.environ and os.environ["TG_API_HOST"]:
     TG_API_HOST = os.environ["TG_API_HOST"]
-if "DD_BOT_TOKEN" in os.environ and os.environ["DD_BOT_TOKEN"] and "DD_BOT_SECRET" in os.environ and os.environ[
-    "DD_BOT_SECRET"]:
+if "DD_BOT_TOKEN" in os.environ and os.environ[
+        "DD_BOT_TOKEN"] and "DD_BOT_SECRET" in os.environ and os.environ[
+            "DD_BOT_SECRET"]:
     DD_BOT_TOKEN = os.environ["DD_BOT_TOKEN"]
     DD_BOT_SECRET = os.environ["DD_BOT_SECRET"]
-if "QQ_SKEY" in os.environ and os.environ["QQ_SKEY"] and "QQ_MODE" in os.environ and os.environ["QQ_MODE"]:
+if "QQ_SKEY" in os.environ and os.environ[
+        "QQ_SKEY"] and "QQ_MODE" in os.environ and os.environ["QQ_MODE"]:
     QQ_SKEY = os.environ["QQ_SKEY"]
     QQ_MODE = os.environ["QQ_MODE"]
 # 获取pushplus+ PUSH_PLUS_TOKEN
@@ -98,13 +101,11 @@ def message(str_msg):
 
 
 def bark(title, content):
-    if not BARK:
-        print("bark服务的BARK未设置,\n取消推送")
-        return
     print("bark服务启动")
     try:
         response = requests.get(
-            f"""https://api.day.app/{BARK}/{title}/{urllib.parse.quote_plus(content)}""").json()
+            f"""https://api.day.app/{BARK}/{title}/{urllib.parse.quote_plus(content)}"""
+        ).json()
         if response['code'] == 200:
             print('推送成功！')
         else:
@@ -115,13 +116,11 @@ def bark(title, content):
 
 
 def bark_push(title, content):
-    if not BARK_PUSH:
-        print("bark自建服务的BARK_PUSH未设置,\n取消推送")
-        return
     print("bark自建服务启动")
     try:
         response = requests.get(
-            f"""{BARK_PUSH}/{title}/{urllib.parse.quote_plus(content)}""").json()
+            f"""{BARK_PUSH}/{title}/{urllib.parse.quote_plus(content)}"""
+        ).json()
         if response['code'] == 200:
             print('推送成功！')
         else:
@@ -132,16 +131,11 @@ def bark_push(title, content):
 
 
 def serverJ(title, content):
-    if not PUSH_KEY:
-        print("server酱服务的PUSH_KEY未设置!!\n取消推送")
-        return
     print("serverJ服务启动")
     try:
-        data = {
-            "text": title,
-            "desp": content.replace("\n", "\n\n")
-        }
-        response = requests.post(f"https://sc.ftqq.com/{PUSH_KEY}.send", data=data).json()
+        data = {"text": title, "desp": content.replace("\n", "\n\n")}
+        response = requests.post(f"https://sc.ftqq.com/{PUSH_KEY}.send",
+                                 data=data).json()
         if response['errno'] == 0:
             print('推送成功！')
         else:
@@ -153,9 +147,6 @@ def serverJ(title, content):
 
 # tg通知
 def telegram_bot(title, content):
-    if not TG_BOT_TOKEN or not TG_USER_ID:
-        print("tg服务的TG_BOT_TOKEN或者TG_USER_ID未设置!!\n取消推送")
-        return
     print("tg服务启动")
     # bot_token = TG_BOT_TOKEN
     # user_id = TG_USER_ID
@@ -168,12 +159,19 @@ def telegram_bot(title, content):
         else:
             url = f"https://api.telegram.org/bot{TG_BOT_TOKEN}/sendMessage"
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        payload = {'chat_id': str(TG_USER_ID), 'text': f'{title}\n\n{content}', 'disable_web_page_preview': 'true'}
+        payload = {
+            'chat_id': str(TG_USER_ID),
+            'text': f'{title}\n\n{content}',
+            'disable_web_page_preview': 'true'
+        }
         proxies = None
         if TG_PROXY_IP and TG_PROXY_PORT:
             proxyStr = "http://{}:{}".format(TG_PROXY_IP, TG_PROXY_PORT)
             proxies = {"http": proxyStr, "https": proxyStr}
-            response = requests.post(url=url, headers=headers, params=payload, proxies=proxies).json()
+            response = requests.post(url=url,
+                                     headers=headers,
+                                     params=payload,
+                                     proxies=proxies).json()
             if response['ok']:
                 print('推送成功！')
             else:
@@ -184,24 +182,28 @@ def telegram_bot(title, content):
 
 
 def dingding_bot(title, content):
-    if not DD_BOT_TOKEN and not DD_BOT_SECRET:
-        print("钉钉机器人服务的DD_BOT_TOKEN或者DD_BOT_SECRET未设置!!\n取消推送")
-        return
     print("钉钉机器人服务启动")
     try:
         timestamp = str(round(time.time() * 1000))  # 时间戳
         secret_enc = DD_BOT_SECRET.encode('utf-8')
         string_to_sign = '{}\n{}'.format(timestamp, DD_BOT_SECRET)
         string_to_sign_enc = string_to_sign.encode('utf-8')
-        hmac_code = hmac.new(secret_enc, string_to_sign_enc, digestmod=hashlib.sha256).digest()
+        hmac_code = hmac.new(secret_enc,
+                             string_to_sign_enc,
+                             digestmod=hashlib.sha256).digest()
         sign = urllib.parse.quote_plus(base64.b64encode(hmac_code))  # 签名
         url = f'https://oapi.dingtalk.com/robot/send?access_token={DD_BOT_TOKEN}&timestamp={timestamp}&sign={sign}'
         headers = {'Content-Type': 'application/json;charset=utf-8'}
         data = {
             'msgtype': 'text',
-            'text': {'content': f'{title}\n\n{content}'}
+            'text': {
+                'content': f'{title}\n\n{content}'
+            }
         }
-        response = requests.post(url=url, data=json.dumps(data), headers=headers, timeout=15).json()
+        response = requests.post(url=url,
+                                 data=json.dumps(data),
+                                 headers=headers,
+                                 timeout=15).json()
         if not response['errcode']:
             print('推送成功！')
         else:
@@ -212,9 +214,6 @@ def dingding_bot(title, content):
 
 
 def coolpush_bot(title, content):
-    if not QQ_SKEY or not QQ_MODE:
-        print("qq服务的QQ_SKEY或者QQ_MODE未设置!!\n取消推送")
-        return
     print("qq服务启动")
     try:
         url = f"https://qmsg.zendee.cn/{QQ_MODE}/{QQ_SKEY}"
@@ -231,17 +230,10 @@ def coolpush_bot(title, content):
 
 # push推送
 def pushplus_bot(title, content):
-    if not PUSH_PLUS_TOKEN:
-        print("PUSHPLUS服务的token未设置!!\n取消推送")
-        return
     print("PUSHPLUS服务启动")
     try:
         url = 'http://www.pushplus.plus/send'
-        data = {
-            "token": PUSH_PLUS_TOKEN,
-            "title": title,
-            "content": content
-        }
+        data = {"token": PUSH_PLUS_TOKEN, "title": title, "content": content}
         body = json.dumps(data).encode(encoding='utf-8')
         headers = {'Content-Type': 'application/json'}
         response = requests.post(url=url, data=body, headers=headers).json()
@@ -255,9 +247,6 @@ def pushplus_bot(title, content):
 
 
 def wecom_key(title, content):
-    if not QYWX_KEY:
-        print("QYWX_KEY未设置!!\n取消推送")
-        return
     print("QYWX_KEY服务启动")
     try:
         # print("content" + content)
@@ -269,8 +258,10 @@ def wecom_key(title, content):
             }
         }
         # print(f"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={QYWX_KEY}")
-        response = requests.post(f"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={QYWX_KEY}", json=data,
-                                 headers=headers).json()
+        response = requests.post(
+            f"https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key={QYWX_KEY}",
+            json=data,
+            headers=headers).json()
         print(response)
         # todo 不知道怎么判断是否成功
     except Exception as e:
@@ -280,9 +271,6 @@ def wecom_key(title, content):
 
 # 飞书机器人推送
 def fs_key(title, content):
-    if not FS_KEY:
-        print("FS_KEY未设置!!\n取消推送")
-        return
     print("FS_KEY服务启动")
     try:
         # print("content" + content)
@@ -294,8 +282,10 @@ def fs_key(title, content):
             }
         }
         # print(f"https://open.feishu.cn/open-apis/bot/v2/hook/{FS_KEY}")
-        response = requests.post(f"https://open.feishu.cn/open-apis/bot/v2/hook/{FS_KEY}", json=data,
-                                 headers=headers).json()
+        response = requests.post(
+            f"https://open.feishu.cn/open-apis/bot/v2/hook/{FS_KEY}",
+            json=data,
+            headers=headers).json()
         print(response)
         # todo 不知道怎么判断是否成功
     except Exception as e:
@@ -305,9 +295,6 @@ def fs_key(title, content):
 
 # 企业微信 APP 推送
 def wecom_app(title, content):
-    if not QYWX_AM:
-        print("QYWX_AM 并未设置！！\n取消推送")
-        return
     QYWX_AM_AY = re.split(',', QYWX_AM)
     if 4 < len(QYWX_AM_AY) > 5:
         print("QYWX_AM 设置错误！！\n取消推送")
@@ -347,15 +334,17 @@ class WeCom:
 
     def get_access_token(self):
         url = 'https://qyapi.weixin.qq.com/cgi-bin/gettoken'
-        values = {'corpid': self.CORPID,
-                  'corpsecret': self.CORPSECRET,
-                  }
+        values = {
+            'corpid': self.CORPID,
+            'corpsecret': self.CORPSECRET,
+        }
         req = requests.post(url, params=values)
         data = json.loads(req.text)
         return data["access_token"]
 
     def send_text(self, message, touser="@all"):
-        send_url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=' + self.get_access_token()
+        send_url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=' + self.get_access_token(
+        )
         send_values = {
             "touser": touser,
             "msgtype": "text",
@@ -371,22 +360,21 @@ class WeCom:
         return respone["errmsg"]
 
     def send_mpnews(self, title, message, media_id, touser="@all"):
-        send_url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=' + self.get_access_token()
+        send_url = 'https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=' + self.get_access_token(
+        )
         send_values = {
             "touser": touser,
             "msgtype": "mpnews",
             "agentid": self.AGENTID,
             "mpnews": {
-                "articles": [
-                    {
-                        "title": title,
-                        "thumb_media_id": media_id,
-                        "author": "Author",
-                        "content_source_url": "",
-                        "content": message.replace('\n', '<br/>'),
-                        "digest": message
-                    }
-                ]
+                "articles": [{
+                    "title": title,
+                    "thumb_media_id": media_id,
+                    "author": "Author",
+                    "content_source_url": "",
+                    "content": message.replace('\n', '<br/>'),
+                    "digest": message
+                }]
             }
         }
         send_msges = (bytes(json.dumps(send_values), 'utf-8'))
