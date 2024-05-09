@@ -45,12 +45,12 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 
 ### 捐赠榜
 
-| 用户 | 平台 | 额度 |
-|:---:|:---:|:---:|
-| [Struggle-best](https://github.com/Struggle-best) | WeChat | ￥50 |
-| M | WeChat | ￥20 |
-| Citizen Z | WeChat | ￥5 |
-| 钟情于 | WeChat | ￥5 |
+| 用户 | 平台 |
+|:---:|:---:|
+| Citizen Z | WeChat |
+| 钟情于 | WeChat |
+| M | WeChat |
+| [Struggle-best](https://github.com/Struggle-best) | WeChat |
 
 ---
 
