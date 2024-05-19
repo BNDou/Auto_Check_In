@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime: 2024-05-10 04:25:25
+LastEditTime: 2024-05-20 00:22:25
 FilePath: \Auto_Check_In\checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -16,11 +16,13 @@ Description  :
 
 添加环境变量COOKIE_ZHANGFEI，多账户用 回车 或 && 分开
 只需要添加8个值即可，分别是
-roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx; giftPackId=xxx;
 
 其中
 speedqqcomrouteLine就是签到页的url中间段，即https://speed.qq.com/cp/xxxxxxxxxx/index.html中的xxxxxxxxxx部分（每月更新一次）
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
+
+giftPackId是月签20和25天的礼包选择，分别有6个礼包选其一，变量取值1-6
 '''
 from datetime import datetime as datetime
 import os
@@ -78,12 +80,12 @@ def commit(user_data, sData):
 
     if sData[0] == "witchDay":  # 累计信息
         iFlowId = user_data.get('total_id')
-    elif sData[0] == "week_signIn":  # 签到
+    elif sData[0] == "signIn":  # 签到
         iFlowId = user_data.get('week_signIn')[datetime.now().weekday()]
     elif sData[0] == "number":  # 补签
-        iFlowId = user_data.get('week_signIn')[-1:]
-    elif sData[0] == "month_SignIn":  # 月签
-        iFlowId = user_data.get('month_SignIn')[sData[1]]
+        iFlowId = user_data.get('week_signIn')[-1]
+    elif sData[0] == "giftPackId":  # 月签
+        iFlowId = user_data.get('month_SignIn')[sData[-1]]
     elif sData[0] == "task_id":  # 任务
         iFlowId = user_data.get('task_id')[sData[1]]
 
@@ -189,7 +191,7 @@ def signIn(user_data):
     :return: 签到信息
     '''
     try:
-        ret = commit(user_data, ['week_signIn', ''])
+        ret = commit(user_data, ['signIn', ''])
         log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
             ret['flowRet']['sMsg'])
         if "网络故障" in log:
@@ -244,7 +246,14 @@ def monthSignIn(user_data):
     for index, day in enumerate([5, 10, 15, 20, 25]):
         if int(user_data.get('monthSignIn')) >= day:
             if int(user_data.get('monthStatue')[index]) == 0:
-                ret = commit(user_data, ['month_SignIn', index])
+                # 如果环境变量未设置，默认领取第一个礼包
+                if user_data.get('giftPackId'):
+                    giftPackId = user_data.get('giftPackId')
+                else:
+                    print(f"❌检测到cookie中未设置giftPackId\n默认领取第一个礼包，如需自定义请添加变量于cookie中：giftPackId=xxx，取值1~6")
+                    giftPackId = '1'
+                # 领取礼包
+                ret = commit(user_data, ['giftPackId', giftPackId, index])
                 log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
                     ret['flowRet']['sMsg'])
                 log = f"✅累计签到{day}天：{log}"
