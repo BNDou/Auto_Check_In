@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-05-07 20:05:01
+ * @LastEditTime: 2024-05-20 01:05:49
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -12,7 +12,8 @@
 
 ~~小米社区~~ | 掌飞签到 | 掌飞购物 | 掌飞寻宝 | 夸克网盘 | 恩山论坛 | ~~必应搜索~~
 
-- 2024-05-06 新版掌飞V4 签到已更新（基础功能已完成，日常任务待完善）
+## 更新日志
+- 2024-05-10 新版掌飞V4 签到已更新
 - 新版掌飞V3 签到、掌飞购物、掌飞寻宝、掌飞开金丝篓已修复
 
 ## 青龙部署
@@ -25,11 +26,9 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 
 2. 根据“**_代码文件头部注释_**”或者“**_运行提示_**”添加对应的“**_环境变量_**”
 
----
-
 ## 捐赠支持，用爱发电
 
-<a href="https://github.com/BNDou/"><img height="200px" src="readme_files\donate.jpg" /></a>
+<a href="https://github.com/BNDou/"><img height="200px" src="https://cdn.bndou.eu.org/gh/BNDou/Auto_Check_In/readme_files/donate.jpg" /></a>
 
 您的赞赏，激励我更好的创作！谢谢~
 
@@ -39,16 +38,20 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 
 想投喂 `雪王牌柠檬水 * 1`
 
-那么上面的微信赞赏码可以扫一扫呢，赞赏时记得留下【`昵称`】和【`留言`】
+那么上面的微信赞赏码可以扫一扫呢
+
+赞赏时记得留下【`GitHub昵称`】和【`留言`】
 
 ### 捐赠榜
 
-| 用户 | 平台 | 额度 |
-|:---:|:---:|:---:|
-| Citizen Z | WeChat | ￥5 |
+| 用户 | 平台 |
+|:---:|:---:|
+| Citizen Z | WeChat |
+| 钟情于 | WeChat |
+| M | WeChat |
+| [Struggle-best](https://github.com/Struggle-best) | WeChat |
 
----
-
+## 免责声明
 - 这里的脚本只是自己学习 python 的一个实践。
 - 仅用于测试和学习研究，禁止用于商业用途，不能保证其合法性，准确性，完整性和有效性，请根据情况自行判断。
 - 仓库内所有资源文件，禁止任何公众号、自媒体进行任何形式的转载、发布。
