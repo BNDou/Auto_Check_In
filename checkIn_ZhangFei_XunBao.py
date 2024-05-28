@@ -3,8 +3,8 @@ new Env('掌上飞车每日寻宝')
 cron: 10 0 0,22 * * *
 Author       : BNDou
 Date         : 2023-02-21 01:09:51
-LastEditTime : 2024-03-17 18:06:11
-FilePath     : /Auto_Check_In/checkIn_ZhangFei_XunBao.py
+LastEditTime: 2024-05-29 02:14:03
+FilePath: \Auto_Check_In\checkIn_ZhangFei_XunBao.py
 Description  :
 感谢@chiupam(https://github.com/chiupam)寻宝脚本
 
@@ -44,12 +44,12 @@ import requests
 from checkIn_ZhangFei_Login import check
 
 # 测试用环境变量
-# os.environ['COOKIE_ZHANGFEI'] = ''
+# os.environ["COOKIE_ZHANGFEI"] = ""
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print('%s\n❌加载通知服务失败~' % err)
+    print("%s\n❌加载通知服务失败~" % err)
 
 
 # 获取环境变量
@@ -57,11 +57,11 @@ def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
         # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
+        cookie_list = re.split("\n|&&", os.environ.get("COOKIE_ZHANGFEI"))
     else:
         # 标准日志输出
-        print('❌未添加COOKIE_ZHANGFEI变量')
-        send('掌上飞车每日寻宝', '❌未添加COOKIE_ZHANGFEI变量')
+        print("❌未添加COOKIE_ZHANGFEI变量")
+        send("掌上飞车每日寻宝", "❌未添加COOKIE_ZHANGFEI变量")
         # 脚本退出
         sys.exit(0)
 
@@ -72,56 +72,59 @@ def get_env():
 def dig(status, user_data):
     url = f"https://bang.qq.com/app/speed/treasure/ajax/{status}DigTreasure"
     headers = {
-        "Referer": "https://bang.qq.com/app/speed/treasure/index",
-        "Cookie": f"access_token={user_data.get('accessToken')}; "
-                  f"acctype=qc; "
-                  f"appid={user_data.get('appid')}; "
-                  f"openid={user_data.get('openid')}"
+        "Referer":
+        "https://bang.qq.com/app/speed/treasure/index",
+        "Cookie":
+        f"access_token={user_data.get("accessToken")}; "
+        f"acctype=qc; "
+        f"appid={user_data.get("appid")}; "
+        f"openid={user_data.get("openid")}"
     }
     data = {
-        "mapId": user_data.get('mapId'),  # 地图Id
-        "starId": user_data.get('starId'),  # 地图星级Id
-        "areaId": user_data.get('areaId'),  # 1是电信区，2是联通
-        "type": user_data.get('type'),  # 1是普通寻宝，2是快速寻宝（紫钻用户）
-        "roleId": user_data.get('roleId'),  # QQ号
-        "userId": user_data.get('userId'),  # 掌飞号
-        "uin": user_data.get('roleId'),  # QQ号
-        "token": user_data.get('token')
+        "mapId": user_data.get("mapId"),  # 地图Id
+        "starId": user_data.get("starId"),  # 地图星级Id
+        "areaId": user_data.get("areaId"),  # 1是电信区，2是联通
+        "type": user_data.get("type"),  # 1是普通寻宝，2是快速寻宝（紫钻用户）
+        "roleId": user_data.get("roleId"),  # QQ号
+        "userId": user_data.get("userId"),  # 掌飞号
+        "uin": user_data.get("roleId"),  # QQ号
+        "token": user_data.get("token")
     }
     response = requests.post(url, headers=headers, data=data)
 
-    return False if response.json()['res'] == 0 else True
+    return False if response.json()["res"] == 0 else True
 
 
 # 领取奖励
 def get_treasure(iFlowId, user_data):
     url = "https://act.game.qq.com/ams/ame/amesvr?ameVersion=0.3&iActivityId=468228"
     headers = {
-        "Cookie": f"access_token={user_data.get('accessToken')}; "
-                  f"acctype=qc; "
-                  f"appid={user_data.get('appid')}; "
-                  f"openid={user_data.get('openid')}"
+        "Cookie":
+        f"access_token={user_data.get("accessToken")}; "
+        f"acctype=qc; "
+        f"appid={user_data.get("appid")}; "
+        f"openid={user_data.get("openid")}"
     }
     data = {
-        'appid': user_data.get('appid'),
-        'sArea': user_data.get('areaId'),
-        'sRoleId': user_data.get('roleId'),
-        'accessToken': user_data.get('accessToken'),
-        'iActivityId': "468228",
-        'iFlowId': iFlowId,
-        'g_tk': '1842395457',
-        'sServiceType': 'bb'
+        "appid": user_data.get("appid"),
+        "sArea": user_data.get("areaId"),
+        "sRoleId": user_data.get("roleId"),
+        "accessToken": user_data.get("accessToken"),
+        "iActivityId": "468228",
+        "iFlowId": iFlowId,
+        "g_tk": "1842395457",
+        "sServiceType": "bb"
     }
     response = requests.post(url, headers=headers, data=data)
     response.encoding = "utf-8"
 
-    return ("✅" + str(response.json()['modRet']['sPackageName'])) if response.json()[
-                                                                         'ret'] == '0' else '❌非常抱歉，您还不满足参加该活动的条件！'
+    return ("✅" + str(response.json()["modRet"]["sPackageName"])
+            ) if response.json()["ret"] == "0" else "❌非常抱歉，您还不满足参加该活动的条件！"
 
 
 # 今日大吉筛选
 def luck_day(user_data):
-    t = f"🚗账号 {user_data.get('roleId')}"
+    t = f"🚗账号 {user_data.get("roleId")}"
 
     def extract(_html, _pattern):
         match = re.search(_pattern, _html)
@@ -131,29 +134,38 @@ def luck_day(user_data):
 
     url = "https://bang.qq.com/app/speed/treasure/index"
     params = {
-        "roleId": user_data.get('roleId'),  # QQ帐号，抓包抓取
-        "areaId": user_data.get('areaId'),  # 1是电信区，抓包抓取
-        "uin": user_data.get('roleId')  # QQ帐号，抓包抓取
+        "roleId": user_data.get("roleId"),  # QQ帐号，抓包抓取
+        "areaId": user_data.get("areaId"),  # 1是电信区，抓包抓取
+        "uin": user_data.get("roleId")  # QQ帐号，抓包抓取
     }
 
     response = requests.get(url, params=params)
-    response.encoding = 'utf-8'
-    user = extract(response.text, r'window\.userInfo\s*=\s*eval\(\'([^\']+)\'\);')
+    response.encoding = "utf-8"
+    user = extract(response.text,
+                   r'window\.userInfo\s*=\s*eval\(\'([^\']+)\'\);')
     # 剩余寻宝次数
     left_times = re.search(r'id="leftTimes">(\d+)</i>', response.text).group(1)
 
     if user:
-        vip_flag = bool(user.get('vip_flag'))
-        print(f"{t}💎紫钻用户：{'是' if vip_flag else '否'}")
-        starId = max([key for key, value in user.get('starInfo', {}).items() if value == 1])
+        vip_flag = bool(user.get("vip_flag"))
+        print(f"{t}💎紫钻用户：{"是" if vip_flag else "否"}")
+        starId = max([
+            key for key, value in user.get("starInfo", {}).items()
+            if value == 1
+        ])
         print(f"{t}⭐最高地图解锁星级：{starId}")
     else:
         print(t, "❌未找到用户信息")
 
     if starId:
-        map_dicts = extract(response.text, r'window\.mapInfo\s*=\s*eval\(\'([^\']+)\'\);')
-        luck_dicts = [item for item in map_dicts[starId] if item.get('isdaji') == 1]
-        mapId, mapName = (luck_dicts[0]['id'], luck_dicts[0]['name']) if luck_dicts else (False, False)
+        map_dicts = extract(response.text,
+                            r'window\.mapInfo\s*=\s*eval\(\'([^\']+)\'\);')
+        luck_dicts = [
+            item for item in map_dicts[starId] if item.get("isdaji") == 1
+        ]
+        mapId, mapName = (luck_dicts[0]["id"],
+                          luck_dicts[0]["name"]) if luck_dicts else (False,
+                                                                     False)
         print(f"{t}🌏今日大吉地图是[{mapName}]-地图ID是[{mapId}]")
     else:
         print(t, "❌未找到地图信息")
@@ -169,11 +181,11 @@ lock = threading.RLock()
 
 # 开始任务
 def run(user_data):
-    sendnoty = 'true'
+    sendnoty = "true"
     msg = ""
-    t = f"🚗账号 {user_data.get('roleId')}"
-    log = f"{t} {'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
-    msg += log + '\n'
+    t = f"🚗账号 {user_data.get("roleId")}"
+    log = f"{t} {"电信区" if user_data.get("areaId") == "1" else "联通区" if user_data.get("areaId") == "2" else "电信2区"}"
+    msg += log + "\n"
     lock.acquire()
     print(f"{log} 开始执行任务")
     lock.release()
@@ -183,17 +195,24 @@ def run(user_data):
         return
 
     # 获取紫钻信息、地图解锁信息
-    user_data['type'], user_data['starId'], user_data['mapId'], user_data['left_times'] = luck_day(user_data)
+    user_data["type"], user_data["starId"], user_data["mapId"], user_data[
+        "left_times"] = luck_day(user_data)
     # 星级地图对应的iFlowId
-    iFlowId_dict = {'1': ['856152', '856155'], '2': ['856156', '856157'], '3': ['856158', '856159'],
-                    '4': ['856160', '856161'], '5': ['856162', '856163'], '6': ['856164', '856165']}
+    iFlowId_dict = {
+        "1": ["856152", "856155"],
+        "2": ["856156", "856157"],
+        "3": ["856158", "856159"],
+        "4": ["856160", "856161"],
+        "5": ["856162", "856163"],
+        "6": ["856164", "856165"]
+    }
 
-    if user_data['left_times'] != "0":
+    if user_data["left_times"] != "0":
         # 每日5次寻宝
         for n in range(5):
             n += 1
             # 寻宝
-            if dig('start', user_data):
+            if dig("start", user_data):
                 msg += f"❌第{n}次寻宝...对不起，当天的寻宝次数已用完\n"
                 lock.acquire()
                 print(f"{t}❌第{n}次寻宝...对不起，当天的寻宝次数已用完")
@@ -205,7 +224,7 @@ def run(user_data):
             lock.release()
 
             # 寻宝倒计时
-            if user_data['type'] == 2:
+            if user_data["type"] == 2:
                 lock.acquire()
                 print(f"{t}🔎等待10秒寻宝时间...")
                 lock.release()
@@ -217,15 +236,15 @@ def run(user_data):
                 time.sleep(600)
 
             # 结束寻宝
-            if not dig('end', user_data):
+            if not dig("end", user_data):
                 lock.acquire()
                 print(f"{t}✅结束寻宝...")
                 lock.release()
 
             # 领取奖励
-            for iflowid in iFlowId_dict[user_data['starId']]:
+            for iflowid in iFlowId_dict[user_data["starId"]]:
                 log = get_treasure(iflowid, user_data)
-                msg += log + '\n'
+                msg += log + "\n"
                 lock.acquire()
                 print(f"{t}{log}")
                 lock.release()
@@ -235,9 +254,9 @@ def run(user_data):
     if sendnoty:
         lock.acquire()
         try:
-            send('掌上飞车每日寻宝', msg)
+            send("掌上飞车每日寻宝", msg)
         except Exception as err:
-            print('%s\n❌错误，请查看运行日志！' % err)
+            print("%s\n❌错误，请查看运行日志！" % err)
         lock.release()
 
 
@@ -254,9 +273,9 @@ if __name__ == "__main__":
     while i < len(cookie_zhangfei):
         # 获取user_data参数
         user_data = {}  # 用户信息
-        for a in cookie_zhangfei[i].replace(" ", "").split(';'):
-            if not a == '':
-                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+        for a in cookie_zhangfei[i].replace(" ", "").split(";"):
+            if not a == "":
+                user_data.update({a.split("=")[0]: unquote(a.split("=")[1])})
 
         # 传个任务,和参数进来
         thread.append(threading.Thread(target=run, args=[user_data]))

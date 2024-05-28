@@ -35,13 +35,13 @@ from urllib.parse import unquote
 import requests
 
 # 测试用环境变量
-# os.environ['zhangFei_login'] = ""
-# os.environ['COOKIE_ZHANGFEI'] = ""
+# os.environ["zhangFei_login"] = ""
+# os.environ["COOKIE_ZHANGFEI"] = ""
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print('%s\n❌加载通知服务失败~' % err)
+    print("%s\n❌加载通知服务失败~" % err)
 
 
 # 获取环境变量
@@ -49,22 +49,24 @@ def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
         # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
+        cookie_list = re.split("\n|&&", os.environ.get("COOKIE_ZHANGFEI"))
     else:
         # 标准日志输出
-        print('❌未添加COOKIE_ZHANGFEI变量')
-        send('掌上飞车login', '❌未添加COOKIE_ZHANGFEI变量')
+        print("❌未添加COOKIE_ZHANGFEI变量")
+        send("掌上飞车login", "❌未添加COOKIE_ZHANGFEI变量")
         # 脚本退出
         sys.exit(0)
 
     if "zhangFei_login" in os.environ:
-        login_list = re.split('\n|&&', os.environ.get('zhangFei_login'))
+        login_list = re.split("\n|&&", os.environ.get("zhangFei_login"))
     else:
-        print('❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到）')
-        print(
-            '❌直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"\n❌变量值为login时data数据包（二进制转base64可以获取到）')
-        send('掌上飞车login',
-             '❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到）\n❌直接在config.sh添加，例如export zhangFei_login="xxx&&xxx"\n❌变量值为login时data数据包（二进制转base64可以获取到）')
+        print("❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到）")
+        print("❌直接在config.sh添加，例如export zhangFei_login=\"xxx&&xxx\"\n"
+              "❌变量值为login时data数据包（二进制转base64可以获取到）")
+        send("掌上飞车login",
+             ("❌使用请添加zhangFei_login变量设置login时data数据包（二进制转base64可以获取到）\n"
+              "❌直接在config.sh添加，例如export zhangFei_login=\"xxx&&xxx\"\n"
+              "❌变量值为login时data数据包（二进制转base64可以获取到）"))
         sys.exit(0)
 
     return cookie_list, login_list
@@ -78,7 +80,8 @@ def login(login_data):
         "Accept-Encrypt": "",
         "Gh-Header": "2-1-1003-2103090010-335257132",
         "Content-Encrypt": "",
-        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 13; Mi 10 Build/TKQ1.221114.001)",
+        "User-Agent":
+        "Dalvik/2.1.0 (Linux; U; Android 13; Mi 10 Build/TKQ1.221114.001)",
         "Content-Type": "application/octet-stream",
         "Content-Length": "912",
         "Connection": "Keep-Alive",
@@ -86,7 +89,7 @@ def login(login_data):
     }
 
     # response = requests.post(url, headers=headers, data=base64.b64decode(postData))
-    # responseData = base64.b64encode(response.content).decode('utf-8')
+    # responseData = base64.b64encode(response.content).decode("utf-8")
     # print(responseData)
 
     requests.post(url, headers=headers, data=base64.b64decode(login_data))
@@ -113,29 +116,30 @@ def check(user, branch):
     # print(response_json)
 
     if branch == "Login":
-        return True if response_json['returnMsg'] == "" else False
+        return True if response_json["returnMsg"] == "" else False
     elif "" or "GouWu" or "JinSiLou" or "XunBao":
-        if response_json['returnMsg'] != "":
-            print("❌账号 {}".format(user.get("userId")), response_json['returnMsg'], "可更新token后重试")
+        if response_json["returnMsg"] != "":
+            print("❌账号 {}".format(user.get("userId")),
+                  response_json["returnMsg"], "可更新token后重试")
 
-    return True if response_json['returnMsg'] == "" else False
+    return True if response_json["returnMsg"] == "" else False
 
 
 # 剩余寻宝次数
 def get_left_times():
     url = "https://bang.qq.com/app/speed/treasure/index"
     params = {
-        "roleId": user_data.get('roleId'),  # QQ帐号，抓包抓取
-        "areaId": user_data.get('areaId'),  # 1是电信区，抓包抓取
-        "uin": user_data.get('roleId')  # QQ帐号，抓包抓取
+        "roleId": user_data.get("roleId"),  # QQ帐号，抓包抓取
+        "areaId": user_data.get("areaId"),  # 1是电信区，抓包抓取
+        "uin": user_data.get("roleId")  # QQ帐号，抓包抓取
     }
     response = requests.get(url, params=params)
-    response.encoding = 'utf-8'
+    response.encoding = "utf-8"
 
     return re.search(r'id="leftTimes">(\d+)</i>', response.text).group(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     msg = ""
     cookie_zhangfei, login_list = get_env()
 
@@ -148,16 +152,16 @@ if __name__ == '__main__':
     while i < len(login_list):
         # 获取user_data参数
         user_data = {}  # 用户信息
-        for a in cookie_zhangfei[i].replace(" ", "").split(';'):
-            if not a == '':
-                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+        for a in cookie_zhangfei[i].replace(" ", "").split(";"):
+            if not a == "":
+                user_data.update({a.split("=")[0]: unquote(a.split("=")[1])})
         # print(user_data)
 
-        t = f"🚗账号 {user_data.get('roleId')} token {'有效' if check(user_data, 'Login') else '失效'}"
+        t = f"🚗账号 {user_data.get("roleId")} token {"有效" if check(user_data, "Login") else "失效"}"
 
         # 寻宝次数查询
         left_times_before = get_left_times()
-        log = f"{t}\n{datetime.datetime.now().strftime('%m月%d日 %H:%M:%S')} 寻宝次数有：{left_times_before}"
+        log = f"{t}\n{datetime.datetime.now().strftime("%m月%d日 %H:%M:%S")} 寻宝次数有：{left_times_before}"
         msg += log + "\n"
         print(log)
 
@@ -171,7 +175,7 @@ if __name__ == '__main__':
 
         # 验证
         left_times_after = get_left_times()
-        log = f"{datetime.datetime.now().strftime('%m月%d日 %H:%M:%S')} 寻宝次数有：{left_times_after}"
+        log = f"{datetime.datetime.now().strftime("%m月%d日 %H:%M:%S")} 寻宝次数有：{left_times_after}"
         msg += log + "\n"
         print(log)
 
@@ -185,8 +189,8 @@ if __name__ == '__main__':
         i += 1
 
     try:
-        send('掌上飞车login', msg)
+        send("掌上飞车login", msg)
     except Exception as err:
-        print('%s\n❌错误，请查看运行日志！' % err)
+        print("%s\n❌错误，请查看运行日志！" % err)
 
     print("----------掌上飞车login完毕----------")

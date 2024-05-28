@@ -9,3 +9,4 @@ __pycache__
 .idea/.name
 sendNotify.py
 .vscode/settings.json
+HistoricalCode/checkIn_AliYun.py

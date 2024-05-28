@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-05-20 01:05:49
+ * @LastEditTime: 2024-05-29 03:24:57
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -21,14 +21,14 @@
 1. 拉库指令（拉库失败请自行添加代理）
 
 ```
-ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNotify" "main"
+ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "^sendNotify" "main"
 ```
 
 2. 根据“**_代码文件头部注释_**”或者“**_运行提示_**”添加对应的“**_环境变量_**”
 
 ## 捐赠支持，用爱发电
 
-<a href="https://github.com/BNDou/"><img height="200px" src="https://cdn.bndou.eu.org/gh/BNDou/Auto_Check_In/readme_files/donate.jpg" /></a>
+<a href="https://github.com/BNDou/"><img height="200px" src="https://cdn.bndou.eu.org/gh/BNDou/Auto_Check_In/readme/donate.jpg" /></a>
 
 您的赞赏，激励我更好的创作！谢谢~
 
