@@ -3,7 +3,7 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime: 2024-05-29 01:57:44
+LastEditTime: 2024-05-29 04:32:06
 FilePath: \Auto_Check_In\checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN，多账号用 回车 或 && 分开
 '''
@@ -16,12 +16,12 @@ import requests
 from lxml import etree
 
 # 测试用环境变量
-# os.environ["COOKIE_ENSHAN"] = ""
+# os.environ['COOKIE_ENSHAN'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print("%s\n加载通知服务失败~" % err)
+    print('%s\n加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -29,11 +29,11 @@ def get_env():
     # 判断 COOKIE_ENSHAN是否存在于环境变量
     if "COOKIE_ENSHAN" in os.environ:
         # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split("\n|&&", os.environ.get("COOKIE_ENSHAN"))
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ENSHAN'))
     else:
         # 标准日志输出
-        print("未添加COOKIE_ENSHAN变量")
-        send("恩山论坛签到", "未添加COOKIE_ENSHAN变量")
+        print('未添加COOKIE_ENSHAN变量')
+        send('恩山论坛签到', '未添加COOKIE_ENSHAN变量')
         # 脚本退出
         sys.exit(0)
 
@@ -41,9 +41,7 @@ def get_env():
 
 
 class EnShan:
-    """恩山论坛签到"""
     def __init__(self, cookie):
-        """初始化"""
         self.cookie = cookie
         self.user_name = None
         self.user_group = None
@@ -76,10 +74,10 @@ class EnShan:
 
         if self.date:
             return (
-                f"👶{self.user_group}：{self.user_name}\n"
-                f"🏅恩山币：{self.coin} 贡献：{self.contribution} 积分：{self.point}\n"
-                f"⭐签到成功或今日已签到\n"
-                f"⭐最后签到时间：{self.date}")
+                f'👶{self.user_group}：{self.user_name}\n'
+                f'🏅恩山币：{self.coin} 贡献：{self.contribution} 积分：{self.point}\n'
+                f'⭐签到成功或今日已签到\n'
+                f'⭐最后签到时间：{self.date}')
         else:
             return '❌️签到失败，可能是cookie失效了！'
 
@@ -98,8 +96,8 @@ if __name__ == "__main__":
         i += 1
 
     try:
-        send("恩山论坛签到", msg)
+        send('恩山论坛签到', msg)
     except Exception as err:
-        print("%s\n❌️错误，请查看运行日志！" % err)
+        print('%s\n❌️错误，请查看运行日志！' % err)
 
     print("----------恩山论坛签到执行完毕----------")

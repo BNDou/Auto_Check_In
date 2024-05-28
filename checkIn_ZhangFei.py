@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime: 2024-05-29 02:23:56
+LastEditTime: 2024-05-29 04:45:06
 FilePath: \Auto_Check_In\checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -35,12 +35,12 @@ import requests
 from checkIn_ZhangFei_Login import check
 
 # 测试用环境变量
-# os.environ["COOKIE_ZHANGFEI"] = ""
+# os.environ['COOKIE_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print("%s\n❌加载通知服务失败~" % err)
+    print('%s\n❌加载通知服务失败~' % err)
 
 
 def get_env():
@@ -51,11 +51,11 @@ def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
         # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split("\n|&&", os.environ.get("COOKIE_ZHANGFEI"))
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
     else:
         # 标准日志输出
-        print("❌未添加COOKIE_ZHANGFEI变量")
-        send("掌上飞车签到", "❌未添加COOKIE_ZHANGFEI变量")
+        print('❌未添加COOKIE_ZHANGFEI变量')
+        send('掌上飞车签到', '❌未添加COOKIE_ZHANGFEI变量')
         # 脚本退出
         sys.exit(0)
 
@@ -69,28 +69,28 @@ def commit(user_data, sData):
     :param sData: 签到信息
     :return: 提交结果
     '''
-    url = f"https://comm.ams.game.qq.com/ams/ame/amesvr?iActivityId={user_data.get("iActivityId")}"
+    url = f"https://comm.ams.game.qq.com/ams/ame/amesvr?iActivityId={user_data.get('iActivityId')}"
     headers = {
-        "Cookie":
-        f"access_token={user_data.get("accessToken")}; "
+        'Cookie':
+        f"access_token={user_data.get('accessToken')}; "
         f"acctype=qc; "
-        f"appid={user_data.get("appid")}; "
-        f"openid={user_data.get("openid")}; "
+        f"appid={user_data.get('appid')}; "
+        f"openid={user_data.get('openid')}; "
     }
 
     if sData[0] == "witchDay":  # 累计信息
-        iFlowId = user_data.get("total_id")
+        iFlowId = user_data.get('total_id')
     elif sData[0] == "signIn":  # 签到
-        iFlowId = user_data.get("week_signIn")[datetime.now().weekday()]
+        iFlowId = user_data.get('week_signIn')[datetime.now().weekday()]
     elif sData[0] == "number":  # 补签
-        iFlowId = user_data.get("week_signIn")[-1]
+        iFlowId = user_data.get('week_signIn')[-1]
     elif sData[0] == "giftPackId":  # 月签
-        iFlowId = user_data.get("month_SignIn")[sData[-1]]
+        iFlowId = user_data.get('month_SignIn')[sData[-1]]
     elif sData[0] == "task_id":  # 任务
-        iFlowId = user_data.get("task_id")[sData[1]]
+        iFlowId = user_data.get('task_id')[sData[1]]
 
     data = {
-        "iActivityId": user_data.get("iActivityId"),
+        "iActivityId": user_data.get('iActivityId'),
         "iFlowId": iFlowId,
         "g_tk": "1842395457",
         "sServiceType": "speed",
@@ -143,21 +143,21 @@ def get_outValue(user_data):
     :param user_data: 用户信息
     :return bolean: 是否成功
     '''
-    ret = commit(user_data, ["witchDay", (datetime.now().weekday() + 1)])
-    if ret["ret"] == "101":
+    ret = commit(user_data, ['witchDay', (datetime.now().weekday() + 1)])
+    if ret['ret'] == '101':
         # 登录失败
-        print(f"❌账号{user_data.get("roleId")}登录失败，请检查账号信息是否正确")
+        print(f"❌账号{user_data.get('roleId')}登录失败，请检查账号信息是否正确")
         return False
-    modRet = ret["modRet"]
+    modRet = ret['modRet']
 
     # 本周已签到天数
-    user_data.update({"weekSignIn": modRet["sOutValue5"]})
+    user_data.update({"weekSignIn": modRet['sOutValue5']})
 
     # 周补签（资格剩余）
     if (datetime.now().weekday() + 1) < 3:
         weekSupplementarySignature = "0"
     else:
-        weekBuqian = modRet["sOutValue7"].split(",")
+        weekBuqian = modRet['sOutValue7'].split(',')
         if int(weekBuqian[1]) == 1:
             # 已经使用资格
             weekSupplementarySignature = "0"
@@ -170,16 +170,16 @@ def get_outValue(user_data):
         {"weekSupplementarySignature": weekSupplementarySignature})
 
     # 周补签状态
-    user_data.update({"weekStatue": modRet["sOutValue2"].split(",")})
+    user_data.update({"weekStatue": modRet['sOutValue2'].split(',')})
 
     # 本月已签到天数
-    monthSignIn = modRet["sOutValue4"]
+    monthSignIn = modRet['sOutValue4']
     if int(monthSignIn) > 25:
         monthSignIn = "25"
     user_data.update({"monthSignIn": monthSignIn})
 
     # 月签（资格剩余）
-    user_data.update({"monthStatue": modRet["sOutValue1"].split(",")})
+    user_data.update({"monthStatue": modRet['sOutValue1'].split(',')})
 
     return True
 
@@ -191,18 +191,21 @@ def signIn(user_data):
     :return: 签到信息
     '''
     try:
-        ret = commit(user_data, ["signIn", ""])
-        log = str(ret["modRet"]["sMsg"]) if ret["ret"] == "0" else str(
-            ret["flowRet"]["sMsg"])
+        ret = commit(user_data, ['signIn', ''])
+        log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+            ret['flowRet']['sMsg'])
         if "网络故障" in log:
-            log = (f"❌今日{datetime.now().strftime("{}月%d日").format(datetime.now().month)} "
-                   f"星期{datetime.now().weekday() + 1} 已签到")
+            log = (
+                f"❌今日{datetime.now().strftime('{}月%d日').format(datetime.now().month)} "
+                f"星期{datetime.now().weekday() + 1} 已签到")
         elif "非常抱歉，请先登录！" in log:
-            log = (f"❌今日{datetime.now().strftime("{}月%d日").format(datetime.now().month)} "
-                   f"星期{datetime.now().weekday() + 1} 非常抱歉，请先登录！")
+            log = (
+                f"❌今日{datetime.now().strftime('{}月%d日').format(datetime.now().month)} "
+                f"星期{datetime.now().weekday() + 1} 非常抱歉，请先登录！")
         else:
-            log = (f"✅今日{datetime.now().strftime("{}月%d日").format(datetime.now().month)} "
-                   f"星期{datetime.now().weekday() + 1} {log}")
+            log = (
+                f"✅今日{datetime.now().strftime('{}月%d日').format(datetime.now().month)} "
+                f"星期{datetime.now().weekday() + 1} {log}")
     except Exception as err:
         log = f"❌签到失败~{err}"
     print(log)
@@ -217,17 +220,17 @@ def weekSupplementarySignature(user_data):
     '''
     msg = ""
     try:
-        if user_data.get("weekSupplementarySignature") == "1":
-            for index, value in enumerate(user_data.get("weekStatue")):
+        if user_data.get('weekSupplementarySignature') == "1":
+            for index, value in enumerate(user_data.get('weekStatue')):
                 if value == "1":
                     if (datetime.now().weekday() + 1) < index + 1:
                         print(f"星期{index + 1} 未领取")
                     elif (datetime.now().weekday() + 1) > index + 1:
                         # 补签
-                        ret = commit(user_data, ["number", (index + 1)])
-                        log = str(ret["modRet"]
-                                  ["sMsg"]) if ret["ret"] == "0" else str(
-                                      ret["flowRet"]["sMsg"])
+                        ret = commit(user_data, ['number', (index + 1)])
+                        log = str(ret['modRet']
+                                  ['sMsg']) if ret['ret'] == '0' else str(
+                                      ret['flowRet']['sMsg'])
                         msg += f"✅补签：{log}\n"
                         print(f"✅补签：{log}")
                 else:
@@ -247,21 +250,21 @@ def monthSignIn(user_data):
     '''
     msg = ""
     for index, day in enumerate([5, 10, 15, 20, 25]):
-        if int(user_data.get("monthSignIn")) >= day:
-            if int(user_data.get("monthStatue")[index]) == 0:
+        if int(user_data.get('monthSignIn')) >= day:
+            if int(user_data.get('monthStatue')[index]) == 0:
                 # 如果环境变量未设置，默认领取第一个礼包
-                if user_data.get("giftPackId"):
-                    giftPackId = user_data.get("giftPackId")
+                if user_data.get('giftPackId'):
+                    giftPackId = user_data.get('giftPackId')
                 else:
-                    print("❌检测到cookie中未设置giftPackId\n"
-                          "默认领取第一个礼包，如需自定义请添加变量于cookie中：giftPackId=xxx，取值1~6")
-                    giftPackId = "1"
+                    print("❌检测到cookie中未设置giftPackId\n默认领取第一个礼包，"
+                          "如需自定义请添加变量于cookie中：giftPackId=xxx，取值1~6")
+                    giftPackId = '1'
                 # 领取礼包
-                ret = commit(user_data, ["giftPackId", giftPackId, index])
-                log = str(ret["modRet"]["sMsg"]) if ret["ret"] == "0" else str(
-                    ret["flowRet"]["sMsg"])
+                ret = commit(user_data, ['giftPackId', giftPackId, index])
+                log = str(ret['modRet']['sMsg']) if ret['ret'] == '0' else str(
+                    ret['flowRet']['sMsg'])
                 log = f"✅累计签到{day}天：{log}"
-                msg += log + "\n"
+                msg += log + '\n'
                 print(log)
             else:
                 print(f"本月签到已达到{day}天，已领取第{index + 1}个月签奖励")
@@ -278,17 +281,17 @@ def browse_backpack(user_data):
     '''
     url = f"https://mwegame.qq.com/yoyo/dnf/phpgameproxypass"
     data = {
-        "uin": user_data.get("roleId"),
-        "userId": user_data.get("userId"),
-        "areaId": user_data.get("areaId"),
-        "token": user_data.get("token"),
+        "uin": user_data.get('roleId'),
+        "userId": user_data.get('userId'),
+        "areaId": user_data.get('areaId'),
+        "token": user_data.get('token'),
         "service": "dnf_getspeedknapsack",
         "cGameId": "1003",
     }
     response = requests.post(url=url, data=data)
     response.encoding = "utf-8"
 
-    return True if response.json()["returnMsg"] == "" else False
+    return True if response.json()['returnMsg'] == '' else False
 
 
 def taskGift(user_data):
@@ -298,14 +301,14 @@ def taskGift(user_data):
     :return msg: 领取奖励信息
     '''
     msg = ""
-    for index in range(len(user_data.get("task_id"))):
-        ret = commit(user_data, ["task_id", index])
-        if ret["ret"] == "0":
-            log = str(ret["modRet"]["sMsg"])
+    for index in range(len(user_data.get('task_id'))):
+        ret = commit(user_data, ['task_id', index])
+        if ret['ret'] == '0':
+            log = str(ret['modRet']['sMsg'])
             log = f"✅日常任务{index + 1}：{log}"
-            msg += log + "\n"
+            msg += log + '\n'
         else:
-            log = str(ret["flowRet"]["sMsg"])
+            log = str(ret['flowRet']['sMsg'])
             log = f"❌日常任务{index + 1}：{log}"
         print(log)
     return msg
@@ -322,9 +325,9 @@ def main():
     while i < len(cookie_zhangfei):
         # 获取user_data参数
         user_data = {}  # 用户信息
-        for a in cookie_zhangfei[i].replace(" ", "").split(";"):
-            if not a == "":
-                user_data.update({a.split("=")[0]: unquote(a.split("=")[1])})
+        for a in cookie_zhangfei[i].replace(" ", "").split(';'):
+            if not a == '':
+                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
         # print(user_data)
 
         # 获取签到信息
@@ -334,37 +337,35 @@ def main():
 
         # 开始任务
         log = (
-            f"\n🚗第 {i + 1} 个账号 {user_data.get("roleId")} "
-            f"{"电信区" if user_data.get("areaId") == "1" else "联通区" if user_data.get("areaId") == "2" else "电信2区"}"
+            f"\n🚗第 {i + 1} 个账号 {user_data.get('roleId')} "
+            f"{'电信区' if user_data.get('areaId') == '1' else '联通区' if user_data.get('areaId') == '2' else '电信2区'}"
         )
-        msg += log + "\n"
+        msg += log + '\n'
         print(f"{log} 开始执行任务...")
 
         # 签到
-        msg += signIn(user_data) + "\n"
+        msg += signIn(user_data) + '\n'
 
         # 获取累计信息
         if not get_outValue(user_data):
             i += 1
             continue
 
-        log = (
-            f"本周签到{user_data.get("weekSignIn")}/7天，"
-            f"本月签到{user_data.get("monthSignIn")}/25天，"
-            f"有{user_data.get("weekSupplementarySignature")}天可补签"
-        )
-        msg += log + "\n"
+        log = (f"本周签到{user_data.get('weekSignIn')}/7天，"
+               f"本月签到{user_data.get('monthSignIn')}/25天，"
+               f"有{user_data.get('weekSupplementarySignature')}天可补签")
+        msg += log + '\n'
         print(log)
 
         # 补签
         weekSupplementarySignature_log = weekSupplementarySignature(user_data)
         if len(weekSupplementarySignature_log):
-            msg += weekSupplementarySignature_log + "\n"
+            msg += weekSupplementarySignature_log + '\n'
 
         # 领取月签奖励
         monthSignIn_log = monthSignIn(user_data)
         if len(monthSignIn_log):
-            msg += monthSignIn_log + "\n"
+            msg += monthSignIn_log + '\n'
 
         # 日常任务：浏览背包
         if browse_backpack(user_data):
@@ -374,7 +375,7 @@ def main():
         # 日常任务：领取奖励
         taskGift_log = taskGift(user_data)
         if len(taskGift_log):
-            msg += taskGift_log + "\n"
+            msg += taskGift_log + '\n'
 
         i += 1
 
@@ -387,6 +388,6 @@ if __name__ == "__main__":
     print("----------掌上飞车签到执行完毕----------")
 
     try:
-        send("掌上飞车签到", msg)
+        send('掌上飞车签到', msg)
     except Exception as err:
-        print("%s\n❌错误，请查看运行日志！" % err)
+        print('%s\n❌错误，请查看运行日志！' % err)
