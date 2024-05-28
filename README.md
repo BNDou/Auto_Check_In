@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-05-20 01:05:49
+ * @LastEditTime: 2024-05-29 00:55:54
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -28,7 +28,7 @@ ql repo https://github.com/BNDou/Auto_Check_In.git "checkIn_" "backUp" "^sendNot
 
 ## 捐赠支持，用爱发电
 
-<a href="https://github.com/BNDou/"><img height="200px" src="https://cdn.bndou.eu.org/gh/BNDou/Auto_Check_In/readme_files/donate.jpg" /></a>
+<a href="https://github.com/BNDou/"><img height="200px" src="https://cdn.bndou.eu.org/gh/BNDou/Auto_Check_In/ReadMeFiles/donate.jpg" /></a>
 
 您的赞赏，激励我更好的创作！谢谢~
 
