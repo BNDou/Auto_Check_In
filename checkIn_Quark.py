@@ -6,10 +6,11 @@ cron: 0 9 * * *
 源码来自 GitHub 仓库：https://github.com/Cp0204/quark-auto-save
 提取“登录验证”“签到”“领取”方法封装到下文中的“Quark”类中
 
-Author       : BNDou
-Date         : 2024/4/10 00:20
-File         : checkIn_Quark
-Description  :
+Author: BNDou
+Date: 2024-03-15 21:43:06
+LastEditTime: 2024-05-28 21:44:55
+FilePath: \Auto_Check_In\checkIn_Quark.py
+Description: 
 抓包流程：
     ①浏览器访问-https://pan.quark.cn/ 并登录
     ②按F12打开“调试”，选中“网络”，找到一个以“sort”开头的文件即url=https://drive-pc.quark.cn/1/clouddrive/file/sort的请求信息
@@ -47,50 +48,88 @@ def get_env():
 
 
 class Quark:
+    '''
+    Quark类封装了登录验证、签到、领取签到奖励的方法
+    '''
     def __init__(self, cookie):
+        '''
+        初始化方法
+        :param cookie: 用户登录后的cookie，用于后续的请求
+        '''
         self.cookie = cookie
 
     def get_growth_info(self):
+        '''
+        获取用户当前的签到信息
+        :return: 返回一个字典，包含用户当前的签到信息
+        '''
         url = "https://drive-m.quark.cn/1/clouddrive/capacity/growth/info"
         querystring = {"pr": "ucpro", "fr": "pc", "uc_param_str": ""}
-        headers = {
-            "content-type": "application/json",
-            "cookie": self.cookie
-        }
-        response = requests.get(url=url, headers=headers, params=querystring).json()
+        headers = {"content-type": "application/json", "cookie": self.cookie}
+        response = requests.get(url=url, headers=headers,
+                                params=querystring).json()
+        #print(f"info={response}\n")
         if response.get("data"):
             return response["data"]
         else:
             return False
 
     def get_growth_sign(self):
+        '''
+        获取用户当前的签到信息
+        :return: 返回一个字典，包含用户当前的签到信息
+        '''
         url = "https://drive-m.quark.cn/1/clouddrive/capacity/growth/sign"
         querystring = {"pr": "ucpro", "fr": "pc", "uc_param_str": ""}
         payload = {"sign_cyclic": True}
-        headers = {
-            "content-type": "application/json",
-            "cookie": self.cookie
-        }
-        response = requests.post(url=url, json=payload, headers=headers, params=querystring).json()
+        headers = {"content-type": "application/json", "cookie": self.cookie}
+        response = requests.post(url=url,
+                                 json=payload,
+                                 headers=headers,
+                                 params=querystring).json()
+        #print(f"sign={response}\n")
         if response.get("data"):
             return True, response["data"]["sign_daily_reward"]
         else:
             return False, response["message"]
 
     def get_account_info(self):
+        '''
+        获取用户账号信息
+        :return: 返回一个字典，包含用户账号信息
+        '''
         url = "https://pan.quark.cn/account/info"
         querystring = {"fr": "pc", "platform": "pc"}
-        headers = {
-            "content-type": "application/json",
-            "cookie": self.cookie
-        }
-        response = requests.get(url=url, headers=headers, params=querystring).json()
+        headers = {"content-type": "application/json", "cookie": self.cookie}
+        response = requests.get(url=url, headers=headers,
+                                params=querystring).json()
         if response.get("data"):
             return response["data"]
         else:
             return False
 
+    def b_to_mb(self, b):
+        '''
+        将字节转换为MB
+        :param b: 字节数
+        :return: 返回转换后的MB数
+        '''
+        return b / (1024 * 1024)
+
+    def b_to_gib(self, b):
+        '''
+        将字节转换为GB
+        :param b: 字节数
+        :return: 返回转换后的GB数(保留两位小数)
+        '''
+        gib = b / (1024 * 1024 * 1024)
+        return round(gib, 1)
+
     def do_sign(self):
+        '''
+        执行签到任务
+        :return: 返回一个字符串，包含签到结果
+        '''
         msg = ""
         # 验证账号
         account_info = self.get_account_info()
@@ -102,21 +141,24 @@ class Quark:
             # 每日领空间
             growth_info = self.get_growth_info()
             if growth_info:
+                log = f"💾 网盘总容量：{self.b_to_gib(growth_info['total_capacity'])}GB，签到累计容量：{self.b_to_gib(growth_info['cap_composition']['sign_reward'])}GB\n"
                 if growth_info["cap_sign"]["sign_daily"]:
-                    log = f"✅ 执行签到: 今日已签到+{int(growth_info['cap_sign']['sign_daily_reward'] / 1024 / 1024)}MB，连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
-                    msg += log + "\n"
+                    log += f"✅ 签到日志: 今日已签到+{self.b_to_mb(growth_info['cap_sign']['sign_daily_reward'])}MB，连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
                 else:
                     sign, sign_return = self.get_growth_sign()
                     if sign:
-                        log = f"✅ 执行签到: 今日签到+{int(sign_return / 1024 / 1024)}MB，连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
-                        msg += log + "\n"
+                        log += f"✅ 执行签到: 今日签到+{self.b_to_mb(sign_return)}MB，连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
                     else:
-                        msg += f"✅ 执行签到: {sign_return}\n"
-
+                        log = f"❌ 签到异常: {sign_return}"
+            msg += log + "\n"
         return msg
 
 
 def main():
+    '''
+    主函数
+    :return: 返回一个字符串，包含签到结果
+    '''
     msg = ""
     global cookie_quark
     cookie_quark = get_env()
