@@ -8,13 +8,12 @@ cron: 0 9 * * *
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-05-29 01:59:12
+LastEditTime: 2024-05-29 04:34:03
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
     ①浏览器访问-https://pan.quark.cn/ 并登录
-    ②按F12打开“调试”，选中“网络”，找到一个以“sort”开头的请求
-        即url=https://drive-pc.quark.cn/1/clouddrive/file/sort的请求信息
+    ②按F12打开“调试”，选中“网络”，找到一个以“sort”开头的文件即url=https://drive-pc.quark.cn/1/clouddrive/file/sort的请求信息
     ③复制全部cookie粘贴到环境变量，环境变量名为 COOKIE_QUARK，多账户用 回车 或 && 分开
 '''
 import os
@@ -24,12 +23,12 @@ import sys
 import requests
 
 # 测试用环境变量
-# os.environ["COOKIE_QUARK"] = ""
+# os.environ['COOKIE_QUARK'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print("%s\n❌加载通知服务失败~" % err)
+    print('%s\n❌加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -37,11 +36,11 @@ def get_env():
     # 判断 COOKIE_QUARK是否存在于环境变量
     if "COOKIE_QUARK" in os.environ:
         # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split("\n|&&", os.environ.get("COOKIE_QUARK"))
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_QUARK'))
     else:
         # 标准日志输出
-        print("❌未添加COOKIE_QUARK变量")
-        send("夸克自动签到", "❌未添加COOKIE_QUARK变量")
+        print('❌未添加COOKIE_QUARK变量')
+        send('夸克自动签到', '❌未添加COOKIE_QUARK变量')
         # 脚本退出
         sys.exit(0)
 
@@ -189,9 +188,9 @@ def main():
     print(msg)
 
     try:
-        send("夸克自动签到", msg)
+        send('夸克自动签到', msg)
     except Exception as err:
-        print("%s\n❌错误，请查看运行日志！" % err)
+        print('%s\n❌错误，请查看运行日志！' % err)
 
     return msg[:-1]
 

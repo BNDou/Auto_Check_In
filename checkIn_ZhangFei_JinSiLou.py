@@ -3,7 +3,7 @@ new Env('掌上飞车-0点开金丝篓')
 cron: 59 59 23 * * *
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime: 2024-05-29 02:06:23
+LastEditTime: 2024-05-29 04:40:53
 FilePath: \Auto_Check_In\checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
 默认只有出货才推送通知
@@ -29,13 +29,13 @@ import requests
 from checkIn_ZhangFei_Login import check
 
 # 测试用环境变量
-# os.environ["zhangFei_jinSiLouNum"] = "1"
-# os.environ["COOKIE_ZHANGFEI"] = ""
+# os.environ['zhangFei_jinSiLouNum'] = '1'
+# os.environ['COOKIE_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
     from sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print("%s\n❌加载通知服务失败~" % err)
+    print('%s\n❌加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -43,32 +43,32 @@ def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
     if "COOKIE_ZHANGFEI" in os.environ:
         # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split("\n|&&", os.environ.get("COOKIE_ZHANGFEI"))
+        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
     else:
         # 标准日志输出
-        print("❌未添加COOKIE_ZHANGFEI变量")
-        send("掌上飞车开金丝篓", "❌未添加COOKIE_ZHANGFEI变量")
+        print('❌未添加COOKIE_ZHANGFEI变量')
+        send('掌上飞车开金丝篓', '❌未添加COOKIE_ZHANGFEI变量')
         # 脚本退出
         sys.exit(0)
 
     # 判断 金丝篓开启个数 变量zhangFei_jinSiLouNum是否存在于环境变量
     if "zhangFei_jinSiLouNum" in os.environ:
-        if (len(os.environ.get("zhangFei_jinSiLouNum")) <= 0 or
-                int(os.environ.get("zhangFei_jinSiLouNum")) == 0):
-            print("❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n"
-                  "❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n"
-                  "❌变量为大于零的整数")
-            send("掌上飞车开金丝篓", ("❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n"
-                              "❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n"
-                              "❌变量为大于零的整数"))
+        if len(os.environ.get('zhangFei_jinSiLouNum')) <= 0 or int(
+                os.environ.get('zhangFei_jinSiLouNum')) == 0:
+            print('❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n'
+                  '❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n'
+                  '❌变量为大于零的整数')
+            send('掌上飞车开金丝篓', ('❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n'
+                              '❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n'
+                              '❌变量为大于零的整数'))
             sys.exit(1)
     else:
-        print("❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n"
-              "❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n"
-              "❌变量为大于零的整数")
-        send("掌上飞车开金丝篓", ("❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n"
-                          "❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n"
-                          "❌变量为大于零的整数"))
+        print('❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n'
+              '❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n'
+              '❌变量为大于零的整数')
+        send('掌上飞车开金丝篓', ('❌使用请添加zhangFei_jinSiLouNum变量控制开启金丝篓个数\n'
+                          '❌直接在config.sh添加export zhangFei_jinSiLouNum=**\n'
+                          '❌变量为大于零的整数'))
         sys.exit(0)
 
     return cookie_list
@@ -79,33 +79,33 @@ class OpenBoxThread(threading.Thread):
     def __init__(self, user_data):
         threading.Thread.__init__(self)
         self.user_data = user_data
-        self.result = ""
+        self.result = ''
         self.q = Queue()
 
     # 执行
     def run(self):
         url = "https://bang.qq.com/app/speed/chest/ajax/openBox"
-        headers = {"Referer": f"https://bang.qq.com/app/speed/chest/index/v2"}
+        headers = {'Referer': f"https://bang.qq.com/app/speed/chest/index/v2"}
         # 生成表单
         data = {
-            "userId": self.user_data.get("userId"),  # 掌飞id
-            "uin": self.user_data.get("roleId"),  # QQ账号
-            "areaId": self.user_data.get("areaId"),  # 大区
-            "token": self.user_data.get("token"),  # 令牌
-            "boxId": "17455",  # 金丝篓17455
-            "openNum": "1"  # 1个金丝篓开2个大闸蟹
+            'userId': self.user_data.get('userId'),  # 掌飞id
+            'uin': self.user_data.get('roleId'),  # QQ账号
+            'areaId': self.user_data.get('areaId'),  # 大区
+            'token': self.user_data.get('token'),  # 令牌
+            'boxId': '17455',  # 金丝篓17455
+            'openNum': '1'  # 1个金丝篓开2个大闸蟹
         }
         r = requests.post(url=url, headers=headers, data=data)
         a = r.json()
 
         # 是否成功
-        if "data" in a:
-            if "itemList" in a.get("data"):
-                item_list = a.get("data").get("itemList")
+        if 'data' in a:
+            if 'itemList' in a.get('data'):
+                item_list = a.get('data').get('itemList')
                 for num in range(len(item_list)):
-                    self.result += f"✅{item_list[num].get("avtarname")}*{item_list[num].get("num")} "
+                    self.result += f"✅{item_list[num].get('avtarname')}*{item_list[num].get('num')} "
                     num += 1
-            if "msg" in a.get("data"):
+            if 'msg' in a.get('data'):
                 self.result += "❌" + str(a)
         self.q.put(self.result)
 
@@ -117,7 +117,7 @@ class OpenBoxThread(threading.Thread):
 def main(*arg):
     msg = ""
     log_push = ""
-    sendnoty = "true"
+    sendnoty = 'true'
     thread = []
     global cookie_zhangfei
     cookie_zhangfei = get_env()
@@ -128,9 +128,9 @@ def main(*arg):
     while i < len(cookie_zhangfei):
         # 获取user_data参数
         user_data = {}  # 用户信息
-        for a in cookie_zhangfei[i].replace(" ", "").split(";"):
-            if not a == "":
-                user_data.update({a.split("=")[0]: unquote(a.split("=")[1])})
+        for a in cookie_zhangfei[i].replace(" ", "").split(';'):
+            if not a == '':
+                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
 
         # 检查token是否过期
         if not check(user_data, "JinSiLou"):
@@ -138,7 +138,7 @@ def main(*arg):
             continue
 
         # 开金丝篓
-        for num in range(int(os.environ.get("zhangFei_jinSiLouNum"))):
+        for num in range(int(os.environ.get('zhangFei_jinSiLouNum'))):
             thread.append(OpenBoxThread(user_data))
 
         i += 1
@@ -155,20 +155,20 @@ def main(*arg):
 
     print(msg)
 
-    if "霸天虎" in msg:
-        log_push += "⭕⭕⭕\n有账号成功开出 霸天虎，离永久雷诺不远了\n⭕⭕⭕\n"
-    if "公牛" in msg:
-        log_push += "⭕⭕⭕\n有账号成功开出 公牛，离永久雷诺不远了\n⭕⭕⭕\n"
-    if "雷诺" in msg:
-        log_push += "⭕⭕⭕\n有账号成功开出 永久雷诺，少年终于圆梦成功\n⭕⭕⭕\n"
+    if '霸天虎' in msg:
+        log_push += '⭕⭕⭕\n有账号成功开出 霸天虎，离永久雷诺不远了\n⭕⭕⭕\n'
+    if '公牛' in msg:
+        log_push += '⭕⭕⭕\n有账号成功开出 公牛，离永久雷诺不远了\n⭕⭕⭕\n'
+    if '雷诺' in msg:
+        log_push += '⭕⭕⭕\n有账号成功开出 永久雷诺，少年终于圆梦成功\n⭕⭕⭕\n'
 
     if sendnoty:
         try:
             if len(log_push) > 0:
                 print(log_push)
-                send("掌上飞车开金丝篓", log_push)
+                send('掌上飞车开金丝篓', log_push)
         except Exception as err:
-            print("%s\n❌错误，请查看运行日志！" % err)
+            print('%s\n❌错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
