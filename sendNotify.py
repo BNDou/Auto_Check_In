@@ -1,7 +1,7 @@
 '''
 Author: BNDou
 Date: 2023-10-18 20:55:31
-LastEditTime: 2024-05-10 04:36:08
+LastEditTime: 2024-05-10 04:38:55
 FilePath: \Auto_Check_In\sendNotify.py
 Description: 
 '''
@@ -36,8 +36,8 @@ TG_USER_ID = ''  # tg机器人的TG_USER_ID; secrets可填 1434078534
 TG_API_HOST = ''  # tg 代理api
 TG_PROXY_IP = ''  # tg机器人的TG_PROXY_IP; secrets可填
 TG_PROXY_PORT = ''  # tg机器人的TG_PROXY_PORT; secrets可填
-DD_BOT_TOKEN = ''  # 钉钉机器人的DD_BOT_TOKEN; secrets可填
-DD_BOT_SECRET = ''  # 钉钉机器人的DD_BOT_SECRET; secrets可填
+DD_BOT_TOKEN = '7b3579e39c92ca8955d1e6f409beba7d7631cb917ab0a1645cbf08d5c45a2456'  # 钉钉机器人的DD_BOT_TOKEN; secrets可填
+DD_BOT_SECRET = 'SEC2e46b77ba04bd2419683f940c96f6ba4e63bb89803dce6d14d50d120eea87db2'  # 钉钉机器人的DD_BOT_SECRET; secrets可填
 QQ_SKEY = ''  # qq机器人的QQ_SKEY; secrets可填
 QQ_MODE = ''  # qq机器人的QQ_MODE; secrets可填
 QYWX_AM = ''  # 企业微信

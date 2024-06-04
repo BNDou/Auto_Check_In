@@ -3,8 +3,8 @@ new Env('人人视频日常')
 cron: 0 9 * * *
 Author: BNDou
 Date: 2024-06-05 01:56:28
-LastEditTime: 2024-06-05 04:46:14
-FilePath: \Auto_Check_In\checIn_RRShiPin.py
+LastEditTime: 2024-06-05 04:48:14
+FilePath: \Auto_Check_In\checkIn_RRShiPin.py
 抓包流程：
     ①开启抓包，打开签到页
     ②找到url = https://api.qwdjapp.com/activity/index/integral 的请求头
