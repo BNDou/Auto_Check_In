@@ -91,9 +91,9 @@ class RRShiPin:
         rjson = requests.post(url, headers=headers, data=data).json()
         if rjson['code'] == '0000':
             if not rjson['data'] == None:
-                return f"✅ 领取签到奖励: {rjson['data']['value']}"
+                return f"✔️ 领取签到奖励: {rjson['data']['value']}"
             else:
-                return '✅ 领取签到奖励: 今日签到奖励已领取！'
+                return '✔️ 领取签到奖励: 今日签到奖励已领取！'
         return f"❌ 签到失败: \n{rjson}"
 
     def get_list(self):
@@ -134,7 +134,7 @@ class RRShiPin:
         data = {'taskId': taskId}
         rjson = requests.post(url, headers=headers, data=data).json()
         if rjson['code'] == '0000':
-            return f"✅ 任务{taskId}: 激活成功"
+            return f"✔️ 任务{taskId}: 激活成功"
         return f"❌ 任务{taskId}: 激活失败\n{rjson}"
 
     def get_complete(self, taskId):
@@ -153,7 +153,7 @@ class RRShiPin:
         data = {"taskId": taskId}
         rjson = requests.post(url, headers=headers, data=data).json()
         if rjson['code'] == '0000':
-            return f"✅ 任务{taskId}: 奖励领取成功"
+            return f"✔️ 任务{taskId}: 奖励领取成功"
         return f"❌ 任务{taskId}: 奖励领取失败\n{rjson}"
 
     def sendLog(self, msg, log):
