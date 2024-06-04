@@ -1,14 +1,10 @@
 '''
 Author: BNDou
 Date: 2023-10-18 20:55:31
-LastEditTime: 2024-06-05 05:03:59
-FilePath: \Auto_Check_In\utils\sendNotify.py
+LastEditTime: 2024-06-05 05:21:57
+FilePath: /Auto_Check_In/utils/sendNotify.py
 Description: 
 '''
-# !/usr/bin/env python3
-# _*_ coding:utf-8 _*_
-
-# Modify: Kirin
 
 import base64
 import hashlib

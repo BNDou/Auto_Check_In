@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-05-29 03:24:57
+ * @LastEditTime: 2024-06-05 05:11:47
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -21,7 +21,7 @@
 1. 拉库指令（拉库失败请自行添加代理）
 
 ```
-ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "^sendNotify" "main"
+ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "utils" "main" "py"
 ```
 
 2. 根据“**_代码文件头部注释_**”或者“**_运行提示_**”添加对应的“**_环境变量_**”
