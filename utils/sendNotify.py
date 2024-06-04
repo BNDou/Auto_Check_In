@@ -1,8 +1,8 @@
 '''
 Author: BNDou
 Date: 2023-10-18 20:55:31
-LastEditTime: 2024-05-10 04:36:08
-FilePath: \Auto_Check_In\sendNotify.py
+LastEditTime: 2024-06-05 05:03:59
+FilePath: \Auto_Check_In\utils\sendNotify.py
 Description: 
 '''
 # !/usr/bin/env python3

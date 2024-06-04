@@ -7,5 +7,4 @@ __pycache__
 .idea/encodings.xml
 .idea/Auto_Check_In.iml
 .idea/.name
-sendNotify.py
 .vscode/settings.json

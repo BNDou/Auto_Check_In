@@ -33,7 +33,7 @@ from checkIn_ZhangFei_Login import check
 # os.environ['COOKIE_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
-    from sendNotify import send  # 导入消息通知模块
+    from utils.sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
     print('%s\n❌加载通知服务失败~' % err)
 

@@ -8,7 +8,7 @@ cron: 0 9 * * *
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-05-29 04:34:03
+LastEditTime: 2024-06-05 05:03:19
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -26,7 +26,7 @@ import requests
 # os.environ['COOKIE_QUARK'] = ''
 
 try:  # 异常捕捉
-    from sendNotify import send  # 导入消息通知模块
+    from utils.sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
     print('%s\n❌加载通知服务失败~' % err)
 

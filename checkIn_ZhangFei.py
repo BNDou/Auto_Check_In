@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime: 2024-05-29 04:45:06
+LastEditTime: 2024-06-05 05:03:41
 FilePath: \Auto_Check_In\checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -38,7 +38,7 @@ from checkIn_ZhangFei_Login import check
 # os.environ['COOKIE_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
-    from sendNotify import send  # 导入消息通知模块
+    from utils.sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
     print('%s\n❌加载通知服务失败~' % err)
 

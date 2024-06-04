@@ -19,7 +19,7 @@ from lxml import etree
 # os.environ['COOKIE_ENSHAN'] = ''
 
 try:  # 异常捕捉
-    from sendNotify import send  # 导入消息通知模块
+    from utils.sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
     print('%s\n加载通知服务失败~' % err)
 
