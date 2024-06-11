@@ -27,7 +27,7 @@ cron: 1 1 1 1 1
 
 Author: BNDou
 Date: 2024-04-11 22:20:35
-LastEditTime: 2024-04-17 03:18:57
+LastEditTime: 2024-06-12 00:15:29
 FilePath: \Auto_Check_In\checkIn_ZhangFei_getToken.py
 Description: 
 '''
@@ -86,7 +86,17 @@ if __name__ == "__main__":
 
     # 3、监控用户是否扫成功
     while (True):
-        url = f"https://xui.ptlogin2.qq.com/ssl/ptqrlogin?ptqrtoken={ptqrtoken}&u1=http://connect.qq.com&from_ui=1&daid=381&aid=716027609&pt_3rd_aid=1105330667"
+        params = {
+            "ptqrtoken": ptqrtoken,
+            "u1": "http://connect.qq.com",
+            "from_ui": "1",
+            "daid": "381",
+            "aid": "716027609",
+            "pt_3rd_aid": "1105330667",
+            "pt_openlogin_data": "refer_cgi%3Dm_authorize%26response_type%3Dtoken%26client_id%3D1105330667%26redirect_uri%3Dauth%253A%252F%252Ftauth.qq.com%252F%26",
+        }
+        query_string = "&".join([f"{k}={v}" for k, v in params.items()])
+        url = f"https://xui.ptlogin2.qq.com/ssl/ptqrlogin?{query_string}"
         res_login = requests.get(
             url=url,
             headers={
@@ -98,26 +108,14 @@ if __name__ == "__main__":
             })
         print(res_login.text)
         if "登录成功" in res_login.text:
+            # 4、提取 openid appid access_token
+            openid = re.search(r"openid=(\w+)", res_login.text).group(1)
+            appid = re.search(r"appid=(\w+)", res_login.text).group(1)
+            access_token = re.search(r"access_token=(\w+)",
+                                     res_login.text).group(1)
+            print(
+                f"\nopenid = {openid}\nappid = {appid}\naccess_token = {access_token}"
+            )
             break
         # 两秒循环检测
         time.sleep(2)
-
-    # 4、获取产生p_skey的url
-    url = re.search(r"ptuiCB\('0','0','(.*?)'", res_login.text).group(1)
-    # print(url)
-    # 遍历 cookies 字典并拼接成 cookie 格式
-    res_check_sig = requests.get(
-        url=url,
-        headers={
-            'Cookie':
-            '; '.join([
-                f'{key}={value}'
-                for key, value in res_login.cookies.get_dict().items()
-            ])
-        },
-        allow_redirects=False)
-    res_check_sig.cookies.get_dict()
-
-    # 5、获取client_id、g_tk、u
-    # 6、获取code的包
-    # 7、获取openid、access_token
