@@ -3,7 +3,7 @@ new Env('人人视频日常')
 cron: 0 9 * * *
 Author: BNDou
 Date: 2024-06-05 01:56:28
-LastEditTime: 2024-06-05 05:03:08
+LastEditTime: 2024-06-11 21:07:25
 FilePath: \Auto_Check_In\checkIn_RRShiPin.py
 抓包流程：
     ①开启抓包，打开签到页
@@ -24,7 +24,7 @@ import requests
 try:  # 异常捕捉
     from utils.sendNotify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
-    print('%s\n❌加载通知服务失败~' % err)
+    print('%s\n🔴加载通知服务失败~' % err)
 
 
 # 获取环境变量
@@ -35,8 +35,8 @@ def get_env():
         cookie_list = re.split('\n|&&', os.environ.get('COOKIE_RRShiPin'))
     else:
         # 标准日志输出
-        print('❌未添加 COOKIE_RRShiPin 变量')
-        send('人人视频日常', '❌未添加 COOKIE_RRShiPin 变量')
+        print('🔴未添加 COOKIE_RRShiPin 变量')
+        send('人人视频日常', '🔴未添加 COOKIE_RRShiPin 变量')
         # 脚本退出
         sys.exit(0)
 
@@ -57,6 +57,23 @@ class RRShiPin:
             for a in cookie.replace(" ", "").split(';') if a != ''
         }
 
+    def status_refresh(self):
+        '''
+        刷新用户登录状态
+        :return: 返回用户登录状态
+        '''
+        url = "https://api.qwdjapp.com/channel/page/category"
+        headers = {
+            "clientVersion": self.cookie.get('clientVersion'),
+            "clientType": self.cookie.get('clientType'),
+            "aliId": self.cookie.get('aliId'),
+            "st": self.cookie.get('st'),
+        }
+        rjson = requests.get(url, headers=headers).json()
+        if rjson['code'] == '0000':
+            return f"🟢 登录账号: {rjson['msg']}"
+        return f"🔴 登录账号: 失败\n{rjson}"
+
     def get_integral(self):
         '''
         获取用户当前的积分信息
@@ -73,7 +90,7 @@ class RRShiPin:
         if rjson['code'] == '0000':
             if not rjson['data'] == None:
                 return rjson['data']['integral']
-        return f"❌ 获取积分信息失败: \n{rjson}"
+        return f"🔴 获取积分信息失败: \n{rjson}"
 
     def get_sign(self):
         '''
@@ -91,10 +108,10 @@ class RRShiPin:
         rjson = requests.post(url, headers=headers, data=data).json()
         if rjson['code'] == '0000':
             if not rjson['data'] == None:
-                return f"✔️ 领取签到奖励: {rjson['data']['value']}"
+                return f"🟢 领取签到奖励: {rjson['data']['value']}"
             else:
-                return '✔️ 领取签到奖励: 今日签到奖励已领取！'
-        return f"❌ 签到失败: \n{rjson}"
+                return '🟢 领取签到奖励: 今日签到奖励已领取！'
+        return f"🔴 签到失败: \n{rjson}"
 
     def get_list(self):
         '''
@@ -134,8 +151,8 @@ class RRShiPin:
         data = {'taskId': taskId}
         rjson = requests.post(url, headers=headers, data=data).json()
         if rjson['code'] == '0000':
-            return f"✔️ 任务{taskId}: 激活成功"
-        return f"❌ 任务{taskId}: 激活失败\n{rjson}"
+            return f"🟢 任务{taskId}: 激活成功"
+        return f"🔴 任务{taskId}: 激活失败\n{rjson}"
 
     def get_complete(self, taskId):
         '''
@@ -153,8 +170,8 @@ class RRShiPin:
         data = {"taskId": taskId}
         rjson = requests.post(url, headers=headers, data=data).json()
         if rjson['code'] == '0000':
-            return f"✔️ 任务{taskId}: 奖励领取成功"
-        return f"❌ 任务{taskId}: 奖励领取失败\n{rjson}"
+            return f"🟢 任务{taskId}: 奖励领取成功"
+        return f"🔴 任务{taskId}: 奖励领取失败\n{rjson}"
 
     def sendLog(self, msg, log):
         '''
@@ -172,13 +189,15 @@ class RRShiPin:
         :return: 返回一个字符串，包含签到结果
         '''
         msg = self.sendLog("", f"👶 账号: {self.cookie.get('user')}")
+        # 刷新登录状态
+        print(self.status_refresh())
         # 请求签到
         msg = self.sendLog(msg, self.get_sign())
         # 获取签到任务列表
         dailyTaskList = self.get_list()
         # 激活任务和领取奖励
         for task in dailyTaskList:
-            print(f"📔 任务{task['id']}: {task['taskName']} 奖励: {task['count']}")
+            print(f"💠 任务{task['id']}: {task['taskName']} 奖励: {task['count']}")
             # 激活任务
             print(self.get_receive(task['id']))
             # 领取奖励
@@ -198,4 +217,4 @@ if __name__ == "__main__":
     try:
         send('人人视频日常', msg)
     except Exception as err:
-        print('%s\n❌错误，请查看运行日志！' % err)
+        print('%s\n🔴 错误，请查看运行日志！' % err)
