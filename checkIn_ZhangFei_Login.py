@@ -119,7 +119,7 @@ def check(user, branch):
         return True if response_json['returnMsg'] == "" else False
     elif "" or "GouWu" or "JinSiLou" or "XunBao":
         if response_json['returnMsg'] != "":
-            print("❌账号 {}".format(user.get("userId")),
+            print("❌账号 {}".format(user.get("roleId")),
                   response_json['returnMsg'], "可更新token后重试")
 
     return True if response_json['returnMsg'] == "" else False
