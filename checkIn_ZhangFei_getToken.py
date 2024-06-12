@@ -27,19 +27,30 @@ cron: 1 1 1 1 1
 
 Author: BNDou
 Date: 2024-04-11 22:20:35
-LastEditTime: 2024-06-12 13:38:30
+LastEditTime: 2024-06-12 19:19:34
 FilePath: \Auto_Check_In\checkIn_ZhangFei_getToken.py
 Description: 
 '''
 
+import sys
 import io
 import re
 import time
 
 import qrcode
 import requests
-from PIL import Image
-from pyzbar.pyzbar import decode
+try:
+    from PIL import Image
+    from pyzbar.pyzbar import decode
+except ModuleNotFoundError as e:
+    if "PIL" in str(e):
+        print(f"❌ {e}\n请到依赖管理中安装python环境的“pillow”")
+    elif "pyzbar" in str(e):
+        print(f"❌ {e}\n请到依赖管理中安装python环境的“pyzbar”")
+    sys.exit()
+except ImportError as e:
+    print(f"❌ {e}\n请安装 zbar 库，安装指令：apk add zbar-dev")
+    sys.exit()
 
 
 # def get_auth_token(t):
