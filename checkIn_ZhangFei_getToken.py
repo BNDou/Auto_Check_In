@@ -1,5 +1,5 @@
 '''
-new Env('暂时不能用-掌上飞车扫码登陆')
+new Env('掌上飞车扫码登陆')
 cron: 1 1 1 1 1
                        _oo0oo_
                       o8888888o
@@ -27,7 +27,7 @@ cron: 1 1 1 1 1
 
 Author: BNDou
 Date: 2024-04-11 22:20:35
-LastEditTime: 2024-06-12 00:15:29
+LastEditTime: 2024-06-12 13:38:30
 FilePath: \Auto_Check_In\checkIn_ZhangFei_getToken.py
 Description: 
 '''
@@ -42,12 +42,12 @@ from PIL import Image
 from pyzbar.pyzbar import decode
 
 
-def get_auth_token(t):
-    """官方算法：根据supertoken计算auth_token"""
-    e, r = 0, len(t)
-    for n in range(r):
-        e = 33 * e + ord(t[n])
-    return e % 4294967296
+# def get_auth_token(t):
+#     """官方算法：根据supertoken计算auth_token"""
+#     e, r = 0, len(t)
+#     for n in range(r):
+#         e = 33 * e + ord(t[n])
+#     return e % 4294967296
 
 
 def get_ptqrtoken(t):
@@ -59,6 +59,10 @@ def get_ptqrtoken(t):
 
 
 if __name__ == "__main__":
+    print("🔴 没事不要随便扫，扫码登录后，寻宝和购物用的token就失效了")
+    print("🔴 需要重新在app端抓包获取token，得不偿失")
+    print("🔴 除非你只用签到脚本，不需要那俩功能")
+    print("✌ 请使用手机QQ扫描二维码")
     # 1、获取需要扫码的图片并切获取qrsig
     url = "https://xui.ptlogin2.qq.com/ssl/ptqrshow?daid=381&appid=716027609&pt_3rd_aid=1105330667"
     res_qr = requests.get(url)
