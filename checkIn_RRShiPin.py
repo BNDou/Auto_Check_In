@@ -3,14 +3,14 @@ new Env('人人视频日常')
 cron: 0 9 * * *
 Author: BNDou
 Date: 2024-06-05 01:56:28
-LastEditTime: 2024-06-11 21:07:25
+LastEditTime: 2024-06-14 23:06:43
 FilePath: \Auto_Check_In\checkIn_RRShiPin.py
 抓包流程：
     ①开启抓包，打开签到页
     ②找到url = https://api.qwdjapp.com/activity/index/integral 的请求头
-    ③分别复制 clientVersion、aliId、st、clientType 四个值，写到环境变量中，格式如下：
-    环境变量名为 COOKIE_RRShiPin 多账户用 回车 或 && 分开，最后一个字段是 user 是用户名备注(自定义的，请求包里面没有)，可加可不加
-    clientVersion=xxx; aliId=xxx; st=xxx; clientType=xxx; user=xxx;
+    ③分别复制 clientVersion clientType token aliId st 四个值，写到环境变量中，格式如下：
+    环境变量名为 COOKIE_RRShiPin 多账户用 回车 或 && 分开
+    clientVersion=xxx; clientType=xxx; token=xxx; aliId=xxx; st=xxx;
 '''
 import os
 import re
@@ -57,21 +57,23 @@ class RRShiPin:
             for a in cookie.replace(" ", "").split(';') if a != ''
         }
 
-    def status_refresh(self):
+    def user_information(self):
         '''
-        刷新用户登录状态
-        :return: 返回用户登录状态
+        获取用户信息
+        :return: 返回用户信息
         '''
-        url = "https://api.qwdjapp.com/channel/page/category"
+        url = f"https://api.qwdjapp.com/user/personal/information?token={self.cookie.get('token')}"
         headers = {
             "clientVersion": self.cookie.get('clientVersion'),
             "clientType": self.cookie.get('clientType'),
+            "token": self.cookie.get('token'),
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
         rjson = requests.get(url, headers=headers).json()
         if rjson['code'] == '0000':
-            return f"🟢 登录账号: {rjson['msg']}"
+            self.cookie['nickName'] = rjson['data']['user']['nickName']
+            return f"👶 登录账号: {rjson['data']['user']['nickName']}"
         return f"🔴 登录账号: 失败\n{rjson}"
 
     def get_integral(self):
@@ -83,6 +85,7 @@ class RRShiPin:
         headers = {
             "clientVersion": self.cookie.get('clientVersion'),
             "clientType": self.cookie.get('clientType'),
+            "token": self.cookie.get('token'),
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
@@ -101,6 +104,7 @@ class RRShiPin:
         headers = {
             "clientVersion": self.cookie.get('clientVersion'),
             "clientType": self.cookie.get('clientType'),
+            "token": self.cookie.get('token'),
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
@@ -122,6 +126,7 @@ class RRShiPin:
         headers = {
             "clientVersion": self.cookie.get('clientVersion'),
             "clientType": self.cookie.get('clientType'),
+            "token": self.cookie.get('token'),
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
@@ -145,6 +150,7 @@ class RRShiPin:
         headers = {
             "clientVersion": self.cookie.get('clientVersion'),
             "clientType": self.cookie.get('clientType'),
+            "token": self.cookie.get('token'),
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
@@ -164,6 +170,7 @@ class RRShiPin:
         headers = {
             "clientVersion": self.cookie.get('clientVersion'),
             "clientType": self.cookie.get('clientType'),
+            "token": self.cookie.get('token'),
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
@@ -188,9 +195,10 @@ class RRShiPin:
         执行日常任务
         :return: 返回一个字符串，包含签到结果
         '''
-        msg = self.sendLog("", f"👶 账号: {self.cookie.get('user')}")
-        # 刷新登录状态
-        print(self.status_refresh())
+        # 获取用户信息
+        msg = self.sendLog("", self.user_information())
+        # 获取初始积分信息
+        print(f"🏅 初始积分: {self.get_integral()}")
         # 请求签到
         msg = self.sendLog(msg, self.get_sign())
         # 获取签到任务列表
