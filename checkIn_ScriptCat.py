@@ -3,7 +3,7 @@ new Env('脚本猫论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2024-06-14 03:24:38
-LastEditTime: 2024-06-14 03:28:18
+LastEditTime: 2024-06-15 21:41:44
 FilePath: \Auto_Check_In\checkIn_ScriptCat.py
 Description  : 添加环境变量COOKIE_SCRIPTCART，多账号用 回车 或 && 分开
 '''
@@ -52,20 +52,36 @@ class ScriptCat:
         self.haixvqiandao = None
         self.xiayige_group = None
         self.date = None
+        self.log = None
+
+    def get_qiandao(self):
+        """签到"""
+        url = "https://bbs.tampermonkey.net.cn/plugin.php"
+        params = {
+            "id": "dsu_paulsign:sign",
+            "operation": "qiandao",
+            "infloat": "1",
+            "inajax": "1",
+        }
+        data = {
+            "formhash": "738cc5d7",
+            "qdxq": "kx",
+            "qdmode": "3",
+            "todaysay": "",
+            "fastreply": "0",
+        }
+        log_res = requests.post(url=url,
+                                params=params,
+                                headers={'Cookie': self.cookie},
+                                data=data)
+        if log_res.status_code == 200:
+            self.log = re.search(r'<div class="c">\r\n(.*?) </div>',
+                                 log_res.text).group(1)
 
     def get_log(self):
         """获取签到日期记录"""
         log_url = "https://bbs.tampermonkey.net.cn/plugin.php?id=dsu_paulsign:sign"
-        data = {
-            "formhash": "738cc5d7",
-            "qdxq": "kx",
-            "qdmode": "2",
-            # "todaysay": "",
-            "fastreply": "0"
-        }
-        log_res = requests.get(url=log_url,
-                               headers={'Cookie': self.cookie},
-                               data=data)
+        log_res = requests.get(url=log_url, headers={'Cookie': self.cookie})
         # print(log_res.text)
         html = etree.HTML(log_res.text)
         self.user_name = html.xpath('//b//text()')[0]
@@ -80,11 +96,13 @@ class ScriptCat:
 
     def main(self):
         """执行"""
+        self.get_qiandao()
         self.get_log()
 
-        if self.date:
+        if self.log:
             return (
                 f'👶 {self.user_name}，目前的等级: {self.user_group}\n'
+                f'⭐ {self.log}\n'
                 f'⭐ 累计已签到: {self.leijiqiandao} 天\n'
                 f'⭐ 本月已累计签到:{self.benyueleijiqiandao} 天\n'
                 f'⭐ 目前获得的总奖励为：油猫币 {self.coin_zong}\n'
