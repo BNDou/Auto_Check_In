@@ -8,7 +8,7 @@ cron: 0 9 * * *
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-06-16 01:15:55
+LastEditTime: 2024-06-16 02:57:29
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -108,22 +108,22 @@ class Quark:
         else:
             return False
 
-    def b_to_mb(self, b):
+    def convert_bytes(self, b):
         '''
-        将字节转换为MB
+        将字节转换为 MB GB TB
         :param b: 字节数
-        :return: 返回转换后的MB数
+        :return: 返回 MB GB TB
         '''
-        return b / (1024 * 1024)
-
-    def b_to_gib(self, b):
-        '''
-        将字节转换为GB
-        :param b: 字节数
-        :return: 返回转换后的GB数(保留两位小数)
-        '''
-        gib = b / (1024 * 1024 * 1024)
-        return round(gib, 1)
+        b = b / (1024 * 1024)
+        if len(str(b).split('.')[0]) < 4:
+            return f"{round(b, 1)} MB"  # 返回 MB
+        else:
+            b = b / 1024
+            if len(str(b).split('.')[0]) < 4:
+                return f"{round(b, 1)} GB"  # 返回 GB
+            else:
+                b = b / 1024
+                return f"{round(b, 1)} TB"  # 返回 TB
 
     def do_sign(self):
         '''
@@ -134,7 +134,7 @@ class Quark:
         # 验证账号
         account_info = self.get_account_info()
         if not account_info:
-            msg = f"\n❌该账号登录失败，cookie无效"
+            msg = f"\n❌ 该账号登录失败，cookie无效\n"
         else:
             log = f" 昵称: {account_info['nickname']}"
             msg += log + "\n"
@@ -142,26 +142,22 @@ class Quark:
             growth_info = self.get_growth_info()
             if growth_info:
                 log = (
-                    f"💾 网盘总容量：{self.b_to_gib(growth_info['total_capacity'])} GB，"
-                    f"签到累计容量："
-                )
+                    f"💾 网盘总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
+                    f"签到累计容量：")
                 if "sign_reward" in growth_info['cap_composition']:
-                    if self.b_to_gib(growth_info['cap_composition']['sign_reward']) > 0:
-                        log += f"{self.b_to_gib(growth_info['cap_composition']['sign_reward'])} GB\n"
-                    else:
-                        log += f"{self.b_to_mb(growth_info['cap_composition']['sign_reward'])} MB\n"
+                    log += f"{self.convert_bytes(growth_info['cap_composition']['sign_reward'])}\n"
                 else:
                     log += "0 MB\n"
                 if growth_info["cap_sign"]["sign_daily"]:
                     log += (
-                        f"✅ 签到日志: 今日已签到+{self.b_to_mb(growth_info['cap_sign']['sign_daily_reward'])} MB，"
+                        f"✅ 签到日志: 今日已签到+{self.convert_bytes(growth_info['cap_sign']['sign_daily_reward'])}，"
                         f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
                     )
                 else:
                     sign, sign_return = self.get_growth_sign()
                     if sign:
                         log += (
-                            f"✅ 执行签到: 今日签到+{self.b_to_mb(sign_return)} MB，"
+                            f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
                             f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
                         )
                     else:
@@ -179,7 +175,7 @@ def main():
     global cookie_quark
     cookie_quark = get_env()
 
-    print("✅检测到共", len(cookie_quark), "个夸克账号\n")
+    print("✅ 检测到共", len(cookie_quark), "个夸克账号\n")
 
     i = 0
     while i < len(cookie_quark):
@@ -197,7 +193,7 @@ def main():
     try:
         send('夸克自动签到', msg)
     except Exception as err:
-        print('%s\n❌错误，请查看运行日志！' % err)
+        print('%s\n❌ 错误，请查看运行日志！' % err)
 
     return msg[:-1]
 
