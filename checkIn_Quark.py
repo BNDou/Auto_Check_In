@@ -8,7 +8,7 @@ cron: 0 9 * * *
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-06-05 05:03:19
+LastEditTime: 2024-06-16 01:15:55
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -142,19 +142,26 @@ class Quark:
             growth_info = self.get_growth_info()
             if growth_info:
                 log = (
-                    f"💾 网盘总容量：{self.b_to_gib(growth_info['total_capacity'])}GB，"
-                    f"签到累计容量：{self.b_to_gib(growth_info['cap_composition']['sign_reward'])}GB\n"
+                    f"💾 网盘总容量：{self.b_to_gib(growth_info['total_capacity'])} GB，"
+                    f"签到累计容量："
                 )
+                if "sign_reward" in growth_info['cap_composition']:
+                    if self.b_to_gib(growth_info['cap_composition']['sign_reward']) > 0:
+                        log += f"{self.b_to_gib(growth_info['cap_composition']['sign_reward'])} GB\n"
+                    else:
+                        log += f"{self.b_to_mb(growth_info['cap_composition']['sign_reward'])} MB\n"
+                else:
+                    log += "0 MB\n"
                 if growth_info["cap_sign"]["sign_daily"]:
                     log += (
-                        f"✅ 签到日志: 今日已签到+{self.b_to_mb(growth_info['cap_sign']['sign_daily_reward'])}MB，"
+                        f"✅ 签到日志: 今日已签到+{self.b_to_mb(growth_info['cap_sign']['sign_daily_reward'])} MB，"
                         f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
                     )
                 else:
                     sign, sign_return = self.get_growth_sign()
                     if sign:
                         log += (
-                            f"✅ 执行签到: 今日签到+{self.b_to_mb(sign_return)}MB，"
+                            f"✅ 执行签到: 今日签到+{self.b_to_mb(sign_return)} MB，"
                             f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
                         )
                     else:
