@@ -3,7 +3,7 @@ new Env('掌上飞车签到')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime: 2024-06-05 05:03:41
+LastEditTime: 2024-07-01 23:01:36
 FilePath: \Auto_Check_In\checkIn_ZhangFei.py
 Description  :
 抓包流程：
@@ -19,8 +19,8 @@ Description  :
 roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx; giftPackId=xxx;
 
 其中
-speedqqcomrouteLine就是签到页的url中间段，即https://speed.qq.com/cp/xxxxxxxxxx/index.html中的xxxxxxxxxx部分（每月更新一次）
-token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
+speedqqcomrouteLine 就是签到页的url中间段，即https://speed.qq.com/cp/xxxxxxxxxx/index.html中的xxxxxxxxxx部分（目前每个月固定，不排除某一天会变更）
+token 进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 
 giftPackId是月签20和25天的礼包选择，分别有6个礼包选其一，变量取值1-6
 '''
@@ -72,8 +72,8 @@ def commit(user_data, sData):
     url = f"https://comm.ams.game.qq.com/ams/ame/amesvr?iActivityId={user_data.get('iActivityId')}"
     headers = {
         'Cookie':
-        f"access_token={user_data.get('accessToken')}; "
         f"acctype=qc; "
+        f"access_token={user_data.get('accessToken')}; "
         f"appid={user_data.get('appid')}; "
         f"openid={user_data.get('openid')}; "
     }
@@ -90,6 +90,9 @@ def commit(user_data, sData):
         iFlowId = user_data.get('task_id')[sData[1]]
 
     data = {
+        "curl_userId": user_data.get('userId'),
+        "curl_qq": user_data.get('roleId'),
+        "curl_token": user_data.get('token'),
         "iActivityId": user_data.get('iActivityId'),
         "iFlowId": iFlowId,
         "g_tk": "1842395457",
@@ -147,6 +150,10 @@ def get_outValue(user_data):
     if ret['ret'] == '101':
         # 登录失败
         print(f"❌账号{user_data.get('roleId')}登录失败，请检查账号信息是否正确")
+        return False
+    elif ret['ret'] == '700':
+        # 绑定大区
+        print(f"❌账号{user_data.get('roleId')} 请确认 token 是否有效")
         return False
     modRet = ret['modRet']
 
@@ -345,6 +352,11 @@ def main():
 
         # 签到
         msg += signIn(user_data) + '\n'
+
+        # 检查token是否过期
+        if not check(user_data, ""):
+            i += 1
+            continue
 
         # 获取累计信息
         if not get_outValue(user_data):
