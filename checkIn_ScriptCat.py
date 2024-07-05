@@ -3,7 +3,7 @@ new Env('脚本猫论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2024-06-14 03:24:38
-LastEditTime: 2024-06-15 21:41:44
+LastEditTime: 2024-07-06 00:16:08
 FilePath: \Auto_Check_In\checkIn_ScriptCat.py
 Description  : 添加环境变量COOKIE_SCRIPTCART，多账号用 回车 或 && 分开
 '''
@@ -64,7 +64,7 @@ class ScriptCat:
             "inajax": "1",
         }
         data = {
-            "formhash": "738cc5d7",
+            "formhash": "21fed99b",
             "qdxq": "kx",
             "qdmode": "3",
             "todaysay": "",
