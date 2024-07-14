@@ -1,14 +1,18 @@
 '''
-new Env('【测试版】夸克自动签到')
+new Env('夸克自动签到')
 cron: 0 9 * * *
 
+V2版-目前有效
+使用移动端接口修复每日自动签到，移除原有的“登录验证”，参数有效期未知
+
+V1版-已失效
 受大佬 @Cp0204 的仓库项目启发改编
 源码来自 GitHub 仓库：https://github.com/Cp0204/quark-auto-save
 提取“登录验证”“签到”“领取”方法封装到下文中的“Quark”类中
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-07-14 20:19:50
+LastEditTime: 2024-07-15 02:22:19
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -45,7 +49,7 @@ def get_env():
     else:
         # 标准日志输出
         print('❌未添加COOKIE_QUARK变量')
-        send('【测试版】夸克自动签到', '❌未添加COOKIE_QUARK变量')
+        send('夸克自动签到', '❌未添加COOKIE_QUARK变量')
         # 脚本退出
         sys.exit(0)
 
@@ -114,13 +118,15 @@ class Quark:
         :return: 返回一个字典，包含用户当前的签到信息
         '''
         url = "https://drive-m.quark.cn/1/clouddrive/capacity/growth/sign"
-        querystring = {"pr": "ucpro", "fr": "pc", "uc_param_str": ""}
-        payload = {"sign_cyclic": True}
-        headers = {"content-type": "application/json", "cookie": self.cookie}
-        response = requests.post(url=url,
-                                 json=payload,
-                                 headers=headers,
-                                 params=querystring).json()
+        querystring = {
+            "pr": "ucpro",
+            "fr": "android",
+            "kps": self.param.get('kps'),
+            "sign": self.param.get('sign'),
+            "vcode": self.param.get('vcode')
+        }
+        data = {"sign_cyclic": True}
+        response = requests.post(url=url, json=data, params=querystring).json()
         #print(response)
         if response.get("data"):
             return True, response["data"]["sign_daily_reward"]
@@ -133,12 +139,11 @@ class Quark:
         :return: 返回一个字符串，包含签到结果
         '''
         msg = ""
-        log = f" 昵称: {self.param.get('user')}"
-        msg += log + "\n"
         # 每日领空间
         growth_info = self.get_growth_info()
         if growth_info:
             log = (
+                f" {'88VIP' if growth_info['88VIP'] else '普通用户'} {self.param.get('user')}\n"
                 f"💾 网盘总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
                 f"签到累计容量：")
             if "sign_reward" in growth_info['cap_composition']:
@@ -151,78 +156,18 @@ class Quark:
                     f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
                 )
             else:
-                if not growth_info['88VIP']:
-                    sign, sign_return = self.get_growth_sign()
-                    if sign:
-                        log += (
-                            f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
-                            f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
-                        )
-                    else:
-                        log += f"❌ 签到异常: {sign_return}"
+                sign, sign_return = self.get_growth_sign()
+                if sign:
+                    log += (
+                        f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
+                        f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
+                    )
                 else:
-                    log += f"✅ 该账号为 88VIP 用户，无需签到"
+                    log += f"❌ 签到异常: {sign_return}"
         else:
             log += f"❌ 签到异常: 获取成长信息失败"
         msg += log + "\n"
         return msg
-
-    # def get_account_info(self):
-    #     '''
-    #     获取用户账号信息
-    #     :return: 返回一个字典，包含用户账号信息
-    #     '''
-    #     url = "https://pan.quark.cn/account/info"
-    #     querystring = {"fr": "pc", "platform": "pc"}
-    #     headers = {"content-type": "application/json", "cookie": self.cookie}
-    #     response = requests.get(url=url, headers=headers,
-    #                             params=querystring).json()
-    #     if response.get("data"):
-    #         return response["data"]
-    #     else:
-    #         return False
-
-    # def do_sign(self):
-    #     '''
-    #     执行签到任务
-    #     :return: 返回一个字符串，包含签到结果
-    #     '''
-    #     msg = ""
-    #     # 验证账号
-    #     account_info = self.get_account_info()
-    #     if not account_info:
-    #         msg = f"\n❌ 该账号登录失败，cookie无效\n"
-    #     else:
-    #         log = f" 昵称: {account_info['nickname']}"
-    #         msg += log + "\n"
-    #         # 每日领空间
-    #         growth_info = self.get_growth_info()
-    #         if growth_info:
-    #             log = (
-    #                 f"💾 网盘总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
-    #                 f"签到累计容量：")
-    #             if "sign_reward" in growth_info['cap_composition']:
-    #                 log += f"{self.convert_bytes(growth_info['cap_composition']['sign_reward'])}\n"
-    #             else:
-    #                 log += "0 MB\n"
-    #             if growth_info["cap_sign"]["sign_daily"]:
-    #                 log += (
-    #                     f"✅ 签到日志: 今日已签到+{self.convert_bytes(growth_info['cap_sign']['sign_daily_reward'])}，"
-    #                     f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
-    #                 )
-    #             else:
-    #                 sign, sign_return = self.get_growth_sign()
-    #                 if sign:
-    #                     log += (
-    #                         f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
-    #                         f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
-    #                     )
-    #                 else:
-    #                     log = f"❌ 签到异常: {sign_return}"
-    #         else:
-    #             log = f"❌ 签到异常: 获取成长信息失败"
-    #         msg += log + "\n"
-    #     return msg
 
 
 def main():
@@ -250,7 +195,7 @@ def main():
     print(msg)
 
     try:
-        send('【测试版】夸克自动签到', msg)
+        send('夸克自动签到', msg)
     except Exception as err:
         print('%s\n❌ 错误，请查看运行日志！' % err)
 
@@ -258,6 +203,6 @@ def main():
 
 
 if __name__ == "__main__":
-    print("----------【测试版】夸克网盘开始签到----------")
+    print("----------夸克网盘开始签到----------")
     main()
-    print("----------【测试版】夸克网盘签到完毕----------")
+    print("----------夸克网盘签到完毕----------")
