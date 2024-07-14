@@ -8,7 +8,7 @@ cron: 0 9 * * *
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-07-14 19:16:48
+LastEditTime: 2024-07-14 20:19:50
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -151,16 +151,19 @@ class Quark:
                     f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
                 )
             else:
-                sign, sign_return = self.get_growth_sign()
-                if sign:
-                    log += (
-                        f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
-                        f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
-                    )
+                if not growth_info['88VIP']:
+                    sign, sign_return = self.get_growth_sign()
+                    if sign:
+                        log += (
+                            f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
+                            f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
+                        )
+                    else:
+                        log += f"❌ 签到异常: {sign_return}"
                 else:
-                    log = f"❌ 签到异常: {sign_return}"
+                    log += f"✅ 该账号为 88VIP 用户，无需签到"
         else:
-            log = f"❌ 签到异常: 获取成长信息失败"
+            log += f"❌ 签到异常: 获取成长信息失败"
         msg += log + "\n"
         return msg
 
