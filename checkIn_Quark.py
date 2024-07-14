@@ -12,7 +12,7 @@ V1版-已失效
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-07-15 02:22:19
+LastEditTime: 2024-07-15 02:50:31
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -60,19 +60,11 @@ class Quark:
     '''
     Quark类封装了登录验证、签到、领取签到奖励的方法
     '''
-    def __init__(self, cookie):
+    def __init__(self, user_data):
         '''
         初始化方法
-        :param cookie: 用户登录后的cookie，用于后续的请求
         :param user_data: 用户信息，用于后续的请求
         '''
-        self.cookie = cookie
-        # 获取user_data参数
-        user_data = {}  # 用户信息
-        for a in cookie.replace(" ", "").split(';'):
-            if not a == '':
-                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
-        # print(user_data)
         self.param = user_data
 
     def convert_bytes(self, b):
@@ -183,11 +175,17 @@ def main():
 
     i = 0
     while i < len(cookie_quark):
+        # 获取user_data参数
+        user_data = {}  # 用户信息
+        for a in cookie_quark[i].replace(" ", "").split(';'):
+            if not a == '':
+                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+        # print(user_data)
         # 开始任务
         log = f"🙍🏻‍♂️ 第{i + 1}个账号"
         msg += log
         # 登录
-        log = Quark(cookie_quark[i]).do_sign()
+        log = Quark(user_data).do_sign()
         msg += log + "\n"
 
         i += 1
