@@ -54,6 +54,7 @@ ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "utils"
 | M | WeChat |
 | [Struggle-best](https://github.com/Struggle-best) | WeChat |
 | [Machae1](https://github.com/Machae1) | WeChat |
+| [AfanChang](https://github.com/AfanChang) | WeChat |
 
 ## 免责声明
 - 这里的脚本只是自己学习 python 的一个实践。
