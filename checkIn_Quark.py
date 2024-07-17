@@ -12,7 +12,7 @@ V1版-已失效
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-07-15 02:50:31
+LastEditTime: 2024-07-17 23:13:27
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -179,7 +179,7 @@ def main():
         user_data = {}  # 用户信息
         for a in cookie_quark[i].replace(" ", "").split(';'):
             if not a == '':
-                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+                user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
         # print(user_data)
         # 开始任务
         log = f"🙍🏻‍♂️ 第{i + 1}个账号"
