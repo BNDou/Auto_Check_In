@@ -12,7 +12,7 @@ V1版-已失效
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-07-17 23:13:27
+LastEditTime: 2024-07-17 23:21:20
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -27,7 +27,6 @@ Description:
 import os
 import re
 import sys
-from urllib.parse import unquote
 
 import requests
 
