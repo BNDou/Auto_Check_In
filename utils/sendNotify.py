@@ -417,7 +417,7 @@ def send(title, content):
     if QYWX_KEY:
         for i in range(int(len(content) / 2000) + 1):
             wecom_key(title=title, content=content[i * 2000:(i + 1) * 2000])
-    if QYWX_KEY:
+    if FS_KEY:
         fs_key(title=title, content=content)
 
 
