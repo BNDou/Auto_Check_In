@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-07-15 02:23:49
+ * @LastEditTime: 2024-07-29 23:23:32
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -55,6 +55,10 @@ ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "utils"
 | [Struggle-best](https://github.com/Struggle-best) | WeChat |
 | [Machae1](https://github.com/Machae1) | WeChat |
 | [AfanChang](https://github.com/AfanChang) | WeChat |
+
+## 技术鸣谢
+- [Chiupam](https://github.com/chiupam)
+- [Cp0204](https://github.com/Cp0204)
 
 ## 免责声明
 - 这里的脚本只是自己学习 python 的一个实践。
