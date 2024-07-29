@@ -12,7 +12,7 @@ V1版-已失效
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-07-17 23:21:20
+LastEditTime: 2024-07-29 23:34:49
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -57,7 +57,7 @@ def get_env():
 
 class Quark:
     '''
-    Quark类封装了登录验证、签到、领取签到奖励的方法
+    Quark类封装了签到、领取签到奖励的方法
     '''
     def __init__(self, user_data):
         '''
@@ -72,16 +72,12 @@ class Quark:
         :param b: 字节数
         :return: 返回 MB GB TB
         '''
-        b = b / (1024 * 1024)
-        if len(str(b).split('.')[0]) < 4:
-            return f"{round(b, 1)} MB"  # 返回 MB
-        else:
-            b = b / 1024
-            if len(str(b).split('.')[0]) < 4:
-                return f"{round(b, 1)} GB"  # 返回 GB
-            else:
-                b = b / 1024
-                return f"{round(b, 1)} TB"  # 返回 TB
+        units = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = 0
+        while b >= 1024 and i < len(units) - 1:
+            b /= 1024
+            i += 1
+        return f"{b:.2f} {units[i]}"
 
     def get_growth_info(self):
         '''
@@ -129,11 +125,11 @@ class Quark:
         执行签到任务
         :return: 返回一个字符串，包含签到结果
         '''
-        msg = ""
+        msg, log = "", ""
         # 每日领空间
         growth_info = self.get_growth_info()
         if growth_info:
-            log = (
+            log += (
                 f" {'88VIP' if growth_info['88VIP'] else '普通用户'} {self.param.get('user')}\n"
                 f"💾 网盘总容量：{self.convert_bytes(growth_info['total_capacity'])}，"
                 f"签到累计容量：")
