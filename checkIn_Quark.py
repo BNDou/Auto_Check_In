@@ -12,7 +12,7 @@ V1版-已失效
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-08-03 20:51:36
+LastEditTime: 2024-08-03 21:07:27
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -176,7 +176,7 @@ class Quark:
             log += f"还剩{balance}次抽奖"
         else:
             log += f"暂无抽奖次数"
-        msg += log + "\n"
+        msg += log + ", 抽奖功能暂未开发\n"
 
         return msg
 
