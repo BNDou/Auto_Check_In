@@ -3,7 +3,7 @@ new Env('人人视频日常')
 cron: 0 9 * * *
 Author: BNDou
 Date: 2024-06-05 01:56:28
-LastEditTime: 2024-06-14 23:06:43
+LastEditTime: 2024-08-03 20:45:44
 FilePath: \Auto_Check_In\checkIn_RRShiPin.py
 抓包流程：
     ①开启抓包，打开签到页
@@ -22,7 +22,7 @@ import requests
 # os.environ['COOKIE_RRShiPin'] = ''
 
 try:  # 异常捕捉
-    from utils.sendNotify import send  # 导入消息通知模块
+    from utils.notify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
     print('%s\n🔴加载通知服务失败~' % err)
 
@@ -187,7 +187,7 @@ class RRShiPin:
         :param log: 日志内容
         :return: 无
         '''
-        print(log)
+        # print(log)
         return (msg + log + "\n")
 
     def run(self):

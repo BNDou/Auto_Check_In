@@ -3,7 +3,7 @@ new Env('脚本猫论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2024-06-14 03:24:38
-LastEditTime: 2024-07-06 00:16:08
+LastEditTime: 2024-08-03 20:44:42
 FilePath: \Auto_Check_In\checkIn_ScriptCat.py
 Description  : 添加环境变量COOKIE_SCRIPTCART，多账号用 回车 或 && 分开
 '''
@@ -19,7 +19,7 @@ from lxml import etree
 # os.environ['COOKIE_SCRIPTCART'] = ''
 
 try:  # 异常捕捉
-    from utils.sendNotify import send  # 导入消息通知模块
+    from utils.notify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
     print('%s\n加载通知服务失败~' % err)
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         log = f"第 {i + 1} 个账号开始执行任务\n"
         log += ScriptCat(cookie_ScriptCat[i]).main()
         msg += log + "\n\n"
-        print(log)
+        # print(log)
         i += 1
 
     try:
