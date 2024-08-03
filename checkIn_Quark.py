@@ -12,7 +12,7 @@ V1版-已失效
 
 Author: BNDou
 Date: 2024-03-15 21:43:06
-LastEditTime: 2024-08-03 20:43:24
+LastEditTime: 2024-08-03 20:51:36
 FilePath: \Auto_Check_In\checkIn_Quark.py
 Description: 
 抓包流程：
@@ -120,6 +120,22 @@ class Quark:
         else:
             return False, response["message"]
 
+    def queryBalance(self):
+        '''
+        查询抽奖余额
+        '''
+        url = "https://coral2.quark.cn/currency/v1/queryBalance"
+        querystring = {
+            "moduleCode": "1f3563d38896438db994f118d4ff53cb",
+            "kps": self.param.get('kps'),
+        }
+        response = requests.get(url=url, params=querystring).json()
+        # print(response)
+        if response.get("data"):
+            return response["data"]["balance"]
+        else:
+            return response["msg"]
+
     def do_sign(self):
         '''
         执行签到任务
@@ -140,20 +156,28 @@ class Quark:
             if growth_info["cap_sign"]["sign_daily"]:
                 log += (
                     f"✅ 签到日志: 今日已签到+{self.convert_bytes(growth_info['cap_sign']['sign_daily_reward'])}，"
-                    f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})"
+                    f"连签进度({growth_info['cap_sign']['sign_progress']}/{growth_info['cap_sign']['sign_target']})\n"
                 )
             else:
                 sign, sign_return = self.get_growth_sign()
                 if sign:
                     log += (
                         f"✅ 执行签到: 今日签到+{self.convert_bytes(sign_return)}，"
-                        f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})"
+                        f"连签进度({growth_info['cap_sign']['sign_progress'] + 1}/{growth_info['cap_sign']['sign_target']})\n"
                     )
                 else:
-                    log += f"❌ 签到异常: {sign_return}"
+                    log += f"❌ 签到异常: {sign_return}\n"
         else:
-            log += f"❌ 签到异常: 获取成长信息失败"
+            log += f"❌ 签到异常: 获取成长信息失败\n"
+
+        # 查询抽奖余额
+        balance = self.queryBalance()
+        if balance > 0:
+            log += f"还剩{balance}次抽奖"
+        else:
+            log += f"暂无抽奖次数"
         msg += log + "\n"
+
         return msg
 
 
