@@ -3,7 +3,7 @@ new Env('人人视频日常')
 cron: 0 9 * * *
 Author: BNDou
 Date: 2024-06-05 01:56:28
-LastEditTime: 2024-08-03 20:45:44
+LastEditTime: 2024-08-03 20:56:45
 FilePath: \Auto_Check_In\checkIn_RRShiPin.py
 抓包流程：
     ①开启抓包，打开签到页
@@ -187,7 +187,7 @@ class RRShiPin:
         :param log: 日志内容
         :return: 无
         '''
-        # print(log)
+        print(log)
         return (msg + log + "\n")
 
     def run(self):
