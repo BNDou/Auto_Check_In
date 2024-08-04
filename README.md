@@ -56,6 +56,7 @@ ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "utils"
 | [Struggle-best](https://github.com/Struggle-best) | WeChat |
 | [Machae1](https://github.com/Machae1) | WeChat |
 | [AfanChang](https://github.com/AfanChang) | WeChat |
+| [1983shake](https://github.com/1983shake) | WeChat |
 
 ## 技术鸣谢
 - [Chiupam](https://github.com/chiupam)
