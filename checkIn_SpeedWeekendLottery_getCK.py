@@ -27,7 +27,7 @@ cron: 1 1 1 1 1
 
 Author: BNDou
 Date: 2024-08-04 22:33:43
-LastEditTime: 2024-08-09 01:34:27
+LastEditTime: 2024-08-11 00:39:59
 FilePath: \Auto_Check_In\checkIn_SpeedWeekendLottery_getCK.py
 Description: 
 '''
@@ -82,44 +82,48 @@ def getG_tk(skey):
 
 def getUserData(p_uin, skey):
     """获取用户数据"""
-    msg = ""
-    url = "https://comm.aci.game.qq.com/main?game=speed&area=2&sCloudApiName=ams.gameattr.role"
-    headers = {
-        "Referer": "https://speed.qq.com/",
-        "Cookie": f"ptui_loginuin={p_uin}; uin={p_uin}; skey={skey};"
-    }
-    response = requests.get(url, headers=headers)
-    userData = unquote(response.text)
-    # 获取用户数据
-    AchievePoint = re.search(r"AchievePoint=(.*?)&", userData).group(1)  # 成就点数
-    Admiration = re.search(r"Admiration=(.*?)&", userData).group(1)  # 心动值
-    Charm = re.search(r"Charm=(.*?)&", userData).group(1)  # 魅力值
-    Money = re.search(r"Money=(.*?)&", userData).group(1)  # 酷币
-    RegisterTime = re.search(r"RegisterTime=(.*?)&", userData).group(1)  # 飞车生日
-    SuperMoney = re.search(r"SuperMoney=(.*?)&", userData).group(1)  # 点券
-    country = re.search(r"country=(.*?)&", userData).group(1)  # 国家
-    gamecount = re.search(r"gamecount=(.*?)&", userData).group(1)  # 参赛场次
-    first = re.search(r"first=(.*?)&", userData).group(1)  # 冠军场次
-    second = re.search(r"second=(.*?)&", userData).group(1)  # 亚军场次
-    third = re.search(r"third=(.*?)&", userData).group(1)  # 季军场次
-    honor = re.search(r"honor=(.*?)&", userData).group(1)  # 荣誉
-    level = re.search(r"level=(.*?)&", userData).group(1)  # 等级
-    name = re.search(r"name=(.*?)&", userData).group(1)  # 等级称号
-    nick = re.search(r"nick=(.*?)&", userData).group(1)  # 昵称
-    zone = re.search(r"zone=(.*?)&", userData).group(1)  # 大区
-    msg = (f"昵称：{nick} 大区：{zone}\n"
-           f"等级：{level} ({name})\n"
-           f"👑 荣誉：{honor} ({country})\n"
-           f"🚗 参赛场次：{gamecount}\n"
-           f"🥇 冠军场次：{first}\n"
-           f"🥈 亚军场次：{second}\n"
-           f"🥉 季军场次：{third}\n"
-           f"⭐️ 成就点数：{AchievePoint}\n"
-           f"💗 心动值：{Admiration}\n"
-           f"💖 魅力：{Charm}\n"
-           f"💰️ 酷币：{Money}\n"
-           f"💸 点券：{SuperMoney}\n"
-           f"🎂 飞车生日：{RegisterTime}\n")
+    msg, area = "", 1
+    while area <= 3:
+        url = f"https://comm.aci.game.qq.com/main?game=speed&area={area}&sCloudApiName=ams.gameattr.role"
+        headers = {
+            "Referer": "https://speed.qq.com/",
+            "Cookie": f"ptui_loginuin={p_uin}; uin={p_uin}; skey={skey};"
+        }
+        response = requests.get(url, headers=headers)
+        userData = unquote(response.text)
+        # 获取用户数据
+        AchievePoint = re.search(r"AchievePoint=(.*?)&",
+                                 userData).group(1)  # 成就点数
+        Admiration = re.search(r"Admiration=(.*?)&", userData).group(1)  # 心动值
+        Charm = re.search(r"Charm=(.*?)&", userData).group(1)  # 魅力值
+        Money = re.search(r"Money=(.*?)&", userData).group(1)  # 酷币
+        RegisterTime = re.search(r"RegisterTime=(.*?)&",
+                                 userData).group(1)  # 飞车生日
+        SuperMoney = re.search(r"SuperMoney=(.*?)&", userData).group(1)  # 点券
+        country = re.search(r"country=(.*?)&", userData).group(1)  # 国家
+        gamecount = re.search(r"gamecount=(.*?)&", userData).group(1)  # 参赛场次
+        first = re.search(r"first=(.*?)&", userData).group(1)  # 冠军场次
+        second = re.search(r"second=(.*?)&", userData).group(1)  # 亚军场次
+        third = re.search(r"third=(.*?)&", userData).group(1)  # 季军场次
+        honor = re.search(r"honor=(.*?)&", userData).group(1)  # 荣誉
+        level = re.search(r"level=(.*?)&", userData).group(1)  # 等级
+        name = re.search(r"name=(.*?)&", userData).group(1)  # 等级称号
+        nick = re.search(r"nick=(.*?)&", userData).group(1)  # 昵称
+        zone = re.search(r"zone=(.*?)&", userData).group(1)  # 大区
+        msg += (f"昵称：{nick} 大区：{zone}\n"
+                f"等级：{level} ({name})\n"
+                f"👑 荣誉：{honor} ({country})\n"
+                f"🚗 参赛场次：{gamecount}\n"
+                f"🥇 冠军场次：{first}\n"
+                f"🥈 亚军场次：{second}\n"
+                f"🥉 季军场次：{third}\n"
+                f"⭐️ 成就点数：{AchievePoint}\n"
+                f"💗 心动值：{Admiration}\n"
+                f"💖 魅力：{Charm}\n"
+                f"💰️ 酷币：{Money}\n"
+                f"💸 点券：{SuperMoney}\n"
+                f"🎂 飞车生日：{RegisterTime}\n\n")
+        area += 1
     try:
         send('周末大乐透扫码登陆', msg)
     except Exception as err:
