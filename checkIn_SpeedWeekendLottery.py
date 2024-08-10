@@ -3,7 +3,7 @@ new Env('周末大乐透')
 cron: 0 0 * * 7
 Author: BNDou
 Date: 2024-08-04 16:35:13
-LastEditTime: 2024-08-05 03:08:40
+LastEditTime: 2024-08-11 00:28:35
 FilePath: \Auto_Check_In\checkIn_SpeedWeekendLottery.py
 Description  :
 飞车PC端活动-周末大乐透
@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import threading
+from urllib.parse import unquote
 import requests
 
 # 测试用环境变量
@@ -75,8 +76,11 @@ class WeekendLottery(threading.Thread):
         }
         response = requests.post(url, headers=headers, data=data).json()
         if response["flowRet"]["iRet"] == "0":
-            count = int(response['modRet']['sOutValue1']) // 50 - int(
-                response['modRet']['sOutValue2'])
+            if int(response['modRet']['sOutValue1']) // 50 > 7:
+                count = 7 - int(response['modRet']['sOutValue2'])
+            else:
+                count = int(response['modRet']['sOutValue1']) // 50 - int(
+                    response['modRet']['sOutValue2'])
             return f"本周活跃度：{response['modRet']['sOutValue1']}\n剩余抽奖次数：{count}\n", count
         else:
             return response["flowRet"]["sMsg"] + "\n", None
@@ -94,11 +98,11 @@ class WeekendLottery(threading.Thread):
             "iFlowId": "750765",
             "g_tk": self.g_tk
         }
-        response = requests.post(url, headers=headers, data=data).json()
+        response = requests.post(url, headers=headers, data=data)
         if response["flowRet"]["iRet"] == "0":
-            return response["modRet"]["sMsg"] + "\n"
+            return unquote(response["modRet"]["sMsg"]) + "\n"
         else:
-            return response["flowRet"]["sMsg"] + "\n"
+            return unquote(response["flowRet"]["sMsg"]) + "\n"
 
     def run(self):
         '''
