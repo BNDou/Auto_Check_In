@@ -172,11 +172,14 @@ class Quark:
 
         # 查询抽奖余额
         balance = self.queryBalance()
-        if balance > 0:
-            log += f"还剩{balance}次抽奖"
+        if isinstance(balance,int):
+            if balance > 0:
+                log += f"还剩{balance}次抽奖"
+            else:
+                log += f"暂无抽奖次数"
+            msg += log + ", 抽奖功能暂未开发\n"
         else:
-            log += f"暂无抽奖次数"
-        msg += log + ", 抽奖功能暂未开发\n"
+            msg += log + balance + "\n"
 
         return msg
 
