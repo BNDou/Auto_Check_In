@@ -3,7 +3,7 @@ new Env('周末大乐透')
 cron: 0 0 * * 7
 Author: BNDou
 Date: 2024-08-04 16:35:13
-LastEditTime: 2024-08-11 00:28:35
+LastEditTime: 2024-08-13 22:23:08
 FilePath: \Auto_Check_In\checkIn_SpeedWeekendLottery.py
 Description  :
 飞车PC端活动-周末大乐透
@@ -74,7 +74,9 @@ class WeekendLottery(threading.Thread):
             "iFlowId": "750956",
             "g_tk": self.g_tk
         }
-        response = requests.post(url, headers=headers, data=data).json()
+        response = requests.post(url, headers=headers, data=data)
+        response.encoding = "utf-8"
+        response = response.json()
         if response["flowRet"]["iRet"] == "0":
             if int(response['modRet']['sOutValue1']) // 50 > 7:
                 count = 7 - int(response['modRet']['sOutValue2'])
@@ -99,6 +101,8 @@ class WeekendLottery(threading.Thread):
             "g_tk": self.g_tk
         }
         response = requests.post(url, headers=headers, data=data)
+        response.encoding = "utf-8"
+        response = response.json()
         if response["flowRet"]["iRet"] == "0":
             return unquote(response["modRet"]["sMsg"]) + "\n"
         else:
