@@ -3,7 +3,7 @@ new Env('周末大乐透')
 cron: 0 0 * * 7
 Author: BNDou
 Date: 2024-08-04 16:35:13
-LastEditTime: 2024-08-13 22:23:08
+LastEditTime: 2024-08-18 01:58:21
 FilePath: \Auto_Check_In\checkIn_SpeedWeekendLottery.py
 Description  :
 飞车PC端活动-周末大乐透
@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import threading
+import time
 from urllib.parse import unquote
 import requests
 
@@ -122,6 +123,7 @@ class WeekendLottery(threading.Thread):
             msg += "🎉开始抽奖\n"
             while count > 0:
                 msg += self.lottery()
+                time.sleep(0.5)
                 count -= 1
         return msg
 
