@@ -3,7 +3,7 @@ new Env('周末大乐透')
 cron: 0 0 * * 7
 Author: BNDou
 Date: 2024-08-04 16:35:13
-LastEditTime: 2024-08-18 01:58:21
+LastEditTime: 2024-08-25 02:00:30
 FilePath: \Auto_Check_In\checkIn_SpeedWeekendLottery.py
 Description  :
 飞车PC端活动-周末大乐透
@@ -14,7 +14,6 @@ Description  :
 import os
 import re
 import sys
-import threading
 import time
 from urllib.parse import unquote
 import requests
@@ -47,9 +46,8 @@ def get_env():
     return cookie_list
 
 
-class WeekendLottery(threading.Thread):
+class WeekendLottery:
     def __init__(self, cookie):
-        super().__init__()
         self.cookie = cookie
         self.p_uin = re.search(r'p_uin=(\S+);', cookie).group(1)
         self.sArea = re.search(r'sArea=(\S+);', cookie).group(1)
@@ -121,9 +119,10 @@ class WeekendLottery(threading.Thread):
         # 抽奖
         if count is not None and count > 0 and count < 8:
             msg += "🎉开始抽奖\n"
+            count *= 2
             while count > 0:
                 msg += self.lottery()
-                time.sleep(0.5)
+                time.sleep(0.4)
                 count -= 1
         return msg
 
@@ -139,18 +138,8 @@ def main():
     i = 0
     while i < len(cookie_daletou):
         # 执行任务
-        threads.append(WeekendLottery(cookie_daletou[i]))
+        msg += WeekendLottery(cookie_daletou[i]).run()
         i += 1
-
-    # 启动线程
-    for t in threads:
-        t.start()
-    # 关闭线程
-    for t in threads:
-        t.join()
-    # 获取返回值
-    for t in threads:
-        msg += t.run() + "\n"
 
     return msg
 
