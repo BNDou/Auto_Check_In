@@ -3,7 +3,7 @@ new Env('小米运动修改步数')
 cron: 0 20 * * *
 Author: BNDou
 Date: 2024-10-08 23:15:30
-LastEditTime: 2024-10-09 00:33:58
+LastEditTime: 2024-10-09 00:35:26
 FilePath: \Auto_Check_In\checkIn_MiMotion.py
 Description: 
     源码出自大佬 Sitoi 的 https://github.com/Sitoi/dailycheckin 项目
@@ -22,8 +22,7 @@ import time
 import requests
 
 # 测试用环境变量
-os.environ[
-    'COOKIE_MIMOTION'] = '{"max_step": "25000", "min_step": "22000", "password": "asdasdasd", "phone": "12312341234"}'
+# os.environ['COOKIE_MIMOTION'] = ''
 
 try:  # 异常捕捉
     from utils.notify import send  # 导入消息通知模块
