@@ -3,14 +3,14 @@ new Env('小米运动修改步数')
 cron: 0 20 * * *
 Author: BNDou
 Date: 2024-10-08 23:15:30
-LastEditTime: 2024-10-09 00:35:26
+LastEditTime: 2024-10-09 00:46:31
 FilePath: \Auto_Check_In\checkIn_MiMotion.py
 Description: 
     源码出自大佬 Sitoi 的 https://github.com/Sitoi/dailycheckin 项目
 
     稍加修改版本，添加环境变量 COOKIE_MIMOTION
 
-    值为 {"max_step": "25000", "min_step": "22000", "password": "asdasdasd", "phone": "12312341234"}
+    值为 max_step=25000; min_step=22000; password=asdasdasd; phone=12312341234;
 '''
 import json
 import os
@@ -34,8 +34,7 @@ except Exception as err:  # 异常捕捉
 def get_env():
     # 判断 COOKIE_MIMOTION 是否存在于环境变量
     if "COOKIE_MIMOTION" in os.environ:
-        # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_MIMOTION'))
+        cookie_list = re.split('&', os.environ.get('COOKIE_MIMOTION'))
     else:
         # 标准日志输出
         print('❌未添加 COOKIE_MIMOTION 变量')
@@ -184,7 +183,11 @@ if __name__ == "__main__":
     print("✅ 检测到共", len(cookie_mimotion), "个小米运动账号\n")
 
     for data in cookie_mimotion:
-        log += MiMotion(json.loads(data)).main() + "\n\n"
+        user_data = {}  # 用户信息
+        for a in data.replace(" ", "").split(';'):
+            if not a == '':
+                user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
+        log += MiMotion(user_data).main() + "\n\n"
 
     # print(msg)
 
