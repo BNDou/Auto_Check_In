@@ -141,7 +141,7 @@ class Quark:
         执行签到任务
         :return: 返回一个字符串，包含签到结果
         '''
-        msg, log = "", ""
+        log = ""
         # 每日领空间
         growth_info = self.get_growth_info()
         if growth_info:
@@ -170,18 +170,7 @@ class Quark:
         else:
             log += f"❌ 签到异常: 获取成长信息失败\n"
 
-        # 查询抽奖余额
-        balance = self.queryBalance()
-        if isinstance(balance,int):
-            if balance > 0:
-                log += f"还剩{balance}次抽奖"
-            else:
-                log += f"暂无抽奖次数"
-            msg += log + ", 抽奖功能暂未开发\n"
-        else:
-            msg += log + balance + "\n"
-
-        return msg
+        return log
 
 
 def main():
