@@ -3,7 +3,7 @@ new Env('掌上飞车购物')
 cron: 50 23 * * *
 Author       : BNDou
 Date         : 2023-11-7 01:11:27
-LastEditTime: 2024-05-29 04:39:39
+LastEditTime : 2024-12-15 17:33:57
 FilePath: \Auto_Check_In\checkIn_ZhangFei_GouWu.py
 Description  :每日定时执行消费券购物，月末执行点券+消费券购物
 
@@ -242,7 +242,10 @@ def getShopItems(itme_data, purse):
             maxCounts = money // int(
                 itme_data[item]['price_idx'][i][1]['price'])
             # 这是一个累加的变量，用于跟踪购买的总道具数量
-            total += maxCounts * int(itme_data[item]['price_idx'][i][0])
+            if type(itme_data[item]['price_idx'][i][0])==str:
+                total += maxCounts * int(float(itme_data[item]['price_idx'][i][0]))
+            else:
+                total += maxCounts * int(itme_data[item]['price_idx'][i][0])
             # 这是当前可用的余额。在每次购买道具后，余额会根据购买的道具数量和价格进行更新，以反映购买后的余额
             money -= maxCounts * int(
                 itme_data[item]['price_idx'][i][1]['price'])
