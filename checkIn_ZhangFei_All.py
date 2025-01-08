@@ -3,7 +3,7 @@ new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-01-09 03:28:16
+LastEditTime : 2025-01-09 04:01:54
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -736,6 +736,7 @@ def update_progress(users):
 def process_account(user, msg_dict, user_index):
     """处理单个账号的任务"""
     try:
+        # 初始化账号消息
         account_msg = f"\n{user.get_account_info()}\n"
         msg_dict[user_index] = [account_msg]  # 使用列表存储当前账号的所有消息
         
@@ -743,23 +744,31 @@ def process_account(user, msg_dict, user_index):
         if not user.check_token():
             user.progress = 100
             user.status = "登录失效"
+            msg_dict[user_index].append("❌登录失效，请重新获取token\n")
             return
             
         # 检查功能启用状态
         enabled_features = []
+        
+        # 检查签到功能
         if user.is_feature_enabled('signin'):
             enabled_features.append('signin')
+        else:
+            msg_dict[user_index].append("❌未启用签到功能，请在cookie中添加enable_signin=true;\n")
+            
+        # 检查购物功能
         if user.is_feature_enabled('shopping'):
             enabled_features.append('shopping')
+        else:
+            msg_dict[user_index].append("❌未启用购物功能，请在cookie中添加enable_shopping=true;\n")
+            
+        # 检查寻宝功能
         if user.is_feature_enabled('treasure'):
             enabled_features.append('treasure')
+        else:
+            msg_dict[user_index].append("❌未启用寻宝功能，请在cookie中添加enable_treasure=true;\n")
             
         if not enabled_features:
-            msg = "❌未启用任何功能，请在cookie中添加以下参数之一：\n"
-            msg += "enable_signin=true; - 签到功能\n"
-            msg += "enable_shopping=true; - 购物功能\n"
-            msg += "enable_treasure=true; - 寻宝功能\n"
-            msg_dict[user_index].append(msg)
             user.progress = 100
             user.status = "未启用功能"
             return
@@ -812,9 +821,11 @@ def process_account(user, msg_dict, user_index):
         msg_dict[user_index].append("="*30 + "\n")
         
     except Exception as e:
+        if user_index not in msg_dict:
+            msg_dict[user_index] = [account_msg]
+        msg_dict[user_index].append(f"❌执行出错: {str(e)}\n")
         user.status = f"执行出错: {str(e)}"
         user.progress = 100
-        msg_dict[user_index].append(f"❌执行出错: {str(e)}\n")
 
 def main():
     """主函数"""
