@@ -4,7 +4,7 @@ cron: 2 1 * * *
 
 Author: BNDou
 Date: 2024-08-22 23:19:20
-LastEditTime: 2024-08-23 00:13:05
+LastEditTime: 2025-01-13 22:37:05
 FilePath: \Auto_Check_In\checkIn_LaTeX.py
 Description: 
 '''
@@ -98,7 +98,12 @@ if __name__ == "__main__":
     i = 0
     while i < len(cookie_LaTeX_Tokens):
         log = f"第 {i + 1} 个账号开始执行任务\n"
-        log += LaTeX(cookie_LaTeX_Tokens[i]).main()
+        try:
+            log += LaTeX(cookie_LaTeX_Tokens[i]).main()
+        except Exception as e:
+            print(f"第 {i + 1} 个账号 处理时发生错误: {str(e)}")
+            print("继续处理下一个账号...")
+            continue
         msg += log + "\n"
         # print(log)
         i += 1

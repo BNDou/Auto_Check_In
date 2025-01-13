@@ -3,7 +3,7 @@ new Env('脚本猫论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2024-06-14 03:24:38
-LastEditTime: 2024-08-03 20:44:42
+LastEditTime: 2025-01-13 22:37:05
 FilePath: \Auto_Check_In\checkIn_ScriptCat.py
 Description  : 添加环境变量COOKIE_SCRIPTCART，多账号用 回车 或 && 分开
 '''
@@ -64,7 +64,7 @@ class ScriptCat:
             "inajax": "1",
         }
         data = {
-            "formhash": "21fed99b",
+            "formhash": "138b308a",
             "qdxq": "kx",
             "qdmode": "3",
             "todaysay": "",
@@ -122,7 +122,12 @@ if __name__ == "__main__":
     i = 0
     while i < len(cookie_ScriptCat):
         log = f"第 {i + 1} 个账号开始执行任务\n"
-        log += ScriptCat(cookie_ScriptCat[i]).main()
+        try:
+            log += ScriptCat(cookie_ScriptCat[i]).main()
+        except Exception as e:
+            print(f"第 {i + 1} 个账号 处理时发生错误: {str(e)}")
+            print("继续处理下一个账号...")
+            continue
         msg += log + "\n\n"
         # print(log)
         i += 1

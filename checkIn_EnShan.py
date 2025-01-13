@@ -3,7 +3,7 @@ new Env('恩山论坛签到')
 cron: 1 0 * * *
 Author       : BNDou
 Date         : 2022-10-30 22:21:48
-LastEditTime: 2024-10-08 23:11:05
+LastEditTime: 2025-01-13 22:37:05
 FilePath: \Auto_Check_In\checkIn_EnShan.py
 Description  : 添加环境变量COOKIE_ENSHAN，多账号用 回车 或 && 分开
     测试cookie只需要 rHEX_2132_saltkey 和 rHEX_2132_auth 这俩值，如果报错，试试复制全部cookie
@@ -91,7 +91,12 @@ if __name__ == "__main__":
     i = 0
     while i < len(cookie_EnShan):
         log = f"第 {i + 1} 个账号开始执行任务\n"
-        log += EnShan(cookie_EnShan[i]).main()
+        try:
+            log += EnShan(cookie_EnShan[i]).main()
+        except Exception as e:
+            print(f"第 {i + 1} 个账号 处理时发生错误: {str(e)}")
+            print("继续处理下一个账号...")
+            continue
         msg += log + "\n\n"
         # print(log)
         i += 1
