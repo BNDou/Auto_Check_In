@@ -3,7 +3,7 @@ new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-01-09 04:01:54
+LastEditTime : 2025-01-13 20:39:25
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -713,21 +713,40 @@ class TreasureHunt:
 
 def update_progress(users):
     """更新并显示所有账号的进度"""
+    # 用于跟踪哪些账号已经显示过完成状态
+    shown_completed = set()
+    
     while True:
         # 清除控制台
         os.system('cls' if os.name == 'nt' else 'clear')
         
         all_completed = True
-        for user in users:
-            account_info = user.get_account_info()
-            progress_bar = '=' * int(user.progress / 2) + '>' + ' ' * (50 - int(user.progress / 2))
-            print(f"{account_info}")
-            print(f"[{progress_bar}] {user.progress}% {user.status}")
-            print()
-            
-            if user.progress < 100:
-                all_completed = False
+        any_output = False
         
+        for user in users:
+            if user.progress < 100:
+                # 显示未完成的账号
+                account_info = user.get_account_info()
+                progress_bar = '=' * int(user.progress / 2) + '>' + ' ' * (50 - int(user.progress / 2))
+                print(f"{account_info}")
+                print(f"[{progress_bar}] {user.progress}% {user.status}")
+                # print()
+                all_completed = False
+                any_output = True
+            elif user.progress == 100 and user not in shown_completed:
+                # 显示刚完成的账号（仅一次）
+                account_info = user.get_account_info()
+                progress_bar = '=' * 50
+                print(f"{account_info}")
+                print(f"[{progress_bar}] 100% {user.status}")
+                # print()
+                shown_completed.add(user)
+                any_output = True
+        
+        # 如果没有任何输出，显示完成信息
+        if not any_output:
+            print("所有账号任务已完成！")
+            
         if all_completed:
             break
             
