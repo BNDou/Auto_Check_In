@@ -3,7 +3,7 @@ new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-01-13 20:39:25
+LastEditTime : 2025-03-22 21:46:19
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -303,8 +303,8 @@ class SignIn:
             msg += month_msg
             
         # 日常任务：浏览背包
-        if self.browse_backpack():
-            msg += "✅日常任务：浏览背包成功\n"
+        # if self.browse_backpack():
+        #     msg += "✅日常任务：浏览背包成功\n"
             
         # 日常任务：领取奖励
         task_msg = self.task_gift()
