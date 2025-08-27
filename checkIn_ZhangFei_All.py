@@ -3,7 +3,7 @@ new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-03-22 21:46:19
+LastEditTime : 2025-08-27 19:32:39
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -829,12 +829,12 @@ def process_account(user, msg_dict, user_index):
             user.progress += progress_per_feature
         
         # 执行寻宝
-        if 'treasure' in enabled_features:
-            user.status = "正在寻宝..."
-            treasure = TreasureHunt(user)
-            treasure_msg = treasure.execute()
-            msg_dict[user_index].append(treasure_msg)
-            user.progress = 100
+        # if 'treasure' in enabled_features:
+        #     user.status = "正在寻宝..."
+        #     treasure = TreasureHunt(user)
+        #     treasure_msg = treasure.execute()
+        #     msg_dict[user_index].append(treasure_msg)
+        #     user.progress = 100
             
         user.status = "任务完成"
         msg_dict[user_index].append("="*30 + "\n")
