@@ -64,7 +64,7 @@ ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "utils"
 | [Machae1](https://github.com/Machae1) | WeChat |
 | [AfanChang](https://github.com/AfanChang) | WeChat |
 | [1983shake](https://github.com/1983shake) | WeChat |
-| [m](https://github.com/mmmmm1mm) | WeChat |
+| [mmmmm1mm](https://github.com/mmmmm1mm) | WeChat |
 | [qqsmms](https://github.com/qqsmms) | WeChat |
 
 ## 技术鸣谢
