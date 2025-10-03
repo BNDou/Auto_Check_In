@@ -3,7 +3,7 @@ new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-08-27 19:32:39
+LastEditTime : 2025-10-3 21:20:19
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -546,105 +546,248 @@ class Shopping:
         return msg
 
 class TreasureHunt:
-    """寻宝功能类"""
+    """寻宝功能类（重构版）"""
     def __init__(self, user):
         self.user = user
         self.lock = threading.RLock()
-        
+        # 从用户数据中提取核心参数
+        self.access_token = self.user.user_data.get('accessToken')
+        self.appid = self.user.user_data.get('appid')
+        self.openid = self.user.user_data.get('openid')
+        self.game_open_id = self.user.user_data.get('roleId')
+        self.area_id = self.user.user_data.get('areaId')
+
     def get_treasure_info(self):
-        """获取寻宝信息"""
-        def extract(_html, _pattern):
-            match = re.search(_pattern, _html)
-            if match:
-                return json.loads(re.sub(r'^\((.*)\)$', r'\1', match.group(1)))
+        """获取寻宝信息（新版接口）"""
+        try:
+            # 第一步：获取用户信息(nickName和face)
+            url = f"https://ams.game.qq.com/ams/userLoginSvr?callback=jsonp86&acctype=qc&openid={self.openid}&access_token={self.access_token}&appid={self.appid}&game=act.xinyue"
+            headers = {
+                'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
+                'sec-fetch-site': "same-site",
+                'sec-fetch-dest': "script",
+                'accept-language': "zh-CN,zh-Hans;q=0.9",
+                'sec-fetch-mode': "no-cors",
+                'referer': "https://act.xinyue.qq.com/",
+                'Cookie': f"accessToken={self.access_token}; access_token={self.access_token}; acctype=qc; appId={self.appid}; appOpenid={self.openid}; appid={self.appid}; openid={self.openid}; uin=o0{self.game_open_id}; actxinyueqqcomrouteLine=a20250417speed"
+            }
+            response = requests.get(url, headers=headers)
+            json_str = re.search(r'jsonp86\((\{.*?\})\)', response.text).group(1)
+            user_info = json.loads(json_str)
+            
+            # 第二步：获取角色信息确认
+            url = "https://agw.xinyue.qq.com/amp2.RoleSrv/GetBindRole"
+            payload = {
+                "game_code": "speed",
+                "device": "ios",
+                "scene": "ceiba"
+            }
+            headers = {
+                'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
+                'Accept': "application/json, text/plain, */*",
+                'Content-Type': "application/json",
+                'T-APPID': self.appid,
+                'T-ACCOUNT-TYPE': "qc",
+                'Sec-Fetch-Site': "same-site",
+                'T-ACCESS-TOKEN': self.access_token,
+                'T-MODE': "true",
+                'T-OPENID': self.openid,
+                'Sec-Fetch-Mode': "cors",
+                'Accept-Language': "zh-CN,zh-Hans;q=0.9",
+                'Origin': "https://act.xinyue.qq.com",
+                'Referer': "https://act.xinyue.qq.com/"
+            }
+            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            role_data = response.json()
+            if not role_data.get('roles'):
+                return None
+            role_info = role_data['roles'][0]
+            
+            # 第三步：获取循环次数和相关ID
+            url = "https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId=307069&actId=22799"
+            payload = {
+                "biz_id": "bb",
+                "act_id": "22799",
+                "flow_id": 307069,
+                "role": {
+                    "game_open_id": self.game_open_id,
+                    "game_app_id": "",
+                    "area_id": int(self.area_id),
+                    "plat_id": 2,
+                    "partition_id": 1,
+                    "partition_name": role_info.get('partition_name', ""),
+                    "role_id": self.game_open_id,
+                    "role_name": role_info.get('role_name', ""),
+                    "device": "pc",
+                    "flag": 0
+                },
+                "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{user_info.get('nickName')}\\\",\\\"avatar\\\":\\\"{user_info.get('face')}\\\"}}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}"
+            }
+            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            loop_data = response.json()
+            inner_data = json.loads(loop_data['data'])
+            hold_list_key = next(iter(inner_data['holdList'].keys()))
+            left_times = inner_data['holdList'][hold_list_key]['remain']
+            
+            # 第四步：获取地图信息
+            url = "https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId=307086&actId=22799"
+            payload = {
+                "biz_id": "bb",
+                "act_id": "22799",
+                "flow_id": 307086,
+                "role": {
+                    "game_open_id": self.game_open_id,
+                    "game_app_id": "",
+                    "area_id": int(self.area_id),
+                    "plat_id": 2,
+                    "partition_id": 1,
+                    "partition_name": role_info.get('partition_name', ""),
+                    "role_id": self.game_open_id,
+                    "role_name": role_info.get('role_name', ""),
+                    "device": "pc",
+                    "flag": 0
+                },
+                "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{user_info.get('nickName')}\\\",\\\"avatar\\\":\\\"{user_info.get('face')}\\\"}}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}"
+            }
+            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            map_data = response.json()
+            inner_map_data = json.loads(map_data['data'])
+            
+            # 计算最高星级
+            max_star_level = max(item['star_level'] for item in inner_map_data['mapList'])
+            
+            # 找到daji=1的map_id
+            target_map_id = None
+            for item in inner_map_data['mapList']:
+                for map_info in item['map_info']:
+                    if map_info['daji'] == 1:
+                        target_map_id = map_info['map_id']
+                        break
+                if target_map_id:
+                    break
+            
+            # 检查是否为紫钻用户
+            vip_flag = user_info.get('isvip', '-9999') != '-9999'
+            
+            return {
+                'vip_flag': vip_flag,
+                'left_times': left_times,
+                'star_id': str(max_star_level),
+                'map_info': inner_map_data['mapList'],
+                'target_map_id': target_map_id,
+                'flow_id': hold_list_key,
+                'user_info': user_info,
+                'role_info': role_info
+            }
+        except Exception as e:
+            print(f"❌获取寻宝信息失败: {str(e)}")
             return None
 
-        url = "https://bang.qq.com/app/speed/treasure/index"
-        params = {
-            "roleId": self.user.user_data.get('roleId'),
-            "areaId": self.user.user_data.get('areaId'),
-            "uin": self.user.user_data.get('roleId')
+    def start_game(self, star_level, map_id, role_info, user_info):
+        """开始游戏"""
+        url = "https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId=307070&actId=22799"
+        game_open_id = self.game_open_id
+        role_name = role_info.get('role_name', "")
+        partition_name = role_info.get('partition_name', "")
+        nick_name = user_info.get('nickName', "")
+        face = user_info.get('face', "")
+        
+        payload = {
+            "biz_id": "bb",
+            "act_id": "22799",
+            "flow_id": "307070",
+            "role": {
+                "game_open_id": game_open_id,
+                "game_app_id": "",
+                "area_id": int(self.area_id),
+                "plat_id": 2,
+                "partition_id": 1,
+                "partition_name": partition_name,
+                "role_id": game_open_id,
+                "role_name": role_name,
+                "device": "pc",
+                "flag": 0
+            },
+            "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{nick_name}\\\",\\\"avatar\\\":\\\"{face}\\\"}}\",\"starLevel\":{star_level},\"mapId\":\"{map_id}\",\"StarLevel\":{star_level},\"MapID\":\"{map_id}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}",
+            "starLevel": star_level,
+            "mapId": map_id,
+            "StarLevel": star_level,
+            "MapID": map_id
         }
+        headers = {
+            'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
+            'Accept': "application/json, text/plain, */*",
+            'Content-Type': "application/json",
+            'T-APPID': self.appid,
+            'T-ACCOUNT-TYPE': "qc",
+            'Sec-Fetch-Site': "same-site",
+            'T-ACCESS-TOKEN': self.access_token,
+            'T-MODE': "true",
+            'T-OPENID': self.openid,
+            'Sec-Fetch-Mode': "cors",
+            'Accept-Language': "zh-CN,zh-Hans;q=0.9",
+            'Origin': "https://act.xinyue.qq.com",
+            'Referer': "https://act.xinyue.qq.com/"
+        }
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        return response.json()
 
-        response = requests.get(url, params=params)
-        response.encoding = 'utf-8'
-        
-        # 获取用户信息
-        user_info = extract(response.text, r'window\.userInfo\s*=\s*eval\(\'([^\']+)\'\);')
-        if not user_info:
-            print("❌未找到用户信息")
-            return None
-            
-        # 获取剩余寻宝次数
-        left_times = re.search(r'id="leftTimes">(\d+)</i>', response.text)
-        if not left_times:
-            print("❌未找到剩余寻宝次数")
-            return None
-            
-        # 获取地图信息
-        map_info = extract(response.text, r'window\.mapInfo\s*=\s*eval\(\'([^\']+)\'\);')
-        if not map_info:
-            print("❌未找到地图信息")
-            return None
-            
-        # 获取最高星级
-        star_info = user_info.get('starInfo', {})
-        star_keys = [key for key, value in star_info.items() if value == 1]
-        if not star_keys:
-            print("❌未找到已解锁的星级地图")
-            return None
-        star_id = max(star_keys)
-            
-        # 返回整理后的信息
-        return {
-            'vip_flag': bool(user_info.get('vip_flag')),
-            'left_times': left_times.group(1),
-            'star_id': star_id,
-            'map_info': map_info
-        }
-        
-    def get_treasure(self, iFlowId):
+    def claim_reward(self, flow_id, role_info, user_info):
         """领取奖励"""
-        url = "https://act.game.qq.com/ams/ame/amesvr?ameVersion=0.3&iActivityId=468228"
-        headers = {
-            "Cookie": f"access_token={self.user.user_data.get('accessToken')}; acctype=qc; appid={self.user.user_data.get('appid')}; openid={self.user.user_data.get('openid')}"
-        }
-        data = {
-            'appid': self.user.user_data.get('appid'),
-            'sArea': self.user.user_data.get('areaId'),
-            'sRoleId': self.user.user_data.get('roleId'),
-            'accessToken': self.user.user_data.get('accessToken'),
-            'iActivityId': "468228",
-            'iFlowId': iFlowId,
-            'g_tk': '1842395457',
-            'sServiceType': 'bb'
-        }
-        response = requests.post(url, headers=headers, data=data)
-        response.encoding = "utf-8"
+        url = f"https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId={flow_id}&actId=22799"
+        game_open_id = self.game_open_id
+        role_name = role_info.get('role_name', "")
+        partition_name = role_info.get('partition_name', "")
+        nick_name = user_info.get('nickName', "")
+        face = user_info.get('face', "")
         
-        if response.json()['ret'] == '0':
-            return f"✅{response.json()['modRet']['sPackageName']}"
-        return '❌非常抱歉，您还不满足参加该活动的条件！'
-
-    def dig(self, status):
-        """寻宝操作"""
-        url = f"https://bang.qq.com/app/speed/treasure/ajax/{status}DigTreasure"
+        payload = {
+            "biz_id": "bb",
+            "act_id": "22799",
+            "flow_id": flow_id,
+            "role": {
+                "game_open_id": game_open_id,
+                "game_app_id": "",
+                "area_id": int(self.area_id),
+                "plat_id": 2,
+                "partition_id": 1,
+                "partition_name": partition_name,
+                "role_id": game_open_id,
+                "role_name": role_name,
+                "device": "pc",
+                "flag": 0
+            },
+            "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{nick_name}\\\",\\\"avatar\\\":\\\"{face}\\\"}}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}"
+        }
         headers = {
-            "Referer": "https://bang.qq.com/app/speed/treasure/index",
-            "Cookie": f"access_token={self.user.user_data.get('accessToken')}; acctype=qc; appid={self.user.user_data.get('appid')}; openid={self.user.user_data.get('openid')}"
+            'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
+            'Accept': "application/json, text/plain, */*",
+            'Content-Type': "application/json",
+            'T-APPID': self.appid,
+            'T-ACCOUNT-TYPE': "qc",
+            'Sec-Fetch-Site': "same-site",
+            'T-ACCESS-TOKEN': self.access_token,
+            'T-MODE': "true",
+            'T-OPENID': self.openid,
+            'Sec-Fetch-Mode': "cors",
+            'Accept-Language': "zh-CN,zh-Hans;q=0.9",
+            'Origin': "https://act.xinyue.qq.com",
+            'Referer': "https://act.xinyue.qq.com/"
         }
-        data = {
-            "mapId": self.user.user_data.get('mapId'),
-            "starId": self.user.user_data.get('starId'),
-            "areaId": self.user.user_data.get('areaId'),
-            "type": self.user.user_data.get('type'),
-            "roleId": self.user.user_data.get('roleId'),
-            "userId": self.user.user_data.get('userId'),
-            "uin": self.user.user_data.get('roleId'),
-            "token": self.user.user_data.get('token')
-        }
-        response = requests.post(url, headers=headers, data=data)
-        return False if response.json()['res'] == 0 else True
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        result = response.json()
+        
+        # 整理奖励信息
+        reward_msg = []
+        if result.get('ret') == 0:
+            reward_msg.append(f"✅{result.get('msg', '领取奖励成功')}")
+            if 'data' in result:
+                data_json = json.loads(result['data'])
+                reward_msg.append(f"   {data_json.get('msg', '')}")
+        else:
+            reward_msg.append(f"❌领取奖励失败: {result.get('msg', '未知错误')}")
+            
+        return "\n".join(reward_msg)
 
     def execute(self):
         """执行寻宝任务"""
@@ -654,60 +797,47 @@ class TreasureHunt:
         info = self.get_treasure_info()
         if not info:
             return msg + "❌获取寻宝信息失败\n"
-            
-        # 更新用户数据
-        self.user.user_data.update({
-            'type': 2 if info['vip_flag'] else 1,
-            'starId': info['star_id']
-        })
-        
-        # 获取今日大吉地图
-        luck_maps = [item for item in info['map_info'][info['star_id']] if item.get('isdaji') == 1]
-        if not luck_maps:
-            return msg + "❌未找到今日大吉地图\n"
-            
-        self.user.user_data['mapId'] = luck_maps[0]['id']
         
         # 输出基本信息
         msg += f"💎紫钻用户：{'是' if info['vip_flag'] else '否'}\n"
         msg += f"⭐最高地图解锁星级：{info['star_id']}\n"
-        msg += f"🌏今日大吉地图是[{luck_maps[0]['name']}]-地图ID是[{luck_maps[0]['id']}]\n"
+        msg += f"🌏今日大吉地图ID：{info['target_map_id']}\n"
         msg += f"⏰剩余寻宝次数：{info['left_times']}\n"
         
-        # 星级地图对应的iFlowId
-        iFlowId_dict = {
-            '1': ['856152', '856155'],
-            '2': ['856156', '856157'],
-            '3': ['856158', '856159'],
-            '4': ['856160', '856161'],
-            '5': ['856162', '856163'],
-            '6': ['856164', '856165']
-        }
-        
-        if info['left_times'] != "0":
-            # 每日5次寻宝
-            for n in range(5):
+        # 执行寻宝循环
+        if int(info['left_times']) > 0:
+            for n in range(int(info['left_times'])):
                 with self.lock:
-                    # 开始寻宝
-                    if self.dig('start'):
-                        msg += f"❌第{n+1}次寻宝...对不起，当天的寻宝次数已用完\n"
+                    msg += f"\n第{n+1}次寻宝：\n"
+                    
+                    # 开始游戏
+                    start_result = self.start_game(
+                        info['star_id'], 
+                        info['target_map_id'],
+                        info['role_info'],
+                        info['user_info']
+                    )
+                    
+                    if start_result.get('ret') != 0:
+                        msg += f"❌开始游戏失败：{start_result.get('msg', '未知错误')}\n"
                         break
-
-                    # 寻宝倒计时
-                    if self.user.user_data['type'] == 2:
-                        time.sleep(10)
-                    else:
-                        time.sleep(600)
-
-                    # 结束寻宝
-                    self.dig('end')
-
+                    
+                    msg += "✅开始游戏成功，等待完成...\n"
+                    
+                    # 等待时间（紫钻10秒，普通用户10秒 - 原600秒太长，根据新接口调整）
+                    wait_time = 10 if info['vip_flag'] else 10
+                    msg += f"⌛等待{wait_time}秒...\n"
+                    time.sleep(wait_time)
+                    
                     # 领取奖励
-                    for iflowid in iFlowId_dict[info['star_id']]:
-                        reward = self.get_treasure(iflowid)
-                        msg += reward + "\n"
+                    reward_msg = self.claim_reward(
+                        info['flow_id'],
+                        info['role_info'],
+                        info['user_info']
+                    )
+                    msg += reward_msg + "\n"
         else:
-            msg += "❌对不起，当天的寻宝次数已用完\n"
+            msg += "❌今日寻宝次数已用完\n"
             
         return msg
 
@@ -829,12 +959,12 @@ def process_account(user, msg_dict, user_index):
             user.progress += progress_per_feature
         
         # 执行寻宝
-        # if 'treasure' in enabled_features:
-        #     user.status = "正在寻宝..."
-        #     treasure = TreasureHunt(user)
-        #     treasure_msg = treasure.execute()
-        #     msg_dict[user_index].append(treasure_msg)
-        #     user.progress = 100
+        if 'treasure' in enabled_features:
+            user.status = "正在寻宝..."
+            treasure = TreasureHunt(user)
+            treasure_msg = treasure.execute()
+            msg_dict[user_index].append(treasure_msg)
+            user.progress = 100
             
         user.status = "任务完成"
         msg_dict[user_index].append("="*30 + "\n")
