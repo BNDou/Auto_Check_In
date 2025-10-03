@@ -3,7 +3,7 @@ new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-10-3 21:20:19
+LastEditTime : 2025-03-22 21:46:19
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -652,25 +652,20 @@ class TreasureHunt:
             response = requests.post(url, data=json.dumps(payload), headers=headers)
             map_data = response.json()
             inner_map_data = json.loads(map_data['data'])
-            
-            # 计算最高星级
             max_star_level = max(item['star_level'] for item in inner_map_data['mapList'])
-            
-            # 找到daji=1的map_id
             target_map_id = None
-            for item in inner_map_data['mapList']:
-                for map_info in item['map_info']:
+            max_star_maps = [item for item in inner_map_data['mapList'] if item['star_level'] == max_star_level]
+            if max_star_maps:
+                for map_info in max_star_maps[0]['map_info']:
                     if map_info['daji'] == 1:
                         target_map_id = map_info['map_id']
                         break
-                if target_map_id:
-                    break
+
+            if not target_map_id:
+                print(f"❌最高星级{max_star_level}下未找到daji=1的地图")
             
-            # 检查是否为紫钻用户
-            vip_flag = user_info.get('isvip', '-9999') != '-9999'
             
             return {
-                'vip_flag': vip_flag,
                 'left_times': left_times,
                 'star_id': str(max_star_level),
                 'map_info': inner_map_data['mapList'],
@@ -798,8 +793,6 @@ class TreasureHunt:
         if not info:
             return msg + "❌获取寻宝信息失败\n"
         
-        # 输出基本信息
-        msg += f"💎紫钻用户：{'是' if info['vip_flag'] else '否'}\n"
         msg += f"⭐最高地图解锁星级：{info['star_id']}\n"
         msg += f"🌏今日大吉地图ID：{info['target_map_id']}\n"
         msg += f"⏰剩余寻宝次数：{info['left_times']}\n"
@@ -823,11 +816,7 @@ class TreasureHunt:
                         break
                     
                     msg += "✅开始游戏成功，等待完成...\n"
-                    
-                    # 等待时间（紫钻10秒，普通用户10秒 - 原600秒太长，根据新接口调整）
-                    wait_time = 10 if info['vip_flag'] else 10
-                    msg += f"⌛等待{wait_time}秒...\n"
-                    time.sleep(wait_time)
+                    time.sleep(10)
                     
                     # 领取奖励
                     reward_msg = self.claim_reward(
