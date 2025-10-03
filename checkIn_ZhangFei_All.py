@@ -2,8 +2,9 @@
 new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
 Author       : BNDou
+LastAuthor   : Aellyt
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-03-22 21:46:19
+LastEditTime : 2025-10-03 21:46:19
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -600,7 +601,7 @@ class TreasureHunt:
             response = requests.post(url, data=json.dumps(payload), headers=headers)
             role_data = response.json()
             if not role_data.get('roles'):
-                return None
+                return role_data.get('msg')
             role_info = role_data['roles'][0]
             
             # 第三步：获取循环次数和相关ID
@@ -792,6 +793,8 @@ class TreasureHunt:
         info = self.get_treasure_info()
         if not info:
             return msg + "❌获取寻宝信息失败\n"
+        elif not isinstance(info, dict):
+            return msg + f"❌{info}\n"
         
         msg += f"⭐最高地图解锁星级：{info['star_id']}\n"
         msg += f"🌏今日大吉地图ID：{info['target_map_id']}\n"
