@@ -4,7 +4,7 @@ cron: 2 1 * * *
 
 Author: BNDou
 Date: 2024-08-22 23:19:20
-LastEditTime: 2025-01-13 22:37:05
+LastEditTime: 2025-11-18 03:49:26
 FilePath: \Auto_Check_In\checkIn_LaTeX.py
 Description: 
 '''
@@ -105,7 +105,7 @@ if __name__ == "__main__":
             print("继续处理下一个账号...")
             continue
         msg += log + "\n"
-        # print(log)
+        print(log)
         i += 1
 
     try:
