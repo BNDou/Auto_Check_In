@@ -161,7 +161,7 @@ if __name__ == "__main__":
                 user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
         log += MiMotion(user_data).main() + "\n\n"
 
-    # print(msg)
+    print(msg)
 
     try:
         send('小米运动修改步数', log)
