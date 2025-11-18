@@ -4,7 +4,7 @@ cron: 10 0 * * *
 Author       : BNDou
 LastAuthor   : Aellyt
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-10-03 21:46:19
+LastEditTime : 2025-11-18 03:49:26
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -557,25 +557,33 @@ class TreasureHunt:
         self.openid = self.user.user_data.get('openid')
         self.game_open_id = self.user.user_data.get('roleId')
         self.area_id = self.user.user_data.get('areaId')
+        self.headers = {
+            'Content-Type': "application/json",
+            'T-ACCOUNT-TYPE': "qc",
+            'T-MODE': "true",
+            'T-APPID': self.user.user_data.get('appid'),
+            'T-OPENID': self.user.user_data.get('openid'),
+            'T-ACCESS-TOKEN': self.user.user_data.get('accessToken'),
+            'Origin': "https://act.xinyue.qq.com",
+            'Referer': "https://act.xinyue.qq.com/",
+            'Sec-Fetch-Mode': "cors",
+            'Sec-Fetch-Site': "same-site",
+            'Accept': "application/json, text/plain, */*",
+            'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002"
+        }
 
     def get_treasure_info(self):
         """获取寻宝信息（新版接口）"""
         try:
             # 第一步：获取用户信息(nickName和face)
-            url = f"https://ams.game.qq.com/ams/userLoginSvr?callback=jsonp86&acctype=qc&openid={self.openid}&access_token={self.access_token}&appid={self.appid}&game=act.xinyue"
+            url = f"https://ams.game.qq.com/ams/userLoginSvr?callback=jsonp86&acctype=qc&openid={self.openid}&access_token={self.access_token}&appid={self.appid}"
             headers = {
-                'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
-                'sec-fetch-site': "same-site",
-                'sec-fetch-dest': "script",
-                'accept-language': "zh-CN,zh-Hans;q=0.9",
-                'sec-fetch-mode': "no-cors",
-                'referer': "https://act.xinyue.qq.com/",
-                'Cookie': f"accessToken={self.access_token}; access_token={self.access_token}; acctype=qc; appId={self.appid}; appOpenid={self.openid}; appid={self.appid}; openid={self.openid}; uin=o0{self.game_open_id}; actxinyueqqcomrouteLine=a20250417speed"
+                'referer': "https://act.xinyue.qq.com/"
             }
             response = requests.get(url, headers=headers)
             json_str = re.search(r'jsonp86\((\{.*?\})\)', response.text).group(1)
             user_info = json.loads(json_str)
-            
+
             # 第二步：获取角色信息确认
             url = "https://agw.xinyue.qq.com/amp2.RoleSrv/GetBindRole"
             payload = {
@@ -583,95 +591,62 @@ class TreasureHunt:
                 "device": "ios",
                 "scene": "ceiba"
             }
-            headers = {
-                'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
-                'Accept': "application/json, text/plain, */*",
-                'Content-Type': "application/json",
-                'T-APPID': self.appid,
-                'T-ACCOUNT-TYPE': "qc",
-                'Sec-Fetch-Site': "same-site",
-                'T-ACCESS-TOKEN': self.access_token,
-                'T-MODE': "true",
-                'T-OPENID': self.openid,
-                'Sec-Fetch-Mode': "cors",
-                'Accept-Language': "zh-CN,zh-Hans;q=0.9",
-                'Origin': "https://act.xinyue.qq.com",
-                'Referer': "https://act.xinyue.qq.com/"
-            }
-            response = requests.post(url, data=json.dumps(payload), headers=headers)
+            response = requests.post(url, data=json.dumps(payload), headers=self.headers)
             role_data = response.json()
             if not role_data.get('roles'):
                 return role_data.get('msg')
             role_info = role_data['roles'][0]
-            
-            # 第三步：获取循环次数和相关ID
+
+            # 第三步：获取相关ID
             url = "https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId=307069&actId=22799"
             payload = {
                 "biz_id": "bb",
                 "act_id": "22799",
                 "flow_id": 307069,
                 "role": {
-                    "game_open_id": self.game_open_id,
-                    "game_app_id": "",
                     "area_id": int(self.area_id),
-                    "plat_id": 2,
-                    "partition_id": 1,
-                    "partition_name": role_info.get('partition_name', ""),
-                    "role_id": self.game_open_id,
-                    "role_name": role_info.get('role_name', ""),
-                    "device": "pc",
-                    "flag": 0
-                },
-                "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{user_info.get('nickName')}\\\",\\\"avatar\\\":\\\"{user_info.get('face')}\\\"}}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}"
+                    "role_id": self.game_open_id
+                }
             }
-            response = requests.post(url, data=json.dumps(payload), headers=headers)
-            loop_data = response.json()
-            inner_data = json.loads(loop_data['data'])
-            hold_list_key = next(iter(inner_data['holdList'].keys()))
-            left_times = inner_data['holdList'][hold_list_key]['remain']
+            response = requests.post(url, data=json.dumps(payload), headers=self.headers).json()
+            inner_data = json.loads(response['data'])
+            flow_id = next(iter(inner_data['holdList'].keys()))
             
-            # 第四步：获取地图信息
+            # 第四步：获取寻宝次数和地图信息
             url = "https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId=307086&actId=22799"
             payload = {
                 "biz_id": "bb",
                 "act_id": "22799",
                 "flow_id": 307086,
                 "role": {
-                    "game_open_id": self.game_open_id,
-                    "game_app_id": "",
                     "area_id": int(self.area_id),
-                    "plat_id": 2,
-                    "partition_id": 1,
-                    "partition_name": role_info.get('partition_name', ""),
-                    "role_id": self.game_open_id,
-                    "role_name": role_info.get('role_name', ""),
-                    "device": "pc",
-                    "flag": 0
-                },
-                "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{user_info.get('nickName')}\\\",\\\"avatar\\\":\\\"{user_info.get('face')}\\\"}}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}"
+                    "role_id": self.game_open_id
+                }
             }
-            response = requests.post(url, data=json.dumps(payload), headers=headers)
-            map_data = response.json()
-            inner_map_data = json.loads(map_data['data'])
-            max_star_level = max(item['star_level'] for item in inner_map_data['mapList'])
-            target_map_id = None
-            max_star_maps = [item for item in inner_map_data['mapList'] if item['star_level'] == max_star_level]
+            response = requests.post(url, data=json.dumps(payload), headers=self.headers).json()
+            inner_data = json.loads(response['data'])
+            left_times = inner_data['remain']
+            total_times = inner_data['usedTreasureNum']
+            max_star_level = max(item['star_level'] for item in inner_data['mapList'])
+            target_map = None
+            max_star_maps = [item for item in inner_data['mapList'] if item['star_level'] == max_star_level]
             if max_star_maps:
                 for map_info in max_star_maps[0]['map_info']:
                     if map_info['daji'] == 1:
-                        target_map_id = map_info['map_id']
+                        target_map = [map_info['map_id'], map_info['name']]
                         break
 
-            if not target_map_id:
+            if not target_map:
                 print(f"❌最高星级{max_star_level}下未找到daji=1的地图")
             
             
             return {
                 'left_times': left_times,
+                'total_times': total_times,
                 'star_id': str(max_star_level),
-                'map_info': inner_map_data['mapList'],
-                'target_map_id': target_map_id,
-                'flow_id': hold_list_key,
+                'map_info': inner_data['mapList'],
+                'target_map': target_map,
+                'flow_id': flow_id,
                 'user_info': user_info,
                 'role_info': role_info
             }
@@ -679,12 +654,9 @@ class TreasureHunt:
             print(f"❌获取寻宝信息失败: {str(e)}")
             return None
 
-    def start_game(self, star_level, map_id, role_info, user_info):
+    def start_game(self, star_level, map_id, user_info, role_info):
         """开始游戏"""
         url = "https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId=307070&actId=22799"
-        game_open_id = self.game_open_id
-        role_name = role_info.get('role_name', "")
-        partition_name = role_info.get('partition_name', "")
         nick_name = user_info.get('nickName', "")
         face = user_info.get('face', "")
         
@@ -693,14 +665,14 @@ class TreasureHunt:
             "act_id": "22799",
             "flow_id": "307070",
             "role": {
-                "game_open_id": game_open_id,
-                "game_app_id": "",
                 "area_id": int(self.area_id),
+                "role_id": self.game_open_id,
+                "game_open_id": self.game_open_id,
+                "game_app_id": "",
                 "plat_id": 2,
                 "partition_id": 1,
-                "partition_name": partition_name,
-                "role_id": game_open_id,
-                "role_name": role_name,
+                "partition_name": role_info.get('partition_name', ""),
+                "role_name": role_info.get('role_name', ""),
                 "device": "pc",
                 "flag": 0
             },
@@ -710,30 +682,12 @@ class TreasureHunt:
             "StarLevel": star_level,
             "MapID": map_id
         }
-        headers = {
-            'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
-            'Accept': "application/json, text/plain, */*",
-            'Content-Type': "application/json",
-            'T-APPID': self.appid,
-            'T-ACCOUNT-TYPE': "qc",
-            'Sec-Fetch-Site': "same-site",
-            'T-ACCESS-TOKEN': self.access_token,
-            'T-MODE': "true",
-            'T-OPENID': self.openid,
-            'Sec-Fetch-Mode': "cors",
-            'Accept-Language': "zh-CN,zh-Hans;q=0.9",
-            'Origin': "https://act.xinyue.qq.com",
-            'Referer': "https://act.xinyue.qq.com/"
-        }
-        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        response = requests.post(url, data=json.dumps(payload), headers=self.headers)
         return response.json()
 
-    def claim_reward(self, flow_id, role_info, user_info):
+    def claim_reward(self, flow_id, user_info, role_info):
         """领取奖励"""
         url = f"https://agw.xinyue.qq.com/amp2.WPESrv/WPEIndex?flowId={flow_id}&actId=22799"
-        game_open_id = self.game_open_id
-        role_name = role_info.get('role_name', "")
-        partition_name = role_info.get('partition_name', "")
         nick_name = user_info.get('nickName', "")
         face = user_info.get('face', "")
         
@@ -742,35 +696,20 @@ class TreasureHunt:
             "act_id": "22799",
             "flow_id": flow_id,
             "role": {
-                "game_open_id": game_open_id,
-                "game_app_id": "",
                 "area_id": int(self.area_id),
+                "role_id": self.game_open_id,
+                "game_open_id": self.game_open_id,
+                "game_app_id": "",
                 "plat_id": 2,
                 "partition_id": 1,
-                "partition_name": partition_name,
-                "role_id": game_open_id,
-                "role_name": role_name,
+                "partition_name": role_info.get('partition_name', ""),
+                "role_name": role_info.get('role_name', ""),
                 "device": "pc",
                 "flag": 0
             },
             "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{nick_name}\\\",\\\"avatar\\\":\\\"{face}\\\"}}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}"
         }
-        headers = {
-            'User-Agent': "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 GH_QQConnect GameHelper_1003/3.16.0.2.2103160002",
-            'Accept': "application/json, text/plain, */*",
-            'Content-Type': "application/json",
-            'T-APPID': self.appid,
-            'T-ACCOUNT-TYPE': "qc",
-            'Sec-Fetch-Site': "same-site",
-            'T-ACCESS-TOKEN': self.access_token,
-            'T-MODE': "true",
-            'T-OPENID': self.openid,
-            'Sec-Fetch-Mode': "cors",
-            'Accept-Language': "zh-CN,zh-Hans;q=0.9",
-            'Origin': "https://act.xinyue.qq.com",
-            'Referer': "https://act.xinyue.qq.com/"
-        }
-        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        response = requests.post(url, data=json.dumps(payload), headers=self.headers)
         result = response.json()
         
         # 整理奖励信息
@@ -796,9 +735,10 @@ class TreasureHunt:
         elif not isinstance(info, dict):
             return msg + f"❌{info}\n"
         
-        msg += f"⭐最高地图解锁星级：{info['star_id']}\n"
-        msg += f"🌏今日大吉地图ID：{info['target_map_id']}\n"
+        msg += f"⭐地图解锁最高星级：{info['star_id']}\n"
+        msg += f"🌏今日大吉地图：[{info['target_map'][1]}]{info['target_map'][0]}\n"
         msg += f"⏰剩余寻宝次数：{info['left_times']}\n"
+        msg += f"🎖️总夺宝次数：{info['total_times']}\n"
         
         # 执行寻宝循环
         if int(info['left_times']) > 0:
@@ -809,23 +749,23 @@ class TreasureHunt:
                     # 开始游戏
                     start_result = self.start_game(
                         info['star_id'], 
-                        info['target_map_id'],
-                        info['role_info'],
-                        info['user_info']
+                        info['target_map'][0],
+                        info['user_info'],
+                        info['role_info']
                     )
                     
                     if start_result.get('ret') != 0:
                         msg += f"❌开始游戏失败：{start_result.get('msg', '未知错误')}\n"
                         break
                     
-                    msg += "✅开始游戏成功，等待完成...\n"
-                    time.sleep(10)
+                    # msg += "✅开始游戏成功，等待完成...\n"
+                    time.sleep(11)
                     
                     # 领取奖励
                     reward_msg = self.claim_reward(
-                        info['flow_id'],
-                        info['role_info'],
-                        info['user_info']
+                        info['flow_id'], 
+                        info['user_info'],
+                        info['role_info']
                     )
                     msg += reward_msg + "\n"
         else:
