@@ -161,8 +161,9 @@ if __name__ == "__main__":
                 user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
         log += MiMotion(user_data).main() + "\n\n"
         if len(cookie_mimotion) > 1:
-            print(f"✅ 已完成{cookie_mimotion.index(data) + 1}/{len(cookie_mimotion)}个账号\n60秒后继续下一个账号")
+            print(f"✅ 已完成{cookie_mimotion.index(data) + 1}/{len(cookie_mimotion)}个账号")
             if cookie_mimotion.index(data) + 1 != len(cookie_mimotion):
+                print("⏳ 正在等待60秒，继续下一个账号...")
                 time.sleep(60)
 
     print(log)
