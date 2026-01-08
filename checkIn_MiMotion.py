@@ -160,8 +160,12 @@ if __name__ == "__main__":
             if not a == '':
                 user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
         log += MiMotion(user_data).main() + "\n\n"
+        if len(cookie_mimotion) > 1:
+            print(f"✅ 已完成{cookie_mimotion.index(data) + 1}/{len(cookie_mimotion)}个账号\n60秒后继续下一个账号")
+            if cookie_mimotion.index(data) + 1 != len(cookie_mimotion):
+                time.sleep(60)
 
-    print(msg)
+    print(log)
 
     try:
         send('小米运动修改步数', log)
