@@ -68,6 +68,7 @@ ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "utils"
 | [1983shake](https://github.com/1983shake) | WeChat |
 | [mmmmm1mm](https://github.com/mmmmm1mm) | WeChat |
 | [qqsmms](https://github.com/qqsmms) | WeChat |
+| 以大橘为重 | WeChat |
 
 ## 技术鸣谢
 - [Chiupam](https://github.com/chiupam)
