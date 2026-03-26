@@ -4,7 +4,7 @@ cron: 10 0 * * *
 Author       : BNDou
 LastAuthor   : Aellyt
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2025-11-18 03:49:26
+LastEditTime : 2026-03-26 21:37:02
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
@@ -19,7 +19,7 @@ COOKIE_ZHANGFEI，多账户用 回车 或 && 分开
 
 Cookie参数说明：
 1. 基础参数(必需)：
-roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx;
 
 2. 功能控制参数(可选，默认均为false)：
 enable_signin=true/false; - 签到功能
@@ -104,7 +104,7 @@ class SignIn:
         """获取签到信息"""
         try:
             flow = requests.get(
-                f"https://speed.qq.com/cp/{self.user.user_data['speedqqcomrouteLine']}/index.js"
+                f"https://speed.qq.com/cp/a20240402mrqd/index.js"
             )
             html = flow.text
             # 解析签到信息

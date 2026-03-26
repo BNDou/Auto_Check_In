@@ -3,7 +3,7 @@ new Env('掌上飞车-0点开金丝篓')
 cron: 59 59 23 * * *
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime: 2024-05-29 04:40:53
+LastEditTime : 2026-03-26 21:38:10
 FilePath: \Auto_Check_In\checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
 默认只有出货才推送通知
@@ -11,10 +11,9 @@ Description  : 端游 金丝篓开永久雷诺
 ①添加zhangFei_jinSiLouNum变量于config.sh用于控制开启金丝篓个数，变量为大于零的整数
 ②添加环境变量COOKIE_ZHANGFEI，多账户用 回车 或 && 分开
 同签到的环境变量，只需要添加8个值即可，分别是
-roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx; speedqqcomrouteLine=xxx;
+roleId=QQ号; userId=掌飞社区ID号; accessToken=xxx; appid=xxx; openid=xxx; areaId=xxx; token=xxx;
 
 其中
-speedqqcomrouteLine就是签到页的url中间段，即http://speed.qq.com/lbact/xxxxxxxxxx/zfmrqd.html中的xxxxxxxxxx部分（金丝篓不需要这个参数，如只用本库金丝篓脚本，可不添加此参数）
 token进入签到页（url参数里面有）或者进入寻宝页（Referer里面会出现）都能获取到
 '''
 import os
@@ -25,8 +24,6 @@ from queue import Queue
 from urllib.parse import unquote
 
 import requests
-
-from checkIn_ZhangFei_Login import check
 
 # 测试用环境变量
 # os.environ['zhangFei_jinSiLouNum'] = '1'
@@ -114,6 +111,28 @@ class OpenBoxThread(threading.Thread):
         return self.q.get()
 
 
+# token验证
+def check(user):
+    url = "https://api2.helper.qq.com/report/checklogswitch"
+    body = {
+        "gameId": "1003",
+        "cSystem": "iOS",
+        "cGameId": "1003",
+        "userId": user.get("userId"),
+        "token": user.get("token")
+    }
+
+    response = requests.post(url, data=body)
+    response_json = response.json()
+    # print(response_json)
+
+    if response_json['returnMsg'] != "":
+        print("❌账号 {}".format(user.get("roleId")),
+                response_json['returnMsg'], "可更新token后重试")
+
+    return True if response_json['returnMsg'] == "" else False
+
+
 def main(*arg):
     msg = ""
     log_push = ""
@@ -133,7 +152,7 @@ def main(*arg):
                 user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
 
         # 检查token是否过期
-        if not check(user_data, "JinSiLou"):
+        if not check(user_data):
             i += 1
             continue
 
