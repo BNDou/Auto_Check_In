@@ -71,7 +71,7 @@ def get_ptqrtoken(t):
 
 if __name__ == "__main__":
     print("🔴 没事不要随便扫，防止token失效")
-    print("🔴 获取的ck只能用于寻宝脚本，签到登其他功能缺少token参数")
+    print("🔴 获取的ck只能用于寻宝脚本，签到等其他功能缺少token参数")
     print("✌ 请使用手机QQ扫描二维码")
     # 1、获取需要扫码的图片并切获取qrsig
     url = "https://xui.ptlogin2.qq.com/ssl/ptqrshow?daid=381&appid=716027609&pt_3rd_aid=1105330667"
@@ -128,7 +128,7 @@ if __name__ == "__main__":
             access_token = re.search(r"access_token=(\w+)",
                                      res_login.text).group(1)
             print(f"\nck获取成功\n请将下面一段复制到cookie中\n"
-                f"👇👇👇👇👇👇\nroleId=QQ号; userId=掌飞社区ID号; accessToken={access_token}; appid={appid}; openid={openid}\n; areaId=电信一1联通2电信二3; enable_signin=false; enable_shopping=false; enable_treasure=true;\n👆👆👆👆👆👆"
+                f"👇👇👇👇👇👇\nroleId=QQ号; userId=掌飞社区ID号; accessToken={access_token}; appid={appid}; openid={openid}; areaId=电信一1联通2电信二3; enable_signin=false; enable_shopping=false; enable_treasure=true;\n👆👆👆👆👆👆"
             )
             break
         # 两秒循环检测
