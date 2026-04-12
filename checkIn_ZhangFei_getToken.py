@@ -1,5 +1,5 @@
 '''
-new Env('掌上飞车扫码登陆')
+new Env('掌上飞车扫码登陆-目前仅支持寻宝')
 cron: 1 1 1 1 1
                        _oo0oo_
                       o8888888o
@@ -27,7 +27,7 @@ cron: 1 1 1 1 1
 
 Author: BNDou
 Date: 2024-04-11 22:20:35
-LastEditTime: 2024-06-12 19:19:34
+LastEditTime: 2026-04-13 00:48:21
 FilePath: \Auto_Check_In\checkIn_ZhangFei_getToken.py
 Description: 
 '''
@@ -70,9 +70,8 @@ def get_ptqrtoken(t):
 
 
 if __name__ == "__main__":
-    print("🔴 没事不要随便扫，扫码登录后，寻宝和购物用的token就失效了")
-    print("🔴 需要重新在app端抓包获取token，得不偿失")
-    print("🔴 除非你只用签到脚本，不需要那俩功能")
+    print("🔴 没事不要随便扫，防止token失效")
+    print("🔴 获取的ck只能用于寻宝脚本，签到登其他功能缺少token参数")
     print("✌ 请使用手机QQ扫描二维码")
     # 1、获取需要扫码的图片并切获取qrsig
     url = "https://xui.ptlogin2.qq.com/ssl/ptqrshow?daid=381&appid=716027609&pt_3rd_aid=1105330667"
@@ -128,8 +127,8 @@ if __name__ == "__main__":
             appid = re.search(r"appid=(\w+)", res_login.text).group(1)
             access_token = re.search(r"access_token=(\w+)",
                                      res_login.text).group(1)
-            print(
-                f"\nopenid = {openid}\nappid = {appid}\naccess_token = {access_token}"
+            print(f"\nck获取成功\n请将下面一段复制到cookie中\n"
+                f"👇👇👇👇👇👇\nroleId=QQ号; userId=掌飞社区ID号; accessToken={access_token}; appid={appid}; openid={openid}\n; areaId=电信一1联通2电信二3; enable_signin=false; enable_shopping=false; enable_treasure=true;\n👆👆👆👆👆👆"
             )
             break
         # 两秒循环检测
