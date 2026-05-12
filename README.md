@@ -1,7 +1,7 @@
 <!--
  * @Author       : BNDou
  * @Date         : 2022-10-30 19:12:57
- * @LastEditTime: 2024-05-29 03:24:57
+ * @LastEditTime: 2025-11-19 00:32:19
  * @FilePath: \Auto_Check_In\README.md
  * @Description  :
 -->
@@ -10,9 +10,22 @@
 
 > 每日自动签到集合
 
-~~小米社区~~ | 掌飞签到 | 掌飞购物 | 掌飞寻宝 | 夸克网盘 | 恩山论坛 | ~~必应搜索~~
+掌飞签到 | 掌飞购物 | 掌飞寻宝 | speed大乐透 | 夸克网盘 | 人人视频 | 小米运动 | LaTeX工作室 | ~~小米社区~~ |  ~~恩山论坛~~ | ~~脚本猫~~ | ~~必应搜索~~
 
 ## 更新日志
+- 2025-11-18 优化 **掌飞寻宝** 功能，实现 **每日登录掌飞获得3次寻宝机会**
+- 2025-10-03 感谢[Aellyt](https://github.com/Aellyt)提供 **掌飞寻宝** 更新适配
+- 2025-08-27 因 **掌飞寻宝** 活动更新，原脚本不适配，该功能暂时移除，修复时间暂无法确定，请耐心等待
+- 2025-01-09 合并 **签到**、**购物**、**寻宝** 功能到 **掌上飞车全能版（多线程）**
+    1. 添加多线程支持，实现多账号并行执行
+    2. 添加实时进度条显示
+    3. 优化消息推送格式
+    4. 添加功能控制参数（具体参数请查看脚本注释）
+    5. 完善错误处理和提示
+- 2024-08-05 新增 speed端游-周末大乐透 系列工具
+- 2024-07-15 修复 夸克网盘自动签到
+- ~~2024-07-14 修复 【测试版】夸克网盘自动签到~~
+- 2024-06-12 新增 掌飞扫码登录 获取cookie关键属性(参数只适用于签到脚本)
 - 2024-05-10 新版掌飞V4 签到已更新
 - 新版掌飞V3 签到、掌飞购物、掌飞寻宝、掌飞开金丝篓已修复
 
@@ -21,10 +34,10 @@
 1. 拉库指令（拉库失败请自行添加代理）
 
 ```
-ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "^sendNotify" "main"
+ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "utils" "main" "py"
 ```
 
-2. 根据“**_代码文件头部注释_**”或者“**_运行提示_**”添加对应的“**_环境变量_**”
+2. 根据"**_代码文件头部注释_**"或者"**_运行提示_**"添加对应的"**_环境变量_**"
 
 ## 捐赠支持，用爱发电
 
@@ -50,6 +63,16 @@ ql repo "https://github.com/BNDou/Auto_Check_In.git" "checkIn_" "backUp" "^sendN
 | 钟情于 | WeChat |
 | M | WeChat |
 | [Struggle-best](https://github.com/Struggle-best) | WeChat |
+| [Machae1](https://github.com/Machae1) | WeChat |
+| [AfanChang](https://github.com/AfanChang) | WeChat |
+| [1983shake](https://github.com/1983shake) | WeChat |
+| [mmmmm1mm](https://github.com/mmmmm1mm) | WeChat |
+| [qqsmms](https://github.com/qqsmms) | WeChat |
+| 以大橘为重 | WeChat |
+
+## 技术鸣谢
+- [Chiupam](https://github.com/chiupam)
+- [Cp0204](https://github.com/Cp0204)
 
 ## 免责声明
 - 这里的脚本只是自己学习 python 的一个实践。

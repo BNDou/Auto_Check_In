@@ -1,14 +1,10 @@
 '''
 Author: BNDou
 Date: 2023-10-18 20:55:31
-LastEditTime: 2024-05-10 04:36:08
-FilePath: \Auto_Check_In\sendNotify.py
+LastEditTime: 2024-06-05 05:21:57
+FilePath: /Auto_Check_In/utils/sendNotify.py
 Description: 
 '''
-# !/usr/bin/env python3
-# _*_ coding:utf-8 _*_
-
-# Modify: Kirin
 
 import base64
 import hashlib
@@ -421,7 +417,7 @@ def send(title, content):
     if QYWX_KEY:
         for i in range(int(len(content) / 2000) + 1):
             wecom_key(title=title, content=content[i * 2000:(i + 1) * 2000])
-    if QYWX_KEY:
+    if FS_KEY:
         fs_key(title=title, content=content)
 
 

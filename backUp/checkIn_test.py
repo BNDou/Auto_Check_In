@@ -3,14 +3,13 @@ new Env('test')
 cron: 10 0 * * *
 Author       : BNDou
 Date         : 2022-12-02 19:03:27
-LastEditTime : 2024-1-15 22:58:10
-FilePath     : /Auto_Check_In/checkIn_test.py
+LastEditTime: 2024-07-17 23:22:18
+FilePath: \Auto_Check_In\backUp\checkIn_test.py
 Description  :
 
 '''
 import os
 import sys
-from urllib.parse import unquote
 
 import requests
 
@@ -58,7 +57,7 @@ def main(*arg):
         user_data = {}
         for a in cookie_test[i].replace(" ", "").split(';'):
             if not a == '':
-                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+                user_data.update({a[0:a.index('=')]: a[a.index('=') + 1:]})
         # print(user_data)
 
         i += 1
