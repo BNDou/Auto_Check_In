@@ -1,12 +1,14 @@
+#!/usr/bin/env python
+# coding=utf-8
 '''
 new Env('LaTeX工作室签到')
 cron: 2 1 * * *
 
-Author: BNDou
-Date: 2024-08-22 23:19:20
-LastEditTime: 2025-11-18 03:49:26
-FilePath: \Auto_Check_In\checkIn_LaTeX.py
-Description: 
+FilePath     : /Auto_Check_In/checkIn_LaTeX.py
+Author       : BNDou
+Date         : 2024-08-22 23:19:20
+LastEditTime : 2026-05-12 23:15:45
+Description  : 
 '''
 
 import os
@@ -23,14 +25,15 @@ try:  # 异常捕捉
 except Exception as err:  # 异常捕捉
     print('%s\n加载通知服务失败~' % err)
 
+# 导入公共环境变量工具
+from utils.env_utils import get_env as common_get_env
 
-# 获取环境变量
+
+# 获取环境变量（使用公共模块）
 def get_env():
     # 判断 COOKIE_LATEX_TOKEN 是否存在于环境变量
-    if "COOKIE_LATEX_TOKEN" in os.environ:
-        # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_LATEX_TOKEN'))
-    else:
+    cookie_list = common_get_env('COOKIE_LATEX_TOKEN')
+    if not cookie_list:
         # 标准日志输出
         print('未添加 COOKIE_LATEX_TOKEN 变量')
         send('LaTeX工作室签到', '未添加 COOKIE_LATEX_TOKEN 变量')
@@ -56,13 +59,13 @@ class LaTeX:
     def sign(self):
         """签到"""
         url = f"https://www.latexstudio.net/api/Sign/Sign?token={self.token}"
-        res = requests.post(url).json()
+        res = requests.post(url, timeout=15).json()
         self.sign_text = res['msg']
 
     def user(self):
         """获取用户信息"""
         url = f"https://www.latexstudio.net/api/user/index?token={self.token}"
-        res = requests.get(url).json()
+        res = requests.get(url, timeout=15).json()
         if res['code'] == 1:
             self.logintime = res['data']['logintime']
             self.money = res['data']['money']
@@ -90,7 +93,8 @@ class LaTeX:
                     f'⭐ 上次登录: {self.logintime}\n')
 
 
-if __name__ == "__main__":
+def main():
+    """LaTeX工作室签到主函数"""
     print("----------LaTeX工作室开始尝试签到----------")
 
     msg, cookie_LaTeX_Tokens = "", get_env()
@@ -114,3 +118,7 @@ if __name__ == "__main__":
         print('%s\n❌️错误，请查看运行日志！' % err)
 
     print("----------LaTeX工作室签到执行完毕----------")
+
+
+if __name__ == "__main__":
+    main()

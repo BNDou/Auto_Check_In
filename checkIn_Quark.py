@@ -1,20 +1,23 @@
+#!/usr/bin/env python
+# coding=utf-8
 '''
 new Env('夸克自动签到')
 cron: 0 9 * * *
 
+FilePath     : /Auto_Check_In/checkIn_Quark.py
+Author       : BNDou
+Date         : 2024-03-15 21:43:06
+LastEditTime : 2026-05-12 23:16:55
+Description  : 
+
 V2版-目前有效
-使用移动端接口修复每日自动签到，移除原有的“登录验证”，参数有效期未知
+使用移动端接口修复每日自动签到，移除原有的"登录验证"，参数有效期未知
 
 V1版-已失效
 受大佬 @Cp0204 的仓库项目启发改编
 源码来自 GitHub 仓库：https://github.com/Cp0204/quark-auto-save
-提取“登录验证”“签到”“领取”方法封装到下文中的“Quark”类中
+提取"登录验证""签到""领取"方法封装到下文中的"Quark"类中
 
-Author: BNDou
-Date: 2024-03-15 21:43:06
-LastEditTime: 2025-11-18 03:49:26
-FilePath: \Auto_Check_In\checkIn_Quark.py
-Description: 
 抓包流程：
     【手机端】
     ①打开抓包，手机端访问抽奖页
@@ -39,14 +42,15 @@ try:  # 异常捕捉
 except Exception as err:  # 异常捕捉
     print('%s\n❌加载通知服务失败~' % err)
 
+# 导入公共环境变量工具
+from utils.env_utils import get_env as common_get_env
 
-# 获取环境变量
+
+# 获取环境变量（使用公共模块）
 def get_env():
     # 判断 COOKIE_QUARK是否存在于环境变量
-    if "COOKIE_QUARK" in os.environ:
-        # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_QUARK'))
-    else:
+    cookie_list = common_get_env('COOKIE_QUARK')
+    if not cookie_list:
         # 标准日志输出
         print('❌未添加COOKIE_QUARK变量')
         send('夸克自动签到', '❌未添加COOKIE_QUARK变量')
@@ -93,7 +97,7 @@ class Quark:
             "sign": self.param.get('sign'),
             "vcode": self.param.get('vcode')
         }
-        response = requests.get(url=url, params=querystring).json()
+        response = requests.get(url=url, params=querystring, timeout=15).json()
         #print(response)
         if response.get("data"):
             return response["data"]
@@ -114,7 +118,7 @@ class Quark:
             "vcode": self.param.get('vcode')
         }
         data = {"sign_cyclic": True}
-        response = requests.post(url=url, json=data, params=querystring).json()
+        response = requests.post(url=url, json=data, params=querystring, timeout=15).json()
         #print(response)
         if response.get("data"):
             return True, response["data"]["sign_daily_reward"]
@@ -130,7 +134,7 @@ class Quark:
             "moduleCode": "1f3563d38896438db994f118d4ff53cb",
             "kps": self.param.get('kps'),
         }
-        response = requests.get(url=url, params=querystring).json()
+        response = requests.get(url=url, params=querystring, timeout=15).json()
         # print(response)
         if response.get("data"):
             return response["data"]["balance"]

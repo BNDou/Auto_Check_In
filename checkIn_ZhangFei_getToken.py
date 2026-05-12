@@ -1,6 +1,14 @@
+#!/usr/bin/env python
+# coding=utf-8
 '''
 new Env('掌上飞车扫码登陆-目前仅支持寻宝')
 cron: 1 1 1 1 1
+
+FilePath     : /Auto_Check_In/checkIn_ZhangFei_getToken.py
+Author       : BNDou
+Date         : 2024-04-11 22:20:35
+LastEditTime : 2026-05-12 23:26:37
+Description  :  
                        _oo0oo_
                       o8888888o
                       88" . "88
@@ -24,12 +32,6 @@ cron: 1 1 1 1 1
      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
            佛祖保佑     永不宕机     永无BUG
-
-Author: BNDou
-Date: 2024-04-11 22:20:35
-LastEditTime: 2026-04-13 00:48:21
-FilePath: \Auto_Check_In\checkIn_ZhangFei_getToken.py
-Description: 
 '''
 
 import sys
@@ -75,7 +77,7 @@ if __name__ == "__main__":
     print("✌ 请使用手机QQ扫描二维码")
     # 1、获取需要扫码的图片并切获取qrsig
     url = "https://xui.ptlogin2.qq.com/ssl/ptqrshow?daid=381&appid=716027609&pt_3rd_aid=1105330667"
-    res_qr = requests.get(url)
+    res_qr = requests.get(url, timeout=15)
     qrsig = res_qr.cookies.get('qrsig')
     # print("\nqrsig =", qrsig)
 
@@ -119,7 +121,8 @@ if __name__ == "__main__":
                     f'{key}={value}'
                     for key, value in res_qr.cookies.get_dict().items()
                 ])
-            })
+            },
+            timeout=15)
         print(res_login.text)
         if "登录成功" in res_login.text:
             # 4、提取 openid appid access_token

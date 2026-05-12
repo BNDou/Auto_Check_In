@@ -1,11 +1,14 @@
+#!/usr/bin/env python
+# coding=utf-8
 '''
 new Env('小米运动修改步数')
 cron: 0 20 * * *
-Author: BNDou
-Date: 2024-10-08 23:15:30
-LastEditTime: 2026-01-13 00:40:17
-FilePath: \Auto_Check_In\checkIn_MiMotion.py
-Description: 
+
+FilePath     : /Auto_Check_In/checkIn_MiMotion.py
+Author       : BNDou
+Date         : 2024-10-08 23:15:30
+LastEditTime : 2026-05-12 23:15:51
+Description  : 
     源码出自大佬 Sitoi 的 https://github.com/Sitoi/dailycheckin
 
     根据自身需求追加"错误处理"和"稳定性"处理
@@ -30,13 +33,15 @@ try:  # 异常捕捉
 except Exception as err:  # 异常捕捉
     print('%s\n❌加载通知服务失败~' % err)
 
+# 导入公共环境变量工具
+from utils.env_utils import get_env as common_get_env
 
-# 获取环境变量
+
+# 获取环境变量（使用公共模块）
 def get_env():
     # 判断 COOKIE_MIMOTION 是否存在于环境变量
-    if "COOKIE_MIMOTION" in os.environ:
-        cookie_list = re.split('&', os.environ.get('COOKIE_MIMOTION'))
-    else:
+    cookie_list = common_get_env('COOKIE_MIMOTION')
+    if not cookie_list:
         # 标准日志输出
         print('❌未添加 COOKIE_MIMOTION 变量')
         send('小米运动修改步数', '❌未添加 COOKIE_MIMOTION 变量')

@@ -4,6 +4,10 @@ Date: 2023-10-18 20:55:31
 LastEditTime: 2024-06-05 05:21:57
 FilePath: /Auto_Check_In/utils/sendNotify.py
 Description: 
+
+⚠️ DEPRECATED: 此模块已废弃，请迁移至 utils/notify.py
+当前仓库所有脚本均已统一使用 utils/notify.py
+此文件仅保留用于向后兼容，后续版本将删除
 '''
 
 import base64
@@ -130,7 +134,7 @@ def serverJ(title, content):
     print("serverJ服务启动")
     try:
         data = {"text": title, "desp": content.replace("\n", "\n\n")}
-        response = requests.post(f"https://sc.ftqq.com/{PUSH_KEY}.send",
+        response = requests.post(f"https://sctapi.ftqq.com/{PUSH_KEY}.send",
                                  data=data).json()
         if response['errno'] == 0:
             print('推送成功！')

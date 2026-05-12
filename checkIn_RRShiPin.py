@@ -1,10 +1,14 @@
+#!/usr/bin/env python
+# coding=utf-8
 '''
 new Env('人人视频日常')
 cron: 0 9 * * *
-Author: BNDou
-Date: 2024-06-05 01:56:28
-LastEditTime: 2024-08-03 20:56:45
-FilePath: \Auto_Check_In\checkIn_RRShiPin.py
+
+FilePath     : /Auto_Check_In/checkIn_RRShiPin.py
+Author       : BNDou
+Date         : 2024-06-05 01:56:28
+LastEditTime : 2026-05-12 23:21:49
+Description  :  
 抓包流程：
     ①开启抓包，打开签到页
     ②找到url = https://api.qwdjapp.com/activity/index/integral 的请求头
@@ -26,14 +30,15 @@ try:  # 异常捕捉
 except Exception as err:  # 异常捕捉
     print('%s\n🔴加载通知服务失败~' % err)
 
+# 导入公共环境变量工具
+from utils.env_utils import get_env as common_get_env
 
-# 获取环境变量
+
+# 获取环境变量（使用公共模块）
 def get_env():
     # 判断 COOKIE_RRShiPin 是否存在于环境变量
-    if "COOKIE_RRShiPin" in os.environ:
-        # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_RRShiPin'))
-    else:
+    cookie_list = common_get_env('COOKIE_RRShiPin')
+    if not cookie_list:
         # 标准日志输出
         print('🔴未添加 COOKIE_RRShiPin 变量')
         send('人人视频日常', '🔴未添加 COOKIE_RRShiPin 变量')
@@ -45,17 +50,18 @@ def get_env():
 
 class RRShiPin:
     '''
-    Quark类封装了积分查询、签到任务列表查询、签到、激活任务、领取任务奖励的方法
+    人人视频签到类，封装了积分查询、签到任务列表查询、签到、激活任务、领取任务奖励的方法
     '''
     def __init__(self, cookie):
         '''
         初始化方法
         :param cookie: 用户登录后的cookie，用于后续的请求
         '''
-        self.cookie = {
-            a.split('=')[0]: a.split('=')[1]
-            for a in cookie.replace(" ", "").split(';') if a != ''
-        }
+        self.cookie = {}
+        for a in cookie.replace(" ", "").split(';'):
+            if a and '=' in a:
+                parts = a.split('=', 1)
+                self.cookie[parts[0]] = parts[1]
 
     def user_information(self):
         '''
@@ -70,7 +76,7 @@ class RRShiPin:
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
-        rjson = requests.get(url, headers=headers).json()
+        rjson = requests.get(url, headers=headers, timeout=15).json()
         if rjson['code'] == '0000':
             self.cookie['nickName'] = rjson['data']['user']['nickName']
             return f"👶 登录账号: {rjson['data']['user']['nickName']}"
@@ -89,7 +95,7 @@ class RRShiPin:
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
-        rjson = requests.get(url, headers=headers).json()
+        rjson = requests.get(url, headers=headers, timeout=15).json()
         if rjson['code'] == '0000':
             if not rjson['data'] == None:
                 return rjson['data']['integral']
@@ -109,7 +115,7 @@ class RRShiPin:
             "st": self.cookie.get('st'),
         }
         data = {"sectionId": "0"}
-        rjson = requests.post(url, headers=headers, data=data).json()
+        rjson = requests.post(url, headers=headers, data=data, timeout=15).json()
         if rjson['code'] == '0000':
             if not rjson['data'] == None:
                 return f"🟢 领取签到奖励: {rjson['data']['value']}"
@@ -130,7 +136,7 @@ class RRShiPin:
             "aliId": self.cookie.get('aliId'),
             "st": self.cookie.get('st'),
         }
-        rjson = requests.get(url, headers=headers).json()
+        rjson = requests.get(url, headers=headers, timeout=15).json()
         if rjson['code'] == '0000':
             if not rjson['data'] == None:
                 dailyTaskList = rjson['data']['dailyTaskDto']
@@ -155,7 +161,7 @@ class RRShiPin:
             "st": self.cookie.get('st'),
         }
         data = {'taskId': taskId}
-        rjson = requests.post(url, headers=headers, data=data).json()
+        rjson = requests.post(url, headers=headers, data=data, timeout=15).json()
         if rjson['code'] == '0000':
             return f"🟢 任务{taskId}: 激活成功"
         return f"🔴 任务{taskId}: 激活失败\n{rjson}"
@@ -175,7 +181,7 @@ class RRShiPin:
             "st": self.cookie.get('st'),
         }
         data = {"taskId": taskId}
-        rjson = requests.post(url, headers=headers, data=data).json()
+        rjson = requests.post(url, headers=headers, data=data, timeout=15).json()
         if rjson['code'] == '0000':
             return f"🟢 任务{taskId}: 奖励领取成功"
         return f"🔴 任务{taskId}: 奖励领取失败\n{rjson}"

@@ -1,10 +1,13 @@
+#!/usr/bin/env python
+# coding=utf-8
 '''
 new Env('掌上飞车-0点开金丝篓')
 cron: 59 59 23 * * *
+
+FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime : 2026-03-26 21:38:10
-FilePath: \Auto_Check_In\checkIn_ZhangFei_JinSiLou.py
+LastEditTime : 2026-05-12 23:27:25
 Description  : 端游 金丝篓开永久雷诺
 默认只有出货才推送通知
 
@@ -20,7 +23,7 @@ import os
 import re
 import sys
 import threading
-from queue import Queue
+from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import unquote
 
 import requests
@@ -30,18 +33,19 @@ import requests
 # os.environ['COOKIE_ZHANGFEI'] = ''
 
 try:  # 异常捕捉
-    from utils.sendNotify import send  # 导入消息通知模块
+    from utils.notify import send  # 导入消息通知模块
 except Exception as err:  # 异常捕捉
     print('%s\n❌加载通知服务失败~' % err)
 
+# 导入公共环境变量工具
+from utils.env_utils import get_env as common_get_env
 
-# 获取环境变量
+
+# 获取环境变量（使用公共模块）
 def get_env():
     # 判断 COOKIE_ZHANGFEI是否存在于环境变量
-    if "COOKIE_ZHANGFEI" in os.environ:
-        # 读取系统变量以 \n 或 && 分割变量
-        cookie_list = re.split('\n|&&', os.environ.get('COOKIE_ZHANGFEI'))
-    else:
+    cookie_list = common_get_env('COOKIE_ZHANGFEI')
+    if not cookie_list:
         # 标准日志输出
         print('❌未添加COOKIE_ZHANGFEI变量')
         send('掌上飞车开金丝篓', '❌未添加COOKIE_ZHANGFEI变量')
@@ -71,28 +75,23 @@ def get_env():
     return cookie_list
 
 
-# 开箱子线程类
-class OpenBoxThread(threading.Thread):
-    def __init__(self, user_data):
-        threading.Thread.__init__(self)
-        self.user_data = user_data
-        self.result = ''
-        self.q = Queue()
-
-    # 执行
-    def run(self):
-        url = "https://bang.qq.com/app/speed/chest/ajax/openBox"
-        headers = {'Referer': f"https://bang.qq.com/app/speed/chest/index/v2"}
-        # 生成表单
-        data = {
-            'userId': self.user_data.get('userId'),  # 掌飞id
-            'uin': self.user_data.get('roleId'),  # QQ账号
-            'areaId': self.user_data.get('areaId'),  # 大区
-            'token': self.user_data.get('token'),  # 令牌
-            'boxId': '17455',  # 金丝篓17455
-            'openNum': '1'  # 1个金丝篓开2个大闸蟹
-        }
-        r = requests.post(url=url, headers=headers, data=data)
+# 开箱函数（用于ThreadPoolExecutor）
+def open_box(user_data):
+    """开金丝篓"""
+    url = "https://bang.qq.com/app/speed/chest/ajax/openBox"
+    headers = {'Referer': f"https://bang.qq.com/app/speed/chest/index/v2"}
+    # 生成表单
+    data = {
+        'userId': user_data.get('userId'),  # 掌飞id
+        'uin': user_data.get('roleId'),  # QQ账号
+        'areaId': user_data.get('areaId'),  # 大区
+        'token': user_data.get('token'),  # 令牌
+        'boxId': '17455',  # 金丝篓17455
+        'openNum': '1'  # 1个金丝篓开2个大闸蟹
+    }
+    result = ''
+    try:
+        r = requests.post(url=url, headers=headers, data=data, timeout=15)
         a = r.json()
 
         # 是否成功
@@ -100,15 +99,13 @@ class OpenBoxThread(threading.Thread):
             if 'itemList' in a.get('data'):
                 item_list = a.get('data').get('itemList')
                 for num in range(len(item_list)):
-                    self.result += f"✅{item_list[num].get('avtarname')}*{item_list[num].get('num')} "
+                    result += f"✅{item_list[num].get('avtarname')}*{item_list[num].get('num')} "
                     num += 1
             if 'msg' in a.get('data'):
-                self.result += "❌" + str(a)
-        self.q.put(self.result)
-
-    # 取返回值
-    def get_result(self):
-        return self.q.get()
+                result += "❌" + str(a)
+    except Exception as e:
+        result = f"❌开箱异常: {str(e)}"
+    return result
 
 
 # token验证
@@ -122,7 +119,7 @@ def check(user):
         "token": user.get("token")
     }
 
-    response = requests.post(url, data=body)
+    response = requests.post(url, data=body, timeout=15)
     response_json = response.json()
     # print(response_json)
 
@@ -134,43 +131,44 @@ def check(user):
 
 
 def main(*arg):
+    """主函数"""
     msg = ""
     log_push = ""
     sendnoty = 'true'
-    thread = []
-    global cookie_zhangfei
     cookie_zhangfei = get_env()
 
     print("✅检测到共", len(cookie_zhangfei), "个飞车账号\n")
 
+    # 准备所有开箱任务
+    open_box_tasks = []
+    
     i = 0
     while i < len(cookie_zhangfei):
         # 获取user_data参数
         user_data = {}  # 用户信息
         for a in cookie_zhangfei[i].replace(" ", "").split(';'):
             if not a == '':
-                user_data.update({a.split('=')[0]: unquote(a.split('=')[1])})
+                parts = a.split('=', 1)
+                user_data.update({parts[0]: unquote(parts[1])})
 
         # 检查token是否过期
         if not check(user_data):
             i += 1
             continue
 
-        # 开金丝篓
+        # 开金丝篓 - 添加到任务列表
         for num in range(int(os.environ.get('zhangFei_jinSiLouNum'))):
-            thread.append(OpenBoxThread(user_data))
+            open_box_tasks.append(user_data)
 
         i += 1
 
-    # 启动线程
-    for t in thread:
-        t.start()
-    # 关闭线程
-    for t in thread:
-        t.join()
-    # 获取开箱返回值
-    for t in thread:
-        msg += t.get_result()
+    # 使用ThreadPoolExecutor并发执行
+    if open_box_tasks:
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            results = list(executor.map(open_box, open_box_tasks))
+        
+        # 合并结果
+        msg = ''.join(results)
 
     print(msg)
 
@@ -189,7 +187,7 @@ def main(*arg):
         except Exception as err:
             print('%s\n❌错误，请查看运行日志！' % err)
 
-    return msg[:-1]
+    return msg[:-1] if msg else ''
 
 
 if __name__ == "__main__":

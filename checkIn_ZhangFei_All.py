@@ -1,11 +1,13 @@
+#!/usr/bin/env python
+# coding=utf-8
 '''
 new Env('掌上飞车全能版（多线程）')
 cron: 10 0 * * *
-Author       : BNDou
-LastAuthor   : Aellyt
-Date         : 2025-01-09 01:38:32
-LastEditTime : 2026-03-26 21:37:02
+
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
+Author       : BNDou
+Date         : 2025-01-09 01:38:32
+LastEditTime : 2026-05-12 23:30:30
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
 抓包说明：
@@ -29,6 +31,8 @@ enable_treasure=true/false; - 寻宝功能
 3. 购物功能参数(enable_shopping=true时必需)：
 shopName=xxx; - 要购买的商品名称(掌飞商城里面的全称)
 giftPackId=1-6; - 月签20和25天礼包选择，默认1
+
+4. NotifyToken参数是作者本人的推送需求，大家使用可忽略，不影响使用
 '''
 import calendar
 import datetime
@@ -43,12 +47,15 @@ from urllib.parse import unquote
 import requests
 
 try:
-    from utils.sendNotify import send
+    from utils.notify import send
 except Exception as err:
     print(f'%s\n❌加载通知服务失败~' % err)
 
 # 全局变量
-isvip = 0  # 紫钻状态
+# 注意：isvip 已移至 ZhangFeiUser 类中作为实例属性，避免多线程竞态条件
+
+# 线程安全的消息字典锁
+msg_lock = threading.Lock()
 
 class ZhangFeiUser:
     """掌上飞车用户类"""
@@ -56,10 +63,11 @@ class ZhangFeiUser:
         self.user_data = {}
         self.progress = 0  # 添加进度属性
         self.status = ""   # 添加状态描述
+        self.isvip = 0     # 紫钻状态 - 移至实例属性避免线程不安全
         # 解析cookie字符串到user_data
         for item in cookie_str.replace(" ", "").split(';'):
             if item:
-                key, value = item.split('=')
+                key, value = item.split('=', 1)
                 self.user_data[key] = unquote(value)
         
         # 设置功能控制参数默认值
@@ -71,6 +79,10 @@ class ZhangFeiUser:
     def is_feature_enabled(self, feature):
         """检查功能是否启用"""
         return self.user_data.get(f'enable_{feature}', 'false').lower() == 'true'
+    
+    def get_notify_token(self):
+        """获取推送Token"""
+        return self.user_data.get('NotifyToken', '')
     
     def get_account_info(self):
         """获取账号显示信息"""
@@ -86,7 +98,7 @@ class ZhangFeiUser:
             "uin": self.user_data.get('roleId')
         }
         try:
-            response = requests.get(url, params=params)
+            response = requests.get(url, params=params, timeout=15)
             if "登录态失效" in response.text:
                 print(f"❌账号{self.user_data.get('roleId')}登录失效，请重新获取token")
                 return False
@@ -104,7 +116,8 @@ class SignIn:
         """获取签到信息"""
         try:
             flow = requests.get(
-                f"https://speed.qq.com/cp/a20240402mrqd/index.js"
+                f"https://speed.qq.com/cp/a20240402mrqd/index.js",
+                timeout=15
             )
             html = flow.text
             # 解析签到信息
@@ -151,7 +164,7 @@ class SignIn:
             sData[0]: sData[1]
         }
 
-        response = requests.post(url, headers=headers, data=data)
+        response = requests.post(url, headers=headers, data=data, timeout=15)
         response.encoding = "utf-8"
         return response.json()
 
@@ -255,7 +268,7 @@ class SignIn:
             "service": "dnf_getspeedknapsack",
             "cGameId": "1003",
         }
-        response = requests.post(url=url, data=data)
+        response = requests.post(url=url, data=data, timeout=15)
         response.encoding = "utf-8"
         return True if response.json()['returnMsg'] == '' else False
 
@@ -328,7 +341,7 @@ class Shopping:
             'areaId': self.user.user_data.get('areaId'),
             'token': self.user.user_data.get('token'),
         }
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=15)
         response.encoding = "utf-8"
 
         try:
@@ -342,8 +355,8 @@ class Shopping:
 
     def process_data(self, input_dict):
         """格式化道具信息"""
-        global isvip
-        if isvip > 0:
+        # 使用用户实例的 isvip 属性
+        if self.user.isvip > 0:
             vip_discount = input_dict["iMemeberRebate"]
         else:
             vip_discount = input_dict["iCommonRebate"]
@@ -397,7 +410,7 @@ class Shopping:
         }
         headers = {"Referer": "https://bang.qq.com/app/speed/mall/main2"}
 
-        response = requests.post(url, params=params, headers=headers)
+        response = requests.post(url, params=params, headers=headers, timeout=15)
         response.encoding = "utf-8"
 
         if len(response.json()['data']) == 1:
@@ -485,7 +498,7 @@ class Shopping:
         }
         # 延迟400毫秒执行，防止频繁
         time.sleep(0.4)
-        response = requests.post(url, headers=headers, data=data)
+        response = requests.post(url, headers=headers, data=data, timeout=15)
         response.encoding = "utf-8"
 
         if "恭喜购买成功" in response.json()['msg']:
@@ -546,6 +559,42 @@ class Shopping:
         
         return msg
 
+class PushPlusNotifier:
+    """PushPlus推送通知类"""
+    def __init__(self):
+        self.send_url = "http://www.pushplus.plus/send"
+    
+    def send_notification(self, token, title, content):
+        """发送PushPlus通知"""
+        if not token:
+            return False, "未提供NotifyToken"
+            
+        try:
+            data = {
+                "token": token,
+                "title": title,
+                "content": content
+            }
+            
+            # 使用JSON格式发送请求
+            body = json.dumps(data).encode(encoding='utf-8')
+            headers = {'Content-Type': 'application/json'}
+            
+            response = requests.post(self.send_url, data=body, headers=headers, timeout=15)
+            response.encoding = "utf-8"
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result.get('code') == 200:
+                    return True, "推送发送成功"
+                else:
+                    return False, f"推送发送失败: {result.get('msg', '未知错误')}"
+            else:
+                return False, f"HTTP请求失败: {response.status_code}"
+                
+        except Exception as e:
+            return False, f"推送发送异常: {str(e)}"
+
 class TreasureHunt:
     """寻宝功能类（重构版）"""
     def __init__(self, user):
@@ -580,7 +629,7 @@ class TreasureHunt:
             headers = {
                 'referer': "https://act.xinyue.qq.com/"
             }
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=15)
             json_str = re.search(r'jsonp86\((\{.*?\})\)', response.text).group(1)
             user_info = json.loads(json_str)
 
@@ -591,7 +640,7 @@ class TreasureHunt:
                 "device": "ios",
                 "scene": "ceiba"
             }
-            response = requests.post(url, data=json.dumps(payload), headers=self.headers)
+            response = requests.post(url, data=json.dumps(payload), headers=self.headers, timeout=15)
             role_data = response.json()
             if not role_data.get('roles'):
                 return role_data.get('msg')
@@ -608,7 +657,7 @@ class TreasureHunt:
                     "role_id": self.game_open_id
                 }
             }
-            response = requests.post(url, data=json.dumps(payload), headers=self.headers).json()
+            response = requests.post(url, data=json.dumps(payload), headers=self.headers, timeout=15).json()
             inner_data = json.loads(response['data'])
             flow_id = next(iter(inner_data['holdList'].keys()))
             
@@ -623,7 +672,7 @@ class TreasureHunt:
                     "role_id": self.game_open_id
                 }
             }
-            response = requests.post(url, data=json.dumps(payload), headers=self.headers).json()
+            response = requests.post(url, data=json.dumps(payload), headers=self.headers, timeout=15).json()
             inner_data = json.loads(response['data'])
             left_times = inner_data['remain']
             total_times = inner_data['usedTreasureNum']
@@ -682,7 +731,7 @@ class TreasureHunt:
             "StarLevel": star_level,
             "MapID": map_id
         }
-        response = requests.post(url, data=json.dumps(payload), headers=self.headers)
+        response = requests.post(url, data=json.dumps(payload), headers=self.headers, timeout=15)
         return response.json()
 
     def claim_reward(self, flow_id, user_info, role_info):
@@ -709,7 +758,7 @@ class TreasureHunt:
             },
             "data": f"{{\"user_attach\":\"{{\\\"nickName\\\":\\\"{nick_name}\\\",\\\"avatar\\\":\\\"{face}\\\"}}\",\"ceiba_plat_id\":\"ios\",\"cExtData\":{{}}}}"
         }
-        response = requests.post(url, data=json.dumps(payload), headers=self.headers)
+        response = requests.post(url, data=json.dumps(payload), headers=self.headers, timeout=15)
         result = response.json()
         
         # 整理奖励信息
@@ -773,14 +822,15 @@ class TreasureHunt:
             
         return msg
 
+
 def update_progress(users):
     """更新并显示所有账号的进度"""
     # 用于跟踪哪些账号已经显示过完成状态
     shown_completed = set()
     
     while True:
-        # 清除控制台
-        os.system('cls' if os.name == 'nt' else 'clear')
+        # 清屏并显示进度（移除 os.system 调用以避免污染日志）
+        print('\n' + '='*50)
         
         all_completed = True
         any_output = False
@@ -819,13 +869,15 @@ def process_account(user, msg_dict, user_index):
     try:
         # 初始化账号消息
         account_msg = f"\n{user.get_account_info()}\n"
-        msg_dict[user_index] = [account_msg]  # 使用列表存储当前账号的所有消息
+        with msg_lock:
+            msg_dict[user_index] = [account_msg]  # 使用列表存储当前账号的所有消息
         
         # 检查token
         if not user.check_token():
             user.progress = 100
             user.status = "登录失效"
-            msg_dict[user_index].append("❌登录失效，请重新获取token\n")
+            with msg_lock:
+                msg_dict[user_index].append("❌登录失效，请重新获取token\n")
             return
             
         # 检查功能启用状态
@@ -835,19 +887,22 @@ def process_account(user, msg_dict, user_index):
         if user.is_feature_enabled('signin'):
             enabled_features.append('signin')
         else:
-            msg_dict[user_index].append("❌未启用签到功能，请在cookie中添加enable_signin=true;\n")
+            with msg_lock:
+                msg_dict[user_index].append("❌未启用签到功能，请在cookie中添加enable_signin=true;\n")
             
         # 检查购物功能
         if user.is_feature_enabled('shopping'):
             enabled_features.append('shopping')
         else:
-            msg_dict[user_index].append("❌未启用购物功能，请在cookie中添加enable_shopping=true;\n")
+            with msg_lock:
+                msg_dict[user_index].append("❌未启用购物功能，请在cookie中添加enable_shopping=true;\n")
             
         # 检查寻宝功能
         if user.is_feature_enabled('treasure'):
             enabled_features.append('treasure')
         else:
-            msg_dict[user_index].append("❌未启用寻宝功能，请在cookie中添加enable_treasure=true;\n")
+            with msg_lock:
+                msg_dict[user_index].append("❌未启用寻宝功能，请在cookie中添加enable_treasure=true;\n")
             
         if not enabled_features:
             user.progress = 100
@@ -866,7 +921,8 @@ def process_account(user, msg_dict, user_index):
         # 如果启用了购物功能，检查必需的参数
         if 'shopping' in enabled_features and not user.user_data.get('shopName'):
             msg = "❌已启用购物功能但未设置shopName参数\n"
-            msg_dict[user_index].append(msg)
+            with msg_lock:
+                msg_dict[user_index].append(msg)
             user.progress = 100
             user.status = "购物参数缺失"
             return
@@ -879,7 +935,8 @@ def process_account(user, msg_dict, user_index):
             user.status = "正在签到..."
             sign_in = SignIn(user)
             sign_msg = sign_in.execute()
-            msg_dict[user_index].append(sign_msg)
+            with msg_lock:
+                msg_dict[user_index].append(sign_msg)
             user.progress += progress_per_feature
         
         # 执行购物
@@ -887,7 +944,8 @@ def process_account(user, msg_dict, user_index):
             user.status = "正在购物..."
             shopping = Shopping(user)
             shop_msg = shopping.execute()
-            msg_dict[user_index].append(shop_msg)
+            with msg_lock:
+                msg_dict[user_index].append(shop_msg)
             user.progress += progress_per_feature
         
         # 执行寻宝
@@ -895,18 +953,47 @@ def process_account(user, msg_dict, user_index):
             user.status = "正在寻宝..."
             treasure = TreasureHunt(user)
             treasure_msg = treasure.execute()
-            msg_dict[user_index].append(treasure_msg)
+            with msg_lock:
+                msg_dict[user_index].append(treasure_msg)
             user.progress = 100
             
         user.status = "任务完成"
-        msg_dict[user_index].append("="*30 + "\n")
+        with msg_lock:
+            msg_dict[user_index].append("="*30 + "\n")
+        
+        # 发送定向推送通知
+        notify_token = user.get_notify_token()
+        if notify_token:
+            user.status = "正在发送推送..."
+            notifier = PushPlusNotifier()
+            title = f"掌飞{user.user_data.get('roleId')}完成"
+            with msg_lock:
+                content = "".join(msg_dict[user_index])
+            success, push_msg = notifier.send_notification(notify_token, title, content)
+            with msg_lock:
+                if success:
+                    msg_dict[user_index].append(f"✅推送发送成功\n")
+                else:
+                    msg_dict[user_index].append(f"❌推送发送失败: {push_msg}\n")
         
     except Exception as e:
-        if user_index not in msg_dict:
-            msg_dict[user_index] = [account_msg]
-        msg_dict[user_index].append(f"❌执行出错: {str(e)}\n")
+        with msg_lock:
+            if user_index not in msg_dict:
+                msg_dict[user_index] = [account_msg]
+            msg_dict[user_index].append(f"❌执行出错: {str(e)}\n")
         user.status = f"执行出错: {str(e)}"
         user.progress = 100
+        
+        # 尝试发送错误通知
+        notify_token = user.get_notify_token()
+        if notify_token:
+            try:
+                notifier = PushPlusNotifier()
+                title = f"掌飞{user.user_data.get('roleId')}失败"
+                content = "".join(msg_dict[user_index])
+                notifier.send_notification(notify_token, title, content)
+            except:
+                pass  # 防止推送失败影响主流程
 
 def main():
     """主函数"""
