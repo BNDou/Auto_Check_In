@@ -1,13 +1,10 @@
-#!/usr/bin/env python
-# coding=utf-8
 '''
 new Env('掌上飞车-0点开金丝篓')
 cron: 59 59 23 * * *
-
-FilePath     : /Auto_Check_In/checkIn_ZhangFei_JinSiLou.py
 Author       : BNDou
 Date         : 2022-12-28 23:58:11
-LastEditTime : 2026-05-12 23:27:25
+LastEditTime : 2026-05-13 00:10:27
+FilePath: \Auto_Check_In\checkIn_ZhangFei_JinSiLou.py
 Description  : 端游 金丝篓开永久雷诺
 默认只有出货才推送通知
 
@@ -89,7 +86,8 @@ def open_box(user_data):
         'boxId': '17455',  # 金丝篓17455
         'openNum': '1'  # 1个金丝篓开2个大闸蟹
     }
-    result = ''
+    role_id = user_data.get('roleId', 'unknown')
+    result = "  "  # 添加账号标识，便于日志区分
     try:
         r = requests.post(url=url, headers=headers, data=data, timeout=15)
         a = r.json()
@@ -98,17 +96,19 @@ def open_box(user_data):
         if 'data' in a:
             if 'itemList' in a.get('data'):
                 item_list = a.get('data').get('itemList')
-                for num in range(len(item_list)):
-                    result += f"✅{item_list[num].get('avtarname')}*{item_list[num].get('num')} "
-                    num += 1
+                for item in item_list:
+                    result += f"✅{item.get('avtarname')}*{item.get('num')} "
             if 'msg' in a.get('data'):
-                result += "❌" + str(a)
+                # 失败信息单独一行，避免与成功结果混在一起
+                result += f"❌开箱失败: {a.get('data').get('msg')}"
+        else:
+            result = f"❌开箱异常: {a}"
     except Exception as e:
         result = f"❌开箱异常: {str(e)}"
     return result
 
 
-# token验证
+# token验证（返回True=有效，False=失效；错误信息通过返回值传递，不直接打印）
 def check(user):
     url = "https://api2.helper.qq.com/report/checklogswitch"
     body = {
@@ -118,16 +118,12 @@ def check(user):
         "userId": user.get("userId"),
         "token": user.get("token")
     }
-
     response = requests.post(url, data=body, timeout=15)
     response_json = response.json()
     # print(response_json)
 
-    if response_json['returnMsg'] != "":
-        print("❌账号 {}".format(user.get("roleId")),
-                response_json['returnMsg'], "可更新token后重试")
-
-    return True if response_json['returnMsg'] == "" else False
+    # 返回(状态, 错误信息)，不在此打印，统一由调用方处理日志
+    return (True, "") if response_json['returnMsg'] == "" else (False, response_json['returnMsg'])
 
 
 def main(*arg):
@@ -141,36 +137,63 @@ def main(*arg):
 
     # 准备所有开箱任务
     open_box_tasks = []
-    
+    # 记录每个任务对应的roleId（用于结果分组）
+    task_role_ids = []
+
     i = 0
     while i < len(cookie_zhangfei):
-        # 获取user_data参数
-        user_data = {}  # 用户信息
+        role_id = ""  # 用于日志展示
+        user_data = {}
         for a in cookie_zhangfei[i].replace(" ", "").split(';'):
             if not a == '':
                 parts = a.split('=', 1)
                 user_data.update({parts[0]: unquote(parts[1])})
+                if parts[0] == 'roleId':
+                    role_id = parts[1]
 
         # 检查token是否过期
-        if not check(user_data):
+        check_result = check(user_data)
+        if not check_result[0]:  # 登录态失效
+            print(f"❌账号 {role_id} 登录态失效，请重新登录 | {check_result[1]}")
             i += 1
             continue
 
-        # 开金丝篓 - 添加到任务列表
-        for num in range(int(os.environ.get('zhangFei_jinSiLouNum'))):
+        # 有效账号，开金丝篓
+        box_count = int(os.environ.get('zhangFei_jinSiLouNum'))
+        print(f"✅账号 {role_id} 登录态有效，开始开金丝篓 x{box_count}")
+        for num in range(box_count):
             open_box_tasks.append(user_data)
-
+            task_role_ids.append(role_id)
         i += 1
 
     # 使用ThreadPoolExecutor并发执行
     if open_box_tasks:
         with ThreadPoolExecutor(max_workers=10) as executor:
             results = list(executor.map(open_box, open_box_tasks))
-        
-        # 合并结果
-        msg = ''.join(results)
 
-    print(msg)
+        # 按账号分组汇总结果
+        role_results = {}
+        for idx, r in enumerate(results):
+            rid = task_role_ids[idx]
+            if rid not in role_results:
+                role_results[rid] = []
+            role_results[rid].append(r)
+
+        # 输出格式化日志
+        print("\n" + "=" * 40)
+        print("📋 开箱结果汇总")
+        print("=" * 40)
+        for rid, r_list in role_results.items():
+            print(f"\n【账号 {rid}】")
+            for r in r_list:
+                print(f"  {r}")
+        print("\n" + "=" * 40)
+
+        # 汇总推送消息
+        msg = "".join(results)
+    else:
+        print("\n⚠️ 无有效账号可开金丝篓")
+        msg = ""
 
     if '霸天虎' in msg:
         log_push += '⭕⭕⭕\n有账号成功开出 霸天虎，离永久雷诺不远了\n⭕⭕⭕\n'
