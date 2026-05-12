@@ -7,7 +7,7 @@ cron: 10 0 * * *
 FilePath     : /Auto_Check_In/checkIn_ZhangFei_All.py
 Author       : BNDou
 Date         : 2025-01-09 01:38:32
-LastEditTime : 2026-05-12 23:30:30
+LastEditTime : 2026-05-12 23:49:56
 Description  : 掌上飞车签到+购物+寻宝一体化脚本（多线程）
 
 抓包说明：
@@ -830,7 +830,7 @@ def update_progress(users):
     
     while True:
         # 清屏并显示进度（移除 os.system 调用以避免污染日志）
-        print('\n' + '='*50)
+        print('\n')
         
         all_completed = True
         any_output = False
