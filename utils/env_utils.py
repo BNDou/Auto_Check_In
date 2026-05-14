@@ -5,7 +5,7 @@ FilePath     : /Auto_Check_In/utils/env_utils.py
 Description  :  
 Author       : BNDou
 Date         : 2026-05-12 22:46:51
-LastEditTime : 2026-05-12 23:11:18
+LastEditTime : 2026-05-14 20:42:51
 
 utils/env_utils.py - 环境变量工具模块
 
@@ -29,4 +29,4 @@ def get_env(env_name: str) -> list:
     value = os.environ.get(env_name, '')
     if not value:
         return []
-    return [item.strip() for item in re.split(r'\n|&&', value) if item.strip()]
+    return [item.strip() for item in re.split(r'\n|&&|&', value) if item.strip()]
